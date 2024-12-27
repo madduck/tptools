@@ -296,7 +296,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Read TP files into JSON data structures",
-        argument_default=argparse.SUPPRESS
+        argument_default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--verbose",
@@ -355,12 +355,13 @@ if __name__ == "__main__":
     adjust_log_level(logger, args.verbose)
 
     if args.test:
-        if args.user and args.user != parser.get_default('user'):
-            logger.warning(f"Specifying --user with --test makes no sense: {args.user}")
+        if args.user and args.user != parser.get_default("user"):
+            logger.warning(
+                f"Specifying --user with --test makes no sense: {args.user}"
+            )
 
-        if args.password and args.password != parser.get_default('password'):
+        if args.password and args.password != parser.get_default("password"):
             logger.warning("Specifying --password with --test makes no sense")
-
 
     elif not args.input.exists():
         logger.error(f"File {args.input} does not exist")
