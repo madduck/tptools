@@ -29,10 +29,12 @@ APPKEY_TP_STATE = web.AppKey("tp_state", dict)
 APPKEY_TOURNAMENT = web.AppKey("tournament", Tournament)
 
 
-def main(args, logger):
+def create_app(connstr=None):
+    logger = logging.getLogger(__name__)
+
     middlewares = [
         basic_auth_middleware(
-            ("/result",),
+            ("/resultDISABLED",),
             {
                 "squore": "1c5643819209005cd924c5d0e05cbe70f5293c0f47dc53954224d5941b6beea0"  # noqa:E501
             },
@@ -40,33 +42,14 @@ def main(args, logger):
         )
     ]
 
-    del middlewares[0]
-
     app = web.Application(logger=logger, middlewares=middlewares)
 
     state = {}
     app[APPKEY_TP_STATE] = state
 
-    if args.test:
-        logger.warning("Test-mode with static, fake data")
-
-        with open("tests/csv_fixtures/playermatches.csv", newline="") as f:
-            matches = [PlayerMatch(r) for r in CSVReader(f)]
-        with open("tests/csv_fixtures/playerentries.csv", newline="") as f:
-            entries = [Entry(r) for r in CSVReader(f)]
-
-        tournament = Tournament(entries=entries, playermatches=matches)
-
-        logger.info(f"Parsed tournament: {tournament}")
-        state[APPKEY_TOURNAMENT] = tournament
-
-    else:
-
+    if connstr:
         async def create_tp_watcher_task(app):
             async def cb_load_tp_file(state, logger):
-                connstr = make_connstring_from_path(
-                    args.input, args.user, args.password
-                )
                 logger.debug(f"Reloading TP data from {connstr}")
 
                 entry_query = """
@@ -146,19 +129,23 @@ def main(args, logger):
 
         app.cleanup_ctx.append(create_tp_watcher_task)
 
+    else:
+        logger.warning("Test-mode with static, fake data")
+
+        with open("tests/csv_fixtures/playermatches.csv", newline="") as f:
+            matches = [PlayerMatch(r) for r in CSVReader(f)]
+        with open("tests/csv_fixtures/playerentries.csv", newline="") as f:
+            entries = [Entry(r) for r in CSVReader(f)]
+
+        tournament = Tournament(entries=entries, playermatches=matches)
+
+        logger.info(f"Parsed tournament: {tournament}")
+        state[APPKEY_TOURNAMENT] = tournament
+
     routes.static("/flags", "./flags")
     app.add_routes(routes)
 
-    logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
-
-    web.run_app(
-        app,
-        host=args.host
-        or (["::", "0.0.0.0"] if args.public else ["::1", "127.0.0.1"]),
-        port=args.port,
-        print=logger.debug,
-        handler_cancellation=True,
-    )
+    return app
 
 
 routes = web.RouteTableDef()
@@ -184,6 +171,7 @@ routes = web.RouteTableDef()
 
 @routes.get("/matches")
 async def matches(request):
+    logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
 
     include_params = {}
@@ -246,6 +234,7 @@ async def matches(request):
 
 @routes.get("/players")
 async def players(request):
+    logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
 
     entries = request.app[APPKEY_TP_STATE][APPKEY_TOURNAMENT].get_entries()
@@ -255,6 +244,7 @@ async def players(request):
 
 @routes.post("/result")
 async def result(request):
+    logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
 
     try:
@@ -356,9 +346,7 @@ if __name__ == "__main__":
 
     if args.test:
         if args.user and args.user != parser.get_default("user"):
-            logger.warning(
-                f"Specifying --user with --test makes no sense"
-            )
+            logger.warning(f"Specifying --user with --test makes no sense")
 
         if args.password and args.password != parser.get_default("password"):
             logger.warning("Specifying --password with --test makes no sense")
@@ -368,7 +356,30 @@ if __name__ == "__main__":
         sys.exit(2)
 
     try:
-        main(args, logger)
+        if args.test:
+            connstr = None
+
+        else:
+            connstr = make_connstring_from_path(
+                args.input, args.user, args.password
+            )
+
+        logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
+
+        host = args.host or (
+            ["::", "0.0.0.0"] if args.public else ["::1", "127.0.0.1"]
+        )
+
+        app = create_app(connstr)
+        logger.info(f"Starting HTTP server to listen on {host}, port {args.port}")
+        web.run_app(
+            app,
+            host=host,
+            port=args.port,
+            print=None,
+            handler_cancellation=True,
+        )
+
     except Exception as e:
         import traceback
 
