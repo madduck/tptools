@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tptools"
+version = "0.0.1"
+authors = [
+  { name="martin f. krafft", email="tptools@pobox.madduck.net" },
+]
+description = "A library to interface with TournamentPlanner files"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "python-dateutil",
+  "aiohttp",
+  "aiohttp-basicauth-middleware",
+  "asyncinotify",
+  "aioodbc",
+  "asyncstdlib"
+]
