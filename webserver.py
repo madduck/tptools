@@ -357,7 +357,7 @@ if __name__ == "__main__":
     if args.test:
         if args.user and args.user != parser.get_default("user"):
             logger.warning(
-                f"Specifying --user with --test makes no sense: {args.user}"
+                f"Specifying --user with --test makes no sense"
             )
 
         if args.password and args.password != parser.get_default("password"):
