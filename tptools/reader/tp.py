@@ -138,7 +138,7 @@ async def async_tp_watcher(*, path, logger, callback):
         with Inotify() as inotify:
             inotify.add_watch(path, Mask.MODIFY | Mask.ATTRIB)
             logger.debug(f"Added watcher on {path}")
-            await callback(path, logger)
+            await callback(logger)
             async for event in inotify:
                 logger.debug(f"Event in {path}: {event}")
                 await callback(logger)

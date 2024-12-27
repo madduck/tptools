@@ -51,7 +51,7 @@ def create_app(connstr=None, logger=None):
 
     if connstr:
         async def create_tp_watcher_task(app):
-            async def cb_load_tp_file(state, logger):
+            async def cb_load_tp_file(logger):
                 logger.debug(f"Reloading TP data from {connstr}")
 
                 entry_query = """
