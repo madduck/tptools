@@ -209,12 +209,14 @@ async def matches(request):
             matches_without_court.append(match)
 
         else:
-            logger.debug(f"Found a match on court {match.court}")
             sect = " " + court_xform(match.court)
             court_nr = re.search(r"(?P<nr>\d+)$", match.court)
 
             if court == match.court or (court_nr and court_nr["nr"] == court):
                 sect = "+" + sect
+                logger.debug(f"Found a match on OUR court {match.court}")
+            else:
+                logger.debug(f"Found a match on court {match.court}")
             matches_by_court.setdefault(sect, []).append(match)
 
     matches_by_court[" No court"] = matches_without_court
