@@ -151,7 +151,14 @@ def main(args, logger):
 
     logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
-    web.run_app(app)
+    web.run_app(
+        app,
+        host=args.host
+        or (["::", "0.0.0.0"] if args.public else ["::1", "127.0.0.1"]),
+        port=args.port,
+        print=logger.debug,
+        handler_cancellation=True,
+    )
 
 
 routes = web.RouteTableDef()
@@ -297,6 +304,26 @@ if __name__ == "__main__":
         action="count",
         default=0,
         help="Increase verbosity beyond WARNING",
+    )
+    hgroup = parser.add_mutually_exclusive_group(required=False)
+    hgroup.add_argument(
+        "--host",
+        action="append",
+        default=None,
+        help="IP/host or sequence of IPs/hosts for HTTP server to listen on",
+    )
+    hgroup.add_argument(
+        "--public",
+        action="store_true",
+        default=False,
+        help="Listen on all interfaces and IPs",
+    )
+    parser.add_argument(
+        "--port",
+        "-p",
+        type=int,
+        default=8080,
+        help="Port for HTTP server to listen on",
     )
     ingroup = parser.add_mutually_exclusive_group(required=True)
     ingroup.add_argument(
