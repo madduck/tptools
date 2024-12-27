@@ -321,6 +321,7 @@ if __name__ == "__main__":
     ingroup.add_argument(
         "--test",
         "-t",
+        default=False,
         action="store_true",
         help="Use fake test data for this run",
     )
