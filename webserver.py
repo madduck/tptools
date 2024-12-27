@@ -29,8 +29,10 @@ APPKEY_TP_STATE = web.AppKey("tp_state", dict)
 APPKEY_TOURNAMENT = web.AppKey("tournament", Tournament)
 
 
-def create_app(connstr=None):
-    logger = logging.getLogger(__name__)
+def create_app(connstr=None, logger=None):
+    if not logger:
+        logger = get_logger()
+        adjust_log_level(logger, 2)
 
     middlewares = [
         basic_auth_middleware(
@@ -341,7 +343,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logger = get_logger(None)
+    logger = get_logger()
     adjust_log_level(logger, args.verbose)
 
     if args.test:
@@ -364,13 +366,13 @@ if __name__ == "__main__":
                 args.input, args.user, args.password
             )
 
-        logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
+        adjust_log_level(get_logger("aiohttp.access"), 0)
 
         host = args.host or (
             ["::", "0.0.0.0"] if args.public else ["::1", "127.0.0.1"]
         )
 
-        app = create_app(connstr)
+        app = create_app(connstr, logger)
         logger.info(f"Starting HTTP server to listen on {host}, port {args.port}")
         web.run_app(
             app,

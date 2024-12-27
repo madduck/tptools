@@ -41,7 +41,7 @@ class CustomFormatter(logging.Formatter):
         return super().format(record)
 
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name=None, level=logging.INFO):
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
