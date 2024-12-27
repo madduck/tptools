@@ -141,7 +141,7 @@ def create_app(connstr=None, logger=None):
 
         tournament = Tournament(entries=entries, playermatches=matches)
 
-        logger.info(f"Parsed tournament: {tournament}")
+        logger.info(f"Parsed test tournament: {tournament}")
         state[APPKEY_TOURNAMENT] = tournament
 
     routes.static("/flags", "./flags")
