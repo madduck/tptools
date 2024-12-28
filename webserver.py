@@ -211,9 +211,9 @@ async def matches(request):
 
             if court == match.court or (court_nr and court_nr["nr"] == court):
                 sect = "+" + sect
-                logger.debug(f"Found a match on OUR court {match.court}")
+                logger.debug(f"Found match {match.id} on OUR court {match.court}")
             else:
-                logger.debug(f"Found a match on court {match.court}")
+                logger.debug(f"Found match {match.id} on court {match.court}")
             matches_by_court.setdefault(sect, []).append(match)
 
     matches_by_court[" No court"] = matches_without_court
