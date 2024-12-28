@@ -7,6 +7,8 @@ import re
 import json
 import logging
 import hashlib
+import aiosqlite
+import datetime
 from pathlib import Path
 from aiohttp import web
 from aiohttp_basicauth_middleware import basic_auth_middleware
@@ -25,14 +27,86 @@ from tptools.jsonfeed import JSONFeedMaker
 from tptools.logger import get_logger, adjust_log_level
 
 
+APPKEY_CLI_ARGS = web.AppKey("cli_args", argparse.Namespace)
 APPKEY_TP_STATE = web.AppKey("tp_state", dict)
 APPKEY_TOURNAMENT = web.AppKey("tournament", Tournament)
+APPKEY_RESULTS_DB = web.AppKey("results_db", aiosqlite.core.Connection)
 
 
-def create_app(connstr=None, logger=None):
-    if not logger:
-        logger = get_logger()
-        adjust_log_level(logger, 2)
+def make_cli_parser():
+
+    parser = argparse.ArgumentParser(
+        description="Read TP files into JSON data structures",
+        argument_default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
+        help="Increase verbosity beyond WARNING",
+    )
+    ingroup = parser.add_mutually_exclusive_group(required=True)
+    ingroup.add_argument(
+        "--test",
+        "-t",
+        default=False,
+        action="store_true",
+        help="Use fake test data for this run",
+    )
+    ingroup.add_argument(
+        "--input",
+        "-i",
+        type=Path,
+        help="TP file to read",
+    )
+    parser.add_argument(
+        "--user",
+        default="Admin",
+        help="DB user to use with --input",
+    )
+    parser.add_argument(
+        "--password",
+        default="d4R2GY76w2qzZ",
+        help="DB password to use with --input",
+    )
+    parser.add_argument(
+        "--database",
+        "-d",
+        type=Path,
+        default=None,
+        help="Database where to store results as they come in",
+    )
+    return parser
+
+
+def create_app(*, logger=None, cli_parser=None):
+
+    logger = logger or get_logger("tptools")
+    parser = cli_parser or make_cli_parser()
+
+    args = parser.parse_args()
+
+    adjust_log_level(logger, args.verbose)
+
+    if args.test:
+        if args.user and args.user != parser.get_default("user"):
+            logger.warning("Specifying --user with --test makes no sense")
+
+        if args.password and args.password != parser.get_default("password"):
+            logger.warning("Specifying --password with --test makes no sense")
+
+        connstr = None
+
+    elif not args.input.exists():
+        logger.error(f"File {args.input} does not exist")
+        sys.exit(2)
+
+    else:
+        connstr = make_connstring_from_path(
+            args.input, args.user, args.password
+        )
 
     middlewares = [
         basic_auth_middleware(
@@ -46,13 +120,16 @@ def create_app(connstr=None, logger=None):
 
     app = web.Application(logger=logger, middlewares=middlewares)
 
+    app[APPKEY_CLI_ARGS] = args
+
     state = {}
     app[APPKEY_TP_STATE] = state
 
     if connstr:
+
         async def create_tp_watcher_task(app):
             async def cb_load_tp_file(logger):
-                logger.debug(f"Reloading TP data from {connstr}")
+                logger.info(f"Reloading TP data from {connstr}")
 
                 entry_query = """
                     select e.id as entryid,
@@ -144,6 +221,36 @@ def create_app(connstr=None, logger=None):
         logger.info(f"Parsed test tournament: {tournament}")
         state[APPKEY_TOURNAMENT] = tournament
 
+    async def connect_to_database(app):
+        logging.getLogger("aiosqlite").setLevel(logging.INFO)
+        dbname = args.database or ":memory:"
+        init_required = not args.database or not args.database.exists()
+        async with aiosqlite.connect(dbname) as db:
+            if init_required:
+                logger.info(f"Initialising database {dbname}")
+                await db.execute(
+                    """
+                    create table results(
+                      id integer primary key unique not null,
+                      timestamp timestamp not null default CURRENT_TIMESTAMP,
+                      matchid integer not null,
+                      entry1 integer not null,
+                      entry2 integer not null,
+                      result text not null,
+                      finished bool default 0,
+                      acked bool default 0
+                    );
+                    """
+                )
+
+            # db.row_factory = aiosqlite.Row
+            app.logger.debug(f"Connected to SQLite database: {dbname}")
+            app[APPKEY_RESULTS_DB] = db
+            yield
+            app.logger.debug(f"Disconnecting from database: {db}")
+
+    app.cleanup_ctx.append(connect_to_database)
+
     routes.static("/flags", "./flags")
     app.add_routes(routes)
 
@@ -171,7 +278,7 @@ routes = web.RouteTableDef()
 #    )
 
 
-@routes.get("/matches")
+@routes.get("/v1/squore/matches")
 async def matches(request):
     logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
@@ -233,7 +340,8 @@ async def matches(request):
             "${FirstOfList:~${A}~${A.name}~} [${A.club}] - "
             "${FirstOfList:~${B}~${B.name}~} [${B.club}] : "
             "${result}"
-        )
+        ),
+        "PostResult": str(request.url.parent / "result"),
     }
 
     jfm = JSONFeedMaker(
@@ -243,7 +351,7 @@ async def matches(request):
     return web.json_response(jfm.get_data())
 
 
-@routes.get("/players")
+@routes.get("/v1/squore/players")
 async def players(request):
     logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
@@ -253,137 +361,226 @@ async def players(request):
     return web.Response(text="\n".join(names))
 
 
-@routes.post("/result")
+@routes.post("/v1/squore/result")
 async def result(request):
     logger = request.app.logger
     logger.debug(f"{request.method} {request.url} from {request.remote}")
 
     try:
-        data = await request.json()
+        try:
+            data = await request.json()
+            matchid = int(data["metadata"]["sourceID"])
 
-    except json.decoder.JSONDecodeError:
-        logger.error(f"Invalid JSON received: {await request.text()}")
-        raise web.HTTPUnprocessableEntity(reason="Invalid JSON in request")
+        except json.decoder.JSONDecodeError:
+            logger.error(f"Invalid JSON received: {await request.text()}")
+            raise web.HTTPUnprocessableEntity(reason="Invalid JSON in request")
 
-    try:
-        message = f"Recorded game with ID {data['metadata']['sourceID']}"
-        if "isVictoryFor" in data:
-            message += (
-                f", won {data['gamescores']} by "
-                f"{data['players'][data['isVictoryFor']]}"
+        except TypeError as e:
+            logger.error(f"Invalid type received, probably match ID: {e}")
+            raise web.HTTPUnprocessableEntity(reason="Invalid match ID")
+
+        try:
+            message = f"Received results for game with ID {matchid}"
+            if "isVictoryFor" in data:
+                message += (
+                    f", won {data['gamescores']} by "
+                    f"{data['players'][data['isVictoryFor']]}"
+                )
+            else:
+                message += f", at game score {data['result']} ({data['gamescores']} …)"
+
+            logger.info(message)
+
+        except KeyError as e:
+            raise web.HTTPUnprocessableEntity(
+                reason="Missing information in JSON data",
+                text=f"The following key is missing from the JSON data: {e}",
             )
-        else:
-            message += (
-                f", at game score {data['result']} ({data['gamescores']} …)"
+
+        except TypeError as e:
+            raise web.HTTPUnprocessableEntity(
+                reason="Wrong information in JSON data",
+                text=f"The following TypeError occurred: {e}",
             )
 
-    except KeyError as e:
-        raise web.HTTPUnprocessableEntity(
-            reason="Missing information in JSON data",
-            text=f"The following key is missing from the JSON data: {e}",
+        tournament = request.app[APPKEY_TP_STATE][APPKEY_TOURNAMENT]
+
+        match = tournament.get_match(matchid)
+
+        if not match:
+            logger.error(f"No match found for ID {matchid}")
+            raise web.HTTPNotFound(text=f"No match found for ID {matchid}")
+
+        logger.debug(f"Found match {match} for results")
+
+        db = request.app[APPKEY_RESULTS_DB]
+
+        def gamescores_to_json_array(scores):
+            return json.dumps([tuple(g.split('-')) for g in scores.split(',')])
+
+        await db.execute(
+            "INSERT INTO results"
+            "(matchid, entry1, entry2, result, finished) "
+            "values (?, ?, ?, ?, ?)",
+            (
+                matchid,
+                match.player1.id,
+                match.player2.id,
+                gamescores_to_json_array(data["gamescores"]),
+                "isVictoryFor" in data,
+            ),
+        )
+        await db.commit()
+
+        message = (
+            f'Recorded result {data["gamescores"]} for match {matchid}.\n\n'
+            "Thank you for your time!\n\n"
+            "Please make sure the players know\n"
+            "they need to mark&ref the next game!"
         )
 
-    except TypeError as e:
-        raise web.HTTPUnprocessableEntity(
-            reason="Wrong information in JSON data",
-            text=f"The following TypeError occurred: {e}",
+    except (web.HTTPUnprocessableEntity, web.HTTPNotFound) as e:
+        message = (
+            f"An error occurred processing match ID {matchid}.\n\n"
+            f"Please show this to tournament control.\n\n"
+            f"Error: {e}"
         )
 
-    logger.info(message)
     return web.json_response({"message": message})
+
+
+@routes.get("/v1/tc/results")
+async def todo(request):
+    logger = request.app.logger
+    logger.debug(f"{request.method} {request.url} from {request.remote}")
+
+    tournament = request.app[APPKEY_TP_STATE][APPKEY_TOURNAMENT]
+    ret = []
+    db = request.app[APPKEY_RESULTS_DB]
+    query = "SELECT * FROM results WHERE finished "
+    if not request.query.get("include_acked", 0) in ("1", "yes", "true"):
+        query += "AND NOT acked "
+    query += "ORDER BY timestamp"
+    logger.debug(f"Running query: {query}")
+    async with db.execute(query) as cursor:
+        colnames = [x[0] for x in cursor.description]
+        async for result in cursor:
+            record = dict(zip(colnames, result))
+            matchid = record.get("matchid")
+            match = tournament.get_match(record.get("matchid"))
+            if not match:
+                logger.error(
+                    f"Cannot find match ID {matchid} "
+                    f"for result record {record['id']}"
+                )
+                continue
+            ret.append(
+                {
+                    "record": record,
+                    "match": match.as_dict(),
+                }
+            )
+
+    ret = {
+        "timestamp": datetime.datetime.now().strftime("%F %H:%M:%S"),
+        "version": 1,
+        "data": ret,
+    }
+    return web.json_response(
+        ret, headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+
+@routes.get(r"/v1/tc/results/ack/{resid:\d+}")
+async def ack(request):
+    logger = request.app.logger
+    logger.debug(f"{request.method} {request.url} from {request.remote}")
+
+    resid = request.match_info["resid"]
+    db = request.app[APPKEY_RESULTS_DB]
+    unack = request.query.get("unack", 0)
+    query = (
+        "UPDATE results SET acked = ? "
+        f"WHERE id = ? AND {'' if unack else 'not '}acked RETURNING *"
+    )
+    logger.debug(f"Running query: {query}, ({not(unack)}, {resid})")
+    async with db.execute(query, (not (unack), resid)) as cursor:
+        rec = await cursor.fetchone()
+        if rec:
+            status = 200
+            message = f"Success updating record with ID {resid}"
+        else:
+            status = 404
+            message = (
+                f"No record with ID {resid} found to "
+                f"{'un' if unack else ''}ack"
+            )
+
+    await db.commit()
+    return web.json_response(
+        {"message": message, "record": rec}, status=status,
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+
+@routes.get("/v1/tc/results/ws")
+async def ws_handler(request):
+
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            if msg.data == 'close':
+                await ws.close()
+            elif msg.data == 'sub':
+                
+                await ws.send_str(msg.data + '/answer')
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            print('ws connection closed with exception %s' %
+                  ws.exception())
+
+    return ws
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(
-        description="Read TP files into JSON data structures",
-        argument_default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="count",
-        default=0,
-        help="Increase verbosity beyond WARNING",
-    )
-    hgroup = parser.add_mutually_exclusive_group(required=False)
-    hgroup.add_argument(
-        "--host",
-        action="append",
-        default=None,
-        help="IP/host or sequence of IPs/hosts for HTTP server to listen on",
-    )
-    hgroup.add_argument(
-        "--public",
-        action="store_true",
-        default=False,
-        help="Listen on all interfaces and IPs",
-    )
-    parser.add_argument(
-        "--port",
-        "-p",
-        type=int,
-        default=8080,
-        help="Port for HTTP server to listen on",
-    )
-    ingroup = parser.add_mutually_exclusive_group(required=True)
-    ingroup.add_argument(
-        "--test",
-        "-t",
-        default=False,
-        action="store_true",
-        help="Use fake test data for this run",
-    )
-    ingroup.add_argument(
-        "--input",
-        "-i",
-        type=Path,
-        help="TP file to read",
-    )
-    parser.add_argument(
-        "--user",
-        default="Admin",
-        help="DB user to use with --input",
-    )
-    parser.add_argument(
-        "--password",
-        default="d4R2GY76w2qzZ",
-        help="DB password to use with --input",
-    )
-
-    args = parser.parse_args()
-
-    logger = get_logger()
-    adjust_log_level(logger, args.verbose)
-
-    if args.test:
-        if args.user and args.user != parser.get_default("user"):
-            logger.warning(f"Specifying --user with --test makes no sense")
-
-        if args.password and args.password != parser.get_default("password"):
-            logger.warning("Specifying --password with --test makes no sense")
-
-    elif not args.input.exists():
-        logger.error(f"File {args.input} does not exist")
-        sys.exit(2)
-
     try:
-        if args.test:
-            connstr = None
+        parser = make_cli_parser()
 
-        else:
-            connstr = make_connstring_from_path(
-                args.input, args.user, args.password
-            )
+        hgroup = parser.add_mutually_exclusive_group(required=False)
+        hgroup.add_argument(
+            "--host",
+            action="append",
+            default=None,
+            help="IP/host / sequence of IPs/hosts for HTTP server to listen on",  # noqa:E501
+        )
+        hgroup.add_argument(
+            "--public",
+            action="store_true",
+            default=False,
+            help="Listen on all interfaces and IPs",
+        )
+        parser.add_argument(
+            "--port",
+            "-p",
+            type=int,
+            default=8080,
+            help="Port for HTTP server to listen on",
+        )
 
-        adjust_log_level(get_logger("aiohttp.access"), 0)
+        app = create_app(cli_parser=parser)
+
+        logger = app.logger
+        args = app[APPKEY_CLI_ARGS]
 
         host = args.host or (
             ["::", "0.0.0.0"] if args.public else ["::1", "127.0.0.1"]
         )
 
-        app = create_app(connstr, logger)
-        logger.info(f"Starting HTTP server to listen on {host}, port {args.port}")
+        logger.info(
+            f"Starting HTTP server to listen on {host}, port {args.port}"
+        )
         web.run_app(
             app,
             host=host,

@@ -26,7 +26,8 @@ dependencies = [
   "aiohttp-basicauth-middleware",
   "asyncinotify",
   "aioodbc",
-  "asyncstdlib"
+  "asyncstdlib",
+  "aiosqlite"
 ]
 
 [project.optional-dependencies]
