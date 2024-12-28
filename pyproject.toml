@@ -17,6 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.setuptools_scm]
+write_to = "_version.py"
+
 dependencies = [
   "python-dateutil",
   "aiohttp",
