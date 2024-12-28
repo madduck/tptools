@@ -58,7 +58,7 @@ def test_playermatch_get_no_court(demo_playermatch_idmap):
 
 def test_playermatch_get_location(demo_playermatch_idmap):
     pm = demo_playermatch_idmap[34]
-    assert pm.get_location() == ""
+    assert pm.get_location() is None
 
 
 def test_source_playermatch_status_pending(demo_playermatch_idmap):

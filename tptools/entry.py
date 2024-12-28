@@ -4,7 +4,7 @@ class Entry(dict):
     def make_team_name(players, *, joinstr='&'):
         if len(players) == 2 and players[0] == players[1]:
             return players[0]
-        return joinstr.join(players)
+        return joinstr.join([str(p) for p in players])
 
 
     def __repr__(self):

@@ -38,6 +38,11 @@ def test_entry_country(demo_playerentry_records):
     assert e.countries == ("CAN",)
 
 
+def test_entry_country_empty(demo_playerentry_records):
+    e = Entry(demo_playerentry_records[13])
+    assert e.countries == (None,)
+
+
 def test_entry_country_doubles(demo_playerentry_records):
     e = Entry(demo_playerentry_records[6])
     assert e.countries == ("USA", "NED")
@@ -51,6 +56,11 @@ def test_entry_country_doubles_same(demo_playerentry_records):
 def test_entry_club(demo_playerentry_records):
     e = Entry(demo_playerentry_records[0])
     assert e.clubs == ("Limmen",)
+
+
+def test_entry_club_empty(demo_playerentry_records):
+    e = Entry(demo_playerentry_records[16])
+    assert e.clubs == (None,)
 
 
 def test_entry_club_doubles(demo_playerentry_records):

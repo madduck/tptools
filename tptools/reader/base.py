@@ -3,10 +3,12 @@ class BaseReader:
     def __init__(self,
         *,
         auto_convert_int=True,
-        auto_convert_bool=True
+        auto_convert_bool=True,
+        auto_convert_emptystring=True
     ):
         self._auto_convert_int = auto_convert_int
         self._auto_convert_bool = auto_convert_bool
+        self._auto_convert_emptystring = auto_convert_emptystring
 
     def __iter__(self):
         return self
@@ -24,6 +26,10 @@ class BaseReader:
                     return True
                 elif value in ("False", "false"):
                     return False
+
+            if self._auto_convert_emptystring:
+                if value == '':
+                    return None
 
             return value
 
