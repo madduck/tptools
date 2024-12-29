@@ -29,6 +29,7 @@ class Entry(dict):
         else:
             return (ret,)
 
+    id = property(lambda s: s['entryid'])
     players = property(lambda s: s.get_players())
     playersshort = property(lambda s: s.get_players(short=True))
 

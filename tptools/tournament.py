@@ -60,3 +60,17 @@ class Tournament:
 
     def get_entries(self):
         yield from self._entries.values()
+
+    def get_match(self, matchid, *, entry_getter=None):
+        for draw in self._draws.values():
+            for match in draw.get_matches(
+                include_played=True,
+                include_not_ready=True,
+                entry_getter=entry_getter or self._entry_getter,
+            ):
+                if match.id == matchid:
+                    return match
+
+    def get_entry(self, entryid):
+        if self._entries:
+            return self._entries.get(entryid)
