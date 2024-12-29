@@ -1,9 +1,6 @@
 from tptools.entry import Entry
 from tptools.draw import Draw
 from tptools.match import Match
-from tptools.logger import get_logger
-
-logger = get_logger(__name__)
 
 
 class Tournament:
@@ -41,7 +38,6 @@ class Tournament:
                 draw = Draw(
                     event=matches[0]["eventname"], draw=matches[0]["drawname"]
                 )
-                logger.debug(f"Found new draw ID {drawid}: {draw}")
                 self._draws[drawid] = draw
 
             draw.read_playermatches(
