@@ -60,6 +60,19 @@ class Match:
     court = property(lambda s: s._playermatch.get_court())
     status = property(lambda s: Match.get_match_status(s))
 
+    def as_dict(self):
+        return dict(
+            matchid=self.id,
+            date=self.time.strftime("%F") if self.time else None,
+            time=self.time.strftime("%H:%M") if self.time else None,
+            court=self.court,
+            player1=str(self.player1),
+            player2=str(self.player2),
+            event=self.event,
+            draw=self.draw,
+            status=self.status.name
+        )
+
     @classmethod
     def get_match_status(klass, match):
         if match._playermatch.status == PlayerMatch.Status.PLAYER:

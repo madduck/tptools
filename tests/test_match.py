@@ -127,3 +127,13 @@ def test_match_get_player_loser(demo_match_elimination_idmap):
     m = demo_match_elimination_idmap[2004]
     assert m.player1.role == SourcePlayerMatch.Role.LOSER
     assert m.player2.role == SourcePlayerMatch.Role.LOSER
+
+
+def test_match_to_dict(demo_match_elimination_idmap):
+    m = demo_match_elimination_idmap[2004]
+    d = m.as_dict()
+
+    assert 'matchid' in d
+    assert 'court' in d
+    assert d['time'] is None
+    assert d['status'] == 'UNPLAYED'
