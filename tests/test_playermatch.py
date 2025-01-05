@@ -21,6 +21,11 @@ def test_playermatch_status_player(demo_playermatch_idmap):
     assert pm.status == PlayerMatch.Status.PLAYER
 
 
+def test_playermatch_status_player_van_none_instead_of_zero(demo_playermatch_idmap):
+    pm = demo_playermatch_idmap[54]
+    assert pm.status == PlayerMatch.Status.PLAYER
+
+
 def test_playermatch_status_bye(demo_playermatch_idmap):
     pm = demo_playermatch_idmap[42]
     assert pm.status == PlayerMatch.Status.BYE

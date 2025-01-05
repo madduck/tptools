@@ -18,8 +18,8 @@ class PlayerMatch(dict):
     def __init__(self, other):
         super().__init__(other)
         self._entry = self.get("entry")
-        if self.get("van1", 0) == 0:
-            assert self.get("van2", 0) == 0
+        if self.get("van1") in (0, None):
+            assert self.get("van2") in (0, None)
             assert self.get("winner", 0) == 0
             if self._entry:
                 logger.debug(f"Found player (entry={self._entry})")
