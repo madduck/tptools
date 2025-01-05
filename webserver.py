@@ -311,7 +311,7 @@ async def matches(request):
     for match in sorted(matches, key=lambda m: m.time):
 
         if not match.court and not only_this_court:
-            logger.debug("Found a match without an assigned court")
+            logger.debug(f"Found a match {match.id} without an assigned court")
             matches_without_court.append(match)
 
         else:
