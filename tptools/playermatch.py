@@ -28,6 +28,7 @@ class PlayerMatch(dict):
                 logger.debug("Found Bye")
                 self._status = self.Status.BYE
         else:
+            logger.debug("Found match")
             self._status = self.Status.MATCH
 
     id = property(lambda s: s.get("matchid", -1))
