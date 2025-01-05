@@ -133,7 +133,7 @@ class AsyncTPReader(TPReader):
         await self.disconnect()
 
 
-async def async_tp_watcher(*, path, logger, callback):
+async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
     if _INOTIFY:
         with Inotify() as inotify:
             inotify.add_watch(path, Mask.MODIFY | Mask.ATTRIB)
@@ -151,4 +151,4 @@ async def async_tp_watcher(*, path, logger, callback):
                 logger.debug(f"{path} has been modified.")
                 mtime_last = mtime
                 await callback(logger)
-            await asyncio.sleep(5)
+            await asyncio.sleep(pollsecs)
