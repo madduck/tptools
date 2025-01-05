@@ -200,23 +200,32 @@ async def matches(request):
 
     matches_by_court = {}
     matches_without_court = []
-    for match in matches:
-        if not match.court:
+    only_this_court = request.query.get("only_this_court") in ("1", "true", "yes")
+    for match in sorted(matches, key=lambda m: m.time):
+
+        if not match.court and not only_this_court:
             logger.debug("Found a match without an assigned court")
             matches_without_court.append(match)
 
         else:
             sect = " " + court_xform(match.court)
-            court_nr = re.search(r"(?P<nr>\d+)$", match.court)
+            court_nr = re.search(r"0*(?P<nr>[1-9]\d*)$", match.court)
 
             if court == match.court or (court_nr and court_nr["nr"] == court):
                 sect = "+" + sect
                 logger.debug(f"Found match {match.id} on OUR court {match.court}")
+
+            elif only_this_court:
+                logger.debug(f"Skipping match on court {match.court}")
+                continue
+
             else:
                 logger.debug(f"Found match {match.id} on court {match.court}")
+
             matches_by_court.setdefault(sect, []).append(match)
 
-    matches_by_court[" No court"] = matches_without_court
+    if matches_without_court:
+        matches_by_court[" No court"] = matches_without_court
 
     config = {
         "Placeholder_Match": (
