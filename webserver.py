@@ -337,8 +337,9 @@ async def matches(request):
     config = {
         "Placeholder_Match": (
             "${time} Uhr : "
-            "${FirstOfList:~${A}~${A.name}~} [${A.club}] - "
-            "${FirstOfList:~${B}~${B.name}~} [${B.club}] : "
+            "${FirstOfList:~${A}~${A.name}~} - "
+            "${FirstOfList:~${B}~${B.name}~} "
+            "(${field}) : "
             "${result}"
         ),
         "PostResult": str(request.url.parent / "result"),
