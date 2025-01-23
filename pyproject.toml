@@ -33,5 +33,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "aiohttp-devtools"
+  "aiohttp-devtools",
+  "ipdb",
+  "black"
 ]
