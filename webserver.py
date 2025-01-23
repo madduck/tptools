@@ -343,6 +343,7 @@ async def matches(request):
             "${result}"
         ),
         "PostResult": str(request.url.parent / "result"),
+        "LiveScoreUrl": str(request.url.parent / "live"),
     }
 
     jfm = JSONFeedMaker(
@@ -448,6 +449,24 @@ async def result(request):
         )
 
     return web.json_response({"message": message})
+
+
+@routes.post("/v1/squore/live")
+async def live(request):
+    logger = request.app.logger
+    logger.debug(f"{request.method} {request.url} from {request.remote}")
+
+    try:
+        data = await request.json()
+
+        message = f"Received data: {data}"
+        logger.debug(message)
+
+        return web.json_response({"message": message})
+
+    except json.decoder.JSONDecodeError:
+        logger.error(f"Invalid JSON received: {await request.text()}")
+        raise web.HTTPUnprocessableEntity(reason="Invalid JSON in request")
 
 
 @routes.get("/v1/tc/results")
