@@ -2,6 +2,9 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.setuptools_scm]
+write_to = "_version.py"
+
 [project]
 name = "tptools"
 version = "0.0.1"
@@ -16,9 +19,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
-[tool.setuptools_scm]
-write_to = "_version.py"
 
 dependencies = [
   "python-dateutil",
