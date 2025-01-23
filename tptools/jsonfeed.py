@@ -80,14 +80,14 @@ class JSONFeedMaker:
                 else match.court
             ),
             "A": {
-                "name": Entry.make_team_name(match.player1.playersshort),
+                "name": Entry.make_team_name(match.player1.players),
                 "club": Entry.make_team_name(match.player1.clubs, joinstr="/"),
                 "country": Entry.make_team_name(
                     match.player1.countries, joinstr="/"
                 ),
             },
             "B": {
-                "name": Entry.make_team_name(match.player2.playersshort),
+                "name": Entry.make_team_name(match.player2.players),
                 "club": Entry.make_team_name(match.player2.clubs, joinstr="/"),
                 "country": Entry.make_team_name(
                     match.player2.countries, joinstr="/"
