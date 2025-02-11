@@ -144,8 +144,7 @@ class Match:
 
         return (
             f"<Match[{self._playermatch.id}] {self.status} "
-            f"{self._playermatch} "
-            ">"
+            f"{self._playermatch}>"
         )
 
     __repr__ = __str__
