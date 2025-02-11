@@ -35,5 +35,6 @@ dev = [
   "pytest",
   "aiohttp-devtools",
   "ipdb",
-  "black"
+  "black",
+  "flake8"
 ]
