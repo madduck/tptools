@@ -79,7 +79,7 @@ class Match:
 
     @classmethod
     def get_match_status(klass, match):
-        if not match._playermatch.get('matchorder'):
+        if match._playermatch.get('matchorder') is None:
             return klass.Status.INVALID
 
         elif match._playermatch.status == PlayerMatch.Status.PLAYER:
