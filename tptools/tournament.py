@@ -3,7 +3,7 @@ from tptools.draw import Draw
 
 
 class Tournament:
-    def __init__(self, *, entries=None, playermatches=None):
+    def __init__(self, *, entries=None, playermatches=None, court_xform=None):
         self._draws = {}
         if entries:
             self.read_entries(entries)
@@ -15,6 +15,8 @@ class Tournament:
             self.read_playermatches(
                 playermatches, entry_getter=self._entry_getter
             )
+
+        self._court_xform = court_xform
 
     def __str__(self):
         return (
