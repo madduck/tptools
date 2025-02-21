@@ -1,6 +1,5 @@
 from tptools.entry import Entry
 from tptools.draw import Draw
-from tptools.match import Match
 
 
 class Tournament:
@@ -18,7 +17,10 @@ class Tournament:
             )
 
     def __str__(self):
-        return f"<Tournament entries={len(self._entries or [])} draws={len(self._draws)}>"
+        return (
+            f"<Tournament entries={len(self._entries or [])}"
+            " draws={len(self._draws)}>"
+        )
 
     __repr__ = __str__
 

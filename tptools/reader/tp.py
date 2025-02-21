@@ -157,6 +157,7 @@ class AsyncTPReader(TPReader):
 
 
 async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
+
     if _INOTIFY:
         with Inotify() as inotify:
             inotify.add_watch(path, Mask.MODIFY | Mask.ATTRIB)
@@ -165,6 +166,7 @@ async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
             async for event in inotify:
                 logger.debug(f"Event in {path}: {event}")
                 await callback(logger)
+
     else:
         logger.warning("No inotify support, resorting to polling…")
         mtime_last = 0
