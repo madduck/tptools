@@ -40,6 +40,9 @@ def make_connstring_from_path(
 
 class TPReader(BaseReader):
 
+    class DriverMissingException(RuntimeError):
+        pass
+
     def __init__(
         self, *, auto_convert_int=True, auto_convert_bool=True, logger=None
     ):
@@ -55,8 +58,18 @@ class TPReader(BaseReader):
     def connect(self, connstr):
         if self._logger:
             self._logger.debug(f"Connecting with connstr '{connstr}'")
-        self._conn = pyodbc.connect(connstr)
-        self._cursor = self._conn.cursor()
+        try:
+            self._conn = pyodbc.connect(connstr)
+            self._cursor = self._conn.cursor()
+        except pyodbc.Error as err:
+            if (
+                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
+                in str(err)
+            ):
+                raise self.DriverMissingException()
+
+            else:
+                raise
 
     def disconnect(self):
         if self._cursor:
@@ -101,8 +114,18 @@ class AsyncTPReader(TPReader):
     async def connect(self, connstr):
         if self._logger:
             self._logger.debug(f"Connecting with connstr '{connstr}'")
-        self._conn = await aioodbc.connect(dsn=connstr)
-        self._cursor = await self._conn.cursor()
+        try:
+            self._conn = await aioodbc.connect(dsn=connstr)
+            self._cursor = await self._conn.cursor()
+        except pyodbc.Error as err:
+            if (
+                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
+                in str(err)
+            ):
+                raise self.DriverMissingException()
+
+            else:
+                raise
 
     async def disconnect(self):
         if self._cursor:
