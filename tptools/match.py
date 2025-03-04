@@ -32,13 +32,20 @@ class Match:
         def is_played(self):
             return self.value >= self.PLAYED.value
 
-    def __init__(self, playermatch, *, match_getter, entry_getter=None):
+    def __init__(
+        self, playermatch, *, match_getter, entry_getter=None, court_xform=None
+    ):
         self._playermatch = PlayerMatch(playermatch)
         self._match_getter = match_getter
         self._entry_getter = entry_getter
+        if callable(court_xform):
+            self._court_xform = court_xform
+        else:
+            self._court_xform = lambda identity: identity
         if self._playermatch.status == PlayerMatch.Status.MATCH:
 
             planning = self._playermatch["planning"]
+
             def get_playermatch(index):
                 source = match_getter(playermatch[f"van{index}"])
                 if not source.get("entry"):
@@ -61,7 +68,7 @@ class Match:
     draw = property(lambda s: s._playermatch.get_draw())
     id = property(lambda s: s._playermatch.id)
     time = property(lambda s: s._playermatch.get_time())
-    court = property(lambda s: s._playermatch.get_court())
+    court = property(lambda s: s._court_xform(s._playermatch.get_court()))
     status = property(lambda s: Match.get_match_status(s))
 
     def as_dict(self):
