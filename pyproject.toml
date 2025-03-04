@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.setuptools_scm]
 write_to = "_version.py"
 
+[project.scripts]
+tpwatcher = "tptools.tpwatcher:main"
+
 [project]
 name = "tptools"
 version = "0.0.1"
