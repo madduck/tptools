@@ -56,7 +56,9 @@ class PlayerMatch(dict):
     def get_time(self):
         if plan := self.get("plandate"):
             try:
-                dt = date_parser(plan)
+                dt = date_parser(plan).replace(
+                    tzinfo=datetime.datetime.now().astimezone().tzinfo
+                )
             except TypeError:
                 dt = plan
 
