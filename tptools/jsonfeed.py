@@ -74,11 +74,7 @@ class JSONFeedMaker:
     def match_to_dict(klass, match, *, court_xform=None):
         ret = {
             "id": match.id,
-            "court": (
-                court_xform(match.court)
-                if callable(court_xform)
-                else match.court
-            ),
+            "court": match.court,
             "A": {
                 "name": Entry.make_team_name(match.player1.players),
                 "club": Entry.make_team_name(match.player1.clubs, joinstr="/"),
