@@ -2,6 +2,7 @@ import enum
 
 from tptools.logger import get_logger
 from tptools.playermatch import PlayerMatch, SourcePlayerMatch
+from tptools.entry import Entry
 
 logger = get_logger(__name__)
 
@@ -70,6 +71,38 @@ class Match:
     time = property(lambda s: s._playermatch.get_time())
     court = property(lambda s: s._court_xform(s._playermatch.get_court()))
     status = property(lambda s: Match.get_match_status(s))
+
+    def json(self, *, modmap=None):
+        basemap = {
+            'time': lambda t: t.isoformat(),
+            'status': lambda s: (s.value, s.name.lower())
+        }
+
+        basemap |= {f'player{i}': lambda e: {
+                'name': Entry.make_team_name(e.players),
+                'short': Entry.make_team_name(e.playersshort),
+                'club': Entry.make_team_name(e.clubs),
+                'country': Entry.make_team_name(e.countries),
+        } for i in (1, 2)}
+
+        if modmap is not None:
+            modmap = basemap | modmap
+        else:
+            modmap = basemap
+
+        ret = {}
+        for prop in [
+            p
+            for p in dir(self.__class__)
+            if isinstance(getattr(self.__class__, p), property)
+        ]:
+            value = getattr(self, prop)
+            if prop in modmap:
+                value = modmap[prop](value)
+            ret[prop] = value
+
+        return ret
+
 
     def as_dict(self):
         return dict(
