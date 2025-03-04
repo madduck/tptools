@@ -6,12 +6,15 @@ logger = get_logger(__name__)
 
 
 class Draw:
-    def __init__(self, *, event=None, draw=None, entry_getter=None):
+    def __init__(
+        self, *, event=None, draw=None, entry_getter=None, court_xform=None
+    ):
         self._playermatches = {}
         self._name = draw
         if event and event != draw:
             self._name = f"{event}, {draw}"
         self._entry_getter = entry_getter
+        self._court_xform = court_xform
 
     name = property(lambda s: s._name)
 
@@ -56,12 +59,14 @@ class Draw:
         include_played=False,
         include_not_ready=False,
         entry_getter=None,
+        court_xform=None,
     ):
         for planning, pm in self.matches.items():
             m = Match(
                 pm,
                 entry_getter=entry_getter or self._entry_getter,
                 match_getter=self._playermatches.get,
+                court_xform=court_xform or self._court_xform,
             )
             if m.is_played() and not include_played:
                 continue

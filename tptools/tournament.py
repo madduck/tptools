@@ -54,12 +54,14 @@ class Tournament:
         include_played=False,
         include_not_ready=False,
         entry_getter=None,
+        court_xform=None,
     ):
         for draw in self._draws.values():
             yield from draw.get_matches(
                 include_played=include_played,
                 include_not_ready=include_not_ready,
                 entry_getter=entry_getter or self._entry_getter,
+                court_xform=court_xform or self._court_xform,
             )
 
     def get_entries(self):
