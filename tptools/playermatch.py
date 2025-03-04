@@ -77,8 +77,8 @@ class PlayerMatch(dict):
         if not (cname := self.get("courtname")):
             return None
         ret = str(cname)
-        if (loc := self.get("locationname")):
-            ret = f'{loc} - {ret}'
+        if loc := self.get("locationname"):
+            ret = f"{loc} - {ret}"
         return ret
 
 
@@ -102,5 +102,5 @@ class SourcePlayerMatch(PlayerMatch):
 
     players = property(lambda s: (s._role,))
     playersshort = property(lambda s: (str(s),))
-    clubs = property(lambda s: ('?',))
-    countries = property(lambda s: ('?',))
+    clubs = property(lambda s: ("?",))
+    countries = property(lambda s: ("?",))

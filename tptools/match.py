@@ -114,12 +114,12 @@ class Match:
             player2=str(self.player2),
             event=self.event,
             draw=self.draw,
-            status=self.status.name
+            status=self.status.name,
         )
 
     @classmethod
     def get_match_status(klass, match):
-        if match._playermatch.get('matchorder') is None:
+        if match._playermatch.get("matchorder") is None:
             return klass.Status.INVALID
 
         elif match._playermatch.status == PlayerMatch.Status.PLAYER:
