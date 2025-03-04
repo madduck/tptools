@@ -21,7 +21,7 @@ class Tournament:
     def __str__(self):
         return (
             f"<Tournament entries={len(self._entries or [])}"
-            " draws={len(self._draws)}>"
+            f" draws={len(self._draws)}>"
         )
 
     __repr__ = __str__
