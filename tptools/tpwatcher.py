@@ -102,9 +102,7 @@ async def cb_load_tp_file(connstr, *, logger=None):
         entries = [e async for e in entries]
         matches = [m async for m in matches]
 
-        tournament = Tournament(
-            entries=entries, playermatches=matches
-        )
+        tournament = Tournament(entries=entries, playermatches=matches)
 
     if logger:
         logger.info(f"Parsed tournament: {tournament}")
@@ -215,9 +213,7 @@ async def main(
         with open(fixtures / "playerentries.csv", newline="") as f:
             entries = [Entry(r) for r in CSVReader(f)]
 
-        tournament = Tournament(
-            entries=entries, playermatches=matches
-        )
+        tournament = Tournament(entries=entries, playermatches=matches)
         logger.info(f"Parsed test tournament: {tournament}")
 
         await post_tournament_data(url, tournament, logger=logger)
