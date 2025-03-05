@@ -117,16 +117,79 @@ def test_match_entries_notplayed(
     )
 
 
-def test_match_get_player_winner(demo_match_elimination_idmap):
-    m = demo_match_elimination_idmap[1003]
-    assert m.player1.role == SourcePlayerMatch.Role.WINNER
-    assert m.player2.role == SourcePlayerMatch.Role.WINNER
+@pytest.fixture(
+    params=[4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 3001, 3002]
+)
+def demo_match_elimination_winning_players_known(
+    request, demo_match_elimination_idmap
+):
+    return demo_match_elimination_idmap[request.param]
 
 
-def test_match_get_player_loser(demo_match_elimination_idmap):
-    m = demo_match_elimination_idmap[2004]
-    assert m.player1.role == SourcePlayerMatch.Role.LOSER
-    assert m.player2.role == SourcePlayerMatch.Role.LOSER
+@pytest.fixture(params=[3003, 2002, 1001, 1003])
+def demo_match_elimination_winning_players_unknown(
+    request, demo_match_elimination_idmap
+):
+    return demo_match_elimination_idmap[request.param]
+
+
+def test_match_elimination_winners_players_unknown(
+    demo_match_elimination_winning_players_unknown,
+):
+    assert (
+        demo_match_elimination_winning_players_unknown.player1.role
+        == SourcePlayerMatch.Role.WINNER
+    )
+    assert (
+        demo_match_elimination_winning_players_unknown.player2.role
+        == SourcePlayerMatch.Role.WINNER
+    )
+
+
+@pytest.fixture(params=[2001, 3004])
+def demo_match_elimination_winning_players_partially_known(
+    request, demo_match_elimination_idmap
+):
+    return demo_match_elimination_idmap[request.param]
+
+def test_match_elimination_winners_players_partially_known(
+    demo_match_elimination_winning_players_partially_known,
+):
+    m = demo_match_elimination_winning_players_partially_known
+    assert not m.is_ready()
+    assert SourcePlayerMatch.Role.WINNER in (getattr(m._get_player(i), "role", None) for i in (0,1))
+
+@pytest.fixture(params=[2003])
+def demo_match_elimination_losing_players_partially_known(
+    request, demo_match_elimination_idmap
+):
+    return demo_match_elimination_idmap[request.param]
+
+def test_match_elimination_losers_players_partially_known(
+    demo_match_elimination_losing_players_partially_known,
+):
+    m = demo_match_elimination_losing_players_partially_known
+    assert not m.is_ready()
+    assert SourcePlayerMatch.Role.LOSER in (getattr(m._get_player(i), "role", None) for i in (0,1))
+
+@pytest.fixture(params=[2004, 1002])
+def demo_match_elimination_losing_players_unknown(
+    request, demo_match_elimination_idmap
+):
+    return demo_match_elimination_idmap[request.param]
+
+
+def test_match_elimination_losers_players_unknown(
+    demo_match_elimination_losing_players_unknown,
+):
+    assert (
+        demo_match_elimination_losing_players_unknown.player1.role
+        == SourcePlayerMatch.Role.LOSER
+    )
+    assert (
+        demo_match_elimination_losing_players_unknown.player2.role
+        == SourcePlayerMatch.Role.LOSER
+    )
 
 
 def test_match_to_dict(demo_match_elimination_idmap):
