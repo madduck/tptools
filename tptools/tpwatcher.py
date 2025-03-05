@@ -46,8 +46,14 @@ async def post_tournament_data(url, tournament, *, logger):
             raise_for_status=True, json_serialize=json_dump_with_default
         ) as session:
             async with session.post(url, json=matches) as resp:
-                ret = await resp.json()
-                print(ret)
+                if resp.status != 200:
+                    logger.error(f"Data POST failed: {resp.reason}")
+                else:
+                    ret = await resp.json()
+                    logger.info(
+                        "Success transferring "
+                        f"{ret.get('nrecords', '(no number returned)')} matches"
+                    )
 
 
 async def cb_load_tp_file(connstr, *, logger=None):
