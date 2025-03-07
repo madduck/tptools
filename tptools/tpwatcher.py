@@ -22,7 +22,6 @@ logger = get_logger(__name__)
 
 
 TP_DEFAULT_USER = "Admin"
-TP_DEFAULT_PASSWD = "d4R2GY76w2qzZ"
 
 
 def json_dump_with_default(obj, methodname="json", **kwargs):
@@ -136,7 +135,6 @@ async def cb_load_tp_file(connstr, *, logger=None):
     "--tppasswd",
     "-P",
     help="Password to use for TP file",
-    default=TP_DEFAULT_PASSWD,
 )
 @click.option(
     "--pollsecs",
@@ -158,7 +156,7 @@ async def main(
             raise click.BadParameter("--tpfile and --test cannot be combined")
         if tpuser and tpuser != TP_DEFAULT_USER:
             raise click.BadParameter("--tpuser and --test cannot be combined")
-        if tppasswd and tppasswd != TP_DEFAULT_PASSWD:
+        if tppasswd:
             raise click.BadParameter(
                 "--tppasswd and --test cannot be combined"
             )

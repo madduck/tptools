@@ -68,7 +68,6 @@ def make_cli_parser():
     )
     parser.add_argument(
         "--password",
-        default="d4R2GY76w2qzZ",
         help="DB password to use with --input",
     )
     parser.add_argument(
