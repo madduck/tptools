@@ -10,6 +10,7 @@ logger = get_logger(__name__)
 class PlayerMatch(dict):
 
     class Status(enum.Enum):
+        DUPLICATE = -98
         BYE = -3
         PLAYER = -2
         PENDING = -1
@@ -27,6 +28,9 @@ class PlayerMatch(dict):
             else:
                 logger.debug("Found Bye")
                 self._status = self.Status.BYE
+        elif self.get("roundnr", 0) == 0 and self.get("matchorder", 0) == 0:
+            logger.debug("Found duplicate")
+            self._status = self.Status.DUPLICATE
         else:
             logger.debug("Found match")
             self._status = self.Status.MATCH
@@ -92,7 +96,10 @@ class SourcePlayerMatch(PlayerMatch):
     def __init__(self, other, role):
         super().__init__(other)
         self._role = role
-        if self._status == PlayerMatch.Status.MATCH:
+        if self._status in (
+            PlayerMatch.Status.MATCH,
+            PlayerMatch.Status.DUPLICATE,
+        ):
             self._status = PlayerMatch.Status.PENDING
 
     role = property(lambda s: s._role)

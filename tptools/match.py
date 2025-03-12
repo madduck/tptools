@@ -11,6 +11,7 @@ class Match:
 
     class Status(enum.Enum):
         INVALID = -99
+        DUPLICATE = -98
         BYE = -2
         PLAYER = -1
         UNKNOWN = 0
@@ -124,6 +125,9 @@ class Match:
 
         elif match._playermatch.status == PlayerMatch.Status.BYE:
             return klass.Status.BYE
+
+        elif match._playermatch.status == PlayerMatch.Status.DUPLICATE:
+            return klass.Status.DUPLICATE
 
         elif match._playermatch.status != PlayerMatch.Status.MATCH:
             return klass.Status.INVALID
