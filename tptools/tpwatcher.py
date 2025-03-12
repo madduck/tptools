@@ -93,7 +93,19 @@ async def cb_load_tp_file(connstr, *, logger=None):
     """
 
     async with AsyncTPReader(logger=logger) as reader:
-        await reader.connect(connstr)
+        while True:
+            try:
+                await reader.connect(connstr)
+                break
+
+            except AsyncTPReader.UnspecifiedDriverError:
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702
+                await asyncio.sleep(1)
+                retries -= 1
+                if retries > 0:
+                    continue
+                else:
+                    return
 
         entries = reader.query(entry_query, klass=Entry)
         matches = reader.query(match_query, klass=PlayerMatch)

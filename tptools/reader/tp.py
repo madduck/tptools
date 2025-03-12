@@ -43,6 +43,9 @@ class TPReader(BaseReader):
     class DriverMissingException(RuntimeError):
         pass
 
+    class UnspecifiedDriverError(RuntimeError):
+        pass
+
     def __init__(
         self, *, auto_convert_int=True, auto_convert_bool=True, logger=None
     ):
@@ -60,7 +63,7 @@ class TPReader(BaseReader):
             self._logger.debug(f"Connecting with connstr '{connstr}'")
         try:
             self._conn = pyodbc.connect(connstr)
-            self._cursor = self._conn.cursor()
+
         except pyodbc.Error as err:
             if (
                 "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
@@ -68,8 +71,15 @@ class TPReader(BaseReader):
             ):
                 raise self.DriverMissingException()
 
+            elif "The driver did not supply an error" in str(err):
+                raise self.UnspecifiedDriverError()
+
             else:
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702
                 raise
+
+        else:
+            self._cursor = self._conn.cursor()
 
     def disconnect(self):
         if self._cursor:
