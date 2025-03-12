@@ -26,18 +26,18 @@ class Entry(dict):
                 return f"{first} {last}"
 
         ret = make_name(self["firstname1"], self["name1"], short)
-        if (n2 := self.get("name2")):
-            return (ret, make_name(self['firstname2'], n2, short))
+        if n2 := self.get("name2"):
+            return (ret, make_name(self["firstname2"], n2, short))
         else:
             return (ret,)
 
-    id = property(lambda s: s['entryid'])
+    id = property(lambda s: s["entryid"])
     players = property(lambda s: s.get_players())
     playersshort = property(lambda s: s.get_players(short=True))
 
     def get_fields(self, field):
-        ret = self[f'{field}1']
-        if (c2 := self.get(f'{field}2')):
+        ret = self[f"{field}1"]
+        if c2 := self.get(f"{field}2"):
             return (ret, c2)
         else:
             return (ret,)
