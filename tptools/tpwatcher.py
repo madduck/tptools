@@ -35,7 +35,7 @@ def json_dump_with_default(obj, methodname="json", **kwargs):
 
 
 async def post_tournament_data(url, tournament, *, logger):
-    matches = list(tournament.get_matches(include_played=True))
+    matches = list(tournament.get_matches(include_played=False))
 
     if not url:
         print(json_dump_with_default(matches))
