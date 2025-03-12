@@ -120,7 +120,7 @@ async def cb_load_tp_file(connstr, *, logger=None, retries=3):
         entries = [e async for e in entries]
         matches = [m async for m in matches]
 
-        tournament = Tournament(entries=entries, playermatches=matches)
+    tournament = Tournament(entries=entries, playermatches=matches)
 
     if logger:
         logger.info(f"Parsed tournament: {tournament}")
@@ -191,7 +191,8 @@ async def main(
 
         async def callback(logger):
             tournament = await cb_load_tp_file(connstr, logger=logger)
-            await post_tournament_data(url, tournament, logger=logger)
+            if tournament:
+                await post_tournament_data(url, tournament, logger=logger)
 
         try:
             async with asyncio.TaskGroup() as tg:
