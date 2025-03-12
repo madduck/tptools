@@ -1,11 +1,13 @@
 class Entry(dict):
 
     @staticmethod
-    def make_team_name(players, *, joinstr='&'):
-        if len(players) == 2 and players[0] == players[1]:
+    def make_team_name(players, *, joinstr="&"):
+        if len(players) == 1 or (
+            len(players) == 2 and players[0] == players[1]
+        ):
             return players[0]
-        return joinstr.join([str(p) for p in players])
-
+        ret = joinstr.join([str(p) for p in players if p is not None])
+        return ret or None
 
     def __repr__(self):
         if entryid := self.get("entryid"):
