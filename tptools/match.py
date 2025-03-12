@@ -75,16 +75,20 @@ class Match:
 
     def json(self, *, modmap=None):
         basemap = {
-            'time': lambda t: t.isoformat(),
-            'status': lambda s: (s.value, s.name.lower())
+            "time": lambda t: t.isoformat(),
+            "status": lambda s: (s.value, s.name.lower()),
         }
 
-        basemap |= {f'player{i}': lambda e: {
-                'name': Entry.make_team_name(e.players),
-                'short': Entry.make_team_name(e.playersshort),
-                'club': Entry.make_team_name(e.clubs),
-                'country': Entry.make_team_name(e.countries),
-        } for i in (1, 2)}
+        def get_entryfields(e):
+            fields = {
+                "name": lambda e: Entry.make_team_name(e.players),
+                "short": lambda e: Entry.make_team_name(e.playersshort),
+                "club": lambda e: Entry.make_team_name(e.clubs),
+                "country": lambda e: Entry.make_team_name(e.countries),
+            }
+            return {k: l(e) for k, l in fields.items()}
+
+        basemap |= {f"player{i}": get_entryfields for i in (1, 2)}
 
         if modmap is not None:
             modmap = basemap | modmap
