@@ -41,21 +41,28 @@ async def post_tournament_data(url, tournament, *, logger):
         print(json_dump_with_default(matches))
 
     else:
-        async with aiohttp.ClientSession(
-            raise_for_status=True, json_serialize=json_dump_with_default
-        ) as session:
-            async with session.post(url, json=matches) as resp:
-                if resp.status != 200:
-                    logger.error(f"Data POST failed: {resp.reason}")
-                else:
-                    ret = await resp.json()
-                    logger.info(
-                        "Success transferring "
-                        f"{ret.get('nrecords', '(no number returned)')} matches"
-                    )
+        while True:
+            try:
+                async with aiohttp.ClientSession(
+                    raise_for_status=True, json_serialize=json_dump_with_default
+                ) as session:
+                    async with session.post(url, json=matches) as resp:
+                        if resp.status != 200:
+                            logger.error(f"Data POST failed: {resp.reason}")
+                        else:
+                            ret = await resp.json()
+                            logger.info(
+                                "Success transferring "
+                                f"{ret.get('nrecords', '(no number returned)')} matches"
+                            )
+                break
+
+            except aiohttp.client_exceptions.ClientConnectorError as err:
+                logger.error("Connection error: {err}, retrying…")
+                await asyncio.sleep(5)
 
 
-async def cb_load_tp_file(connstr, *, logger=None):
+async def cb_load_tp_file(connstr, *, logger=None, retries=3):
     entry_query = """
         select e.id as entryid,
         p1.id as player1id, p1.firstname as firstname1,
