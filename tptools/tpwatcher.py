@@ -58,7 +58,7 @@ async def post_tournament_data(url, tournament, *, logger):
                 break
 
             except aiohttp.client_exceptions.ClientConnectorError as err:
-                logger.error("Connection error: {err}, retrying…")
+                logger.error(f"Connection error: {err}, retrying…")
                 await asyncio.sleep(5)
 
 
