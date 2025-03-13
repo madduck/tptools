@@ -20,7 +20,11 @@ class Entry(dict):
 
     def get_players(self, *, short=False):
         def make_name(first, last, short):
-            if short:
+            if not first:
+                return last
+            elif not last:
+                return first
+            elif short:
                 return f"{first[0]}.{last}"
             else:
                 return f"{first} {last}"
