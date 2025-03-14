@@ -30,7 +30,8 @@ dependencies = [
   "asyncinotify",
   "aioodbc",
   "asyncstdlib",
-  "aiosqlite"
+  "aiosqlite",
+  "click"
 ]
 
 [project.optional-dependencies]
