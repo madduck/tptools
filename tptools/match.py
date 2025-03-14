@@ -110,10 +110,12 @@ class Match:
 
 
     def as_dict(self):
+        tz = self.time.strftime("%z")
+        tz = f'{tz[:2]}:{tz[2:]}'
         return dict(
             matchid=self.id,
             date=self.time.strftime("%F") if self.time else None,
-            time=self.time.strftime("%H:%M %:z") if self.time else None,
+            time=self.time.strftime(f"%H:%M {tz}") if self.time else None,
             court=self.court,
             player1=str(self.player1),
             player2=str(self.player2),
