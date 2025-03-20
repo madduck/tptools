@@ -34,7 +34,8 @@ async def post_tournament_data(url, tournament, *, logger):
         while True:
             try:
                 async with aiohttp.ClientSession(
-                    raise_for_status=True, json_serialize=json_dump_with_default
+                    raise_for_status=True,
+                    json_serialize=json_dump_with_default,
                 ) as session:
                     async with session.post(url, json=matches) as resp:
                         if resp.status != 200:
@@ -157,7 +158,7 @@ async def cb_load_tp_file(connstr, *, logger=None, retries=3):
     "--quiet",
     "-q",
     is_flag=True,
-    help="Output as little information as possible"
+    help="Output as little information as possible",
 )
 @click.option("--test", "-t", is_flag=True, help="Use test data for this run")
 @click.pass_context
