@@ -123,12 +123,6 @@ async def cb_load_tp_file(connstr, *, logger=None, retries=3):
 
 @click.command
 @click.option(
-    "--verbose", "-v", count=True, help="Increase verbosity of log output"
-)
-@click.option(
-    "--quiet", "-q", is_flag=True, help="Increase verbosity of log output"
-)
-@click.option(
     "--url", "-u", help="URL to send events to (stdout if not provided)"
 )
 @click.option(
@@ -155,6 +149,15 @@ async def cb_load_tp_file(connstr, *, logger=None, retries=3):
     type=click.INT,
     help="Frequency in seconds to poll TP file in the absence of inotify",
     default=30,
+)
+@click.option(
+    "--verbose", "-v", count=True, help="Increase verbosity of log output"
+)
+@click.option(
+    "--quiet",
+    "-q",
+    is_flag=True,
+    help="Output as little information as possible"
 )
 @click.option("--test", "-t", is_flag=True, help="Use test data for this run")
 @click.pass_context
