@@ -179,6 +179,9 @@ async def main(
         connstr = None
 
     elif tpfile:
+        if not tppasswd:
+            raise click.BadParameter("Missing TP password")
+
         connstr = make_connstring_from_path(tpfile, tpuser, tppasswd)
 
     else:
