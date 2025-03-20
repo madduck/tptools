@@ -3,7 +3,6 @@ import sys
 import aiohttp
 import asyncio
 import pathlib
-import json
 import re
 
 from tptools.reader.tp import (
@@ -17,21 +16,12 @@ from tptools.entry import Entry
 from tptools.playermatch import PlayerMatch
 from tptools.tournament import Tournament
 from tptools.logger import get_logger, adjust_log_level
+from tptools.util import json_dump_with_default
 
 logger = get_logger(__name__)
 
 
 TP_DEFAULT_USER = "Admin"
-
-
-def json_dump_with_default(obj, methodname="json", **kwargs):
-    def _default(obj):
-        if callable(fn := getattr(obj, methodname, None)):
-            return fn()
-
-        return json.JSONEncoder().default(obj)
-
-    return json.dumps(obj, default=_default, **kwargs)
 
 
 async def post_tournament_data(url, tournament, *, logger):
