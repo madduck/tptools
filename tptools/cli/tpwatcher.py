@@ -3,7 +3,6 @@ import sys
 import aiohttp
 import asyncio
 import pathlib
-import re
 
 from tptools.reader.tp import (
     make_connstring_from_path,
@@ -41,10 +40,11 @@ async def post_tournament_data(url, tournament, *, logger):
                         if resp.status != 200:
                             logger.error(f"Data POST failed: {resp.reason}")
                         else:
-                            ret = await resp.json()
+                            rt = await resp.json()
                             logger.info(
                                 "Success transferring "
-                                f"{ret.get('nrecords', '(no number returned)')} matches"
+                                f"{rt.get('nrecords', '(no count returned)')} "
+                                "matches"
                             )
                 break
 
