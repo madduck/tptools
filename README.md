@@ -5,12 +5,12 @@
 > [!NOTE]
 > While TournamentSoftware seems to handle a variety of sports, *`tptools` was developed in the context of squash, and squash only*. Therefore, it is likely highly squash-specific. That said, patches to make it usable across other sports are welcome!
 
-Under the hood, TournamentSoftware is a Microsoft Access Database (MDB). The mostpart of `tptools` is a collection of classes to make sense of the stored data, and provide usable data structures. These classes are arguably kept simple, and they cover only a small part of the functionality of TournamentSoftware, but they are test-covered, and hopefully make it possible to work with the data in ways better than trying to make sense of the actual data structures stored in the MDB file.
+Under the hood, TournamentSoftware is a Microsoft Access Database (MDB) stored in a file that has the extension `.TP`, rather than `.mdb`. The mostpart of `tptools` is a collection of classes to make sense of the stored data, and provide usable data structures. These classes are arguably kept simple, and they cover only a small part of the functionality of TournamentSoftware, but they are test-covered, and hopefully make it possible to work with the data in ways better than trying to make sense of the actual data structures stored in the MDB file.
 
 > [!IMPORTANT]
-> The TournamentSoftware database is password-protected, and it is up to you to decide whether you want to obtain this password to be able to read the data, and where to get it. **`tptools` does not include this password, nor will we disclose it**, and none of the tools here will work without it.
+> The TP database is password-protected, and it is up to you to decide whether you want to obtain this password to be able to read the data, and where to get it. **`tptools` does not include this password, nor will we disclose it**, and none of the tools here will work without it.
 
-In addition to simple Python classes, `tptools` also comprises a number of
+In addition to simple Python classes, `tptools` comprises a number of
 command-line utilities (using these classes) that are mainly designed to
 provide the data to other tools:
 
@@ -54,7 +54,8 @@ To test whether you need to install the Microsoft Access Database Engine haha (s
 
 ```
 > pip install pyodbc
-> python -c "import pyodbc; print('No, I am fine' if 'Microsoft Access Driver (*.mdb, *.accdb)' in pyodbc.drivers() else 'Yes, I need to install the engine')"
+> python -c "import pyodbc; print('No, I am fine' if [d for d in pyodbc.drivers() if '*.mdb' in d] else 'Yes, I need to install the engine')"
+```
 ```
 
 If you get a "Yes", please download and install the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
