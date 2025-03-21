@@ -88,3 +88,25 @@ def test_make_team_name_single():
 
 def test_make_team_name_same():
     assert Entry.make_team_name(("A", "A")) == "A"
+
+
+def test_entry_sort_singles(demo_playerentry_records):
+    e1 = Entry(demo_playerentry_records[4])
+    e2 = Entry(demo_playerentry_records[5])
+    assert e1 < e2
+    assert not e1 >= e2
+
+
+def test_entry_sort_doubles(demo_playerentry_records):
+    e1 = Entry(demo_playerentry_records[12])
+    e2 = Entry(demo_playerentry_records[13])
+    assert e1 < e2
+    assert not e1 >= e2
+
+
+def test_entry_sort_same(demo_playerentry_records):
+    e1 = Entry(demo_playerentry_records[1])
+    e2 = Entry(demo_playerentry_records[2])
+    assert not e1 < e2
+    assert e1 >= e2
+    assert e1 == e2

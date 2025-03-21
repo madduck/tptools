@@ -1,10 +1,11 @@
 class Entry(dict):
+    COMPKEYS = ("name1", "firstname1", "name2", "firstname2")
 
     @staticmethod
     def make_team_name(players, *, joinstr="&"):
-        if len(players) == 1 or (
-            len(players) == 2 and players[0] == players[1]
-        ):
+        if len(players) == 1:
+            return players[0]
+        elif len(players) == 2 and players[0] == players[1]:
             return players[0]
         ret = joinstr.join([str(p) for p in players if p is not None])
         return ret or None
@@ -17,6 +18,42 @@ class Entry(dict):
 
     def __str__(self):
         return Entry.make_team_name(self.get_players(short=True))
+
+    def _is_valid_operand(self, other):
+        return all(comp in other for comp in self.COMPKEYS)
+
+    def _comp(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        a = " ".join(self[comp] or "" for comp in self.COMPKEYS)
+        b = " ".join(other[comp] or "" for comp in self.COMPKEYS)
+
+        return a, b
+
+    def __lt__(self, other):
+        pair = self._comp(other)
+        return pair[0] < pair[1]
+
+    def __le__(self, other):
+        pair = self._comp(other)
+        return pair[0] <= pair[1]
+
+    def __gt__(self, other):
+        pair = self._comp(other)
+        return pair[0] > pair[1]
+
+    def __ge__(self, other):
+        pair = self._comp(other)
+        return pair[0] >= pair[1]
+
+    def __eq__(self, other):
+        pair = self._comp(other)
+        return pair[0] == pair[1]
+
+    def __ne__(self, other):
+        pair = self._comp(other)
+        return pair[0] != pair[1]
 
     def get_players(self, *, short=False):
         def make_name(first, last, short):
