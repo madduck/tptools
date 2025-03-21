@@ -90,3 +90,24 @@ Options:
 ```
 
 [to be continued]
+
+## Contributing
+
+To contribute, please ensure you have the appropriate dependencies installed:
+
+```
+$ pip install -e .[dev]
+```
+
+and then install the Git pre-commit hooks that ensure that any commits conform
+with the Flake8 and Black conventions used by this project:
+
+```
+$ pre-commit install
+```
+
+## Legalese
+
+`pngx` is © 2025 martin f. krafft <pngx@pobox.madduck.net>.
+
+It is released under the terms of the MIT Licence.
