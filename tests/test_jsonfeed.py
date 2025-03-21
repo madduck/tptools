@@ -11,7 +11,7 @@ def test_jsonfeed_maker():
     assert len(data["Matches"]) == 0
 
 
-def test_jsonfeed_maker():
+def test_jsonfeed_maker_name():
     jfm = JSONFeedMaker(name="test", matches=[])
     data = jfm.get_data()
     assert data["name"] == "test"

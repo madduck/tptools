@@ -1,6 +1,7 @@
 class BaseReader:
 
-    def __init__(self,
+    def __init__(
+        self,
         *,
         auto_convert_int=True,
         auto_convert_bool=True,
@@ -28,7 +29,7 @@ class BaseReader:
                     return False
 
             if self._auto_convert_emptystring:
-                if value == '':
+                if value == "":
                     return None
 
             return value

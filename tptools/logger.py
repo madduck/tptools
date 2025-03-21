@@ -47,7 +47,10 @@ def get_logger(name=None, level=logging.INFO):
     logger.setLevel(level)
 
     streamhandler = logging.StreamHandler()
-    fmt = "%(asctime)s %(levelname)-8s %(message)s (%(filename)s:%(lineno)d, logger: %(name)s)"
+    fmt = (
+        "%(asctime)s %(levelname)-8s %(message)s "
+        "(%(filename)s:%(lineno)d, logger: %(name)s)"
+    )
     formatter = CustomFormatter(
         fmt=fmt,
         datefmt="%F %T",

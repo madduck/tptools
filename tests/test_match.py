@@ -152,12 +152,16 @@ def demo_match_elimination_winning_players_partially_known(
 ):
     return demo_match_elimination_idmap[request.param]
 
+
 def test_match_elimination_winners_players_partially_known(
     demo_match_elimination_winning_players_partially_known,
 ):
     m = demo_match_elimination_winning_players_partially_known
     assert not m.is_ready()
-    assert SourcePlayerMatch.Role.WINNER in (getattr(m._get_player(i), "role", None) for i in (0,1))
+    assert SourcePlayerMatch.Role.WINNER in (
+        getattr(m._get_player(i), "role", None) for i in (0, 1)
+    )
+
 
 @pytest.fixture(params=[2003])
 def demo_match_elimination_losing_players_partially_known(
@@ -165,12 +169,16 @@ def demo_match_elimination_losing_players_partially_known(
 ):
     return demo_match_elimination_idmap[request.param]
 
+
 def test_match_elimination_losers_players_partially_known(
     demo_match_elimination_losing_players_partially_known,
 ):
     m = demo_match_elimination_losing_players_partially_known
     assert not m.is_ready()
-    assert SourcePlayerMatch.Role.LOSER in (getattr(m._get_player(i), "role", None) for i in (0,1))
+    assert SourcePlayerMatch.Role.LOSER in (
+        getattr(m._get_player(i), "role", None) for i in (0, 1)
+    )
+
 
 @pytest.fixture(params=[2004, 1002])
 def demo_match_elimination_losing_players_unknown(

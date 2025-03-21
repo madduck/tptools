@@ -3,12 +3,13 @@ from collections.abc import Mapping
 
 from tptools.entry import Entry
 
-PLACEHOLDER_MATCH=(
+PLACEHOLDER_MATCH = (
     "${date} ${time} : "
     "${FirstOfList:~${A}~${A.name}~} [${A.country}] [${A.club}] - "
     "${FirstOfList:~${B}~${B.name}~} [${B.country}] [${B.club}] : "
     "${result}"
 )
+
 
 class JSONFeedMaker:
 
@@ -33,7 +34,7 @@ class JSONFeedMaker:
         turnOnLiveScoringForMatchesFromFeed=True,
         postEveryChangeToSupportLiveScore=True,
         Placeholder_Match=PLACEHOLDER_MATCH,
-        **config
+        **config,
     ):
         # https://squore.double-yellow.be/demo/demo.matches.json
         self._name = name
@@ -88,7 +89,7 @@ class JSONFeedMaker:
                 "country": Entry.make_team_name(
                     match.player2.countries, joinstr="/"
                 ),
-            }
+            },
         }
 
         if match.time:
@@ -98,7 +99,7 @@ class JSONFeedMaker:
         if match.event == match.draw:
             ret["field"] = match.event
         else:
-            ret["field"] = f'{match.event}, {match.draw}'
+            ret["field"] = f"{match.event}, {match.draw}"
 
         return ret
 
@@ -107,7 +108,7 @@ class JSONFeedMaker:
             "config": self._config,
         }
         if self._name:
-            ret['name'] = self._name
+            ret["name"] = self._name
         return ret | self._matches
 
     def get_json(self):

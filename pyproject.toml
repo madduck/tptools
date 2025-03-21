@@ -40,5 +40,16 @@ dev = [
   "aiohttp-devtools",
   "ipdb",
   "black",
-  "flake8"
+  "flake8",
+  "pre-commit"
 ]
+
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.tox
+  | __pycache__
+  | .direnv
+)/
+'''

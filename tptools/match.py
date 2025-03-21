@@ -108,10 +108,9 @@ class Match:
 
         return ret
 
-
     def as_dict(self):
         tz = self.time.strftime("%z")
-        tz = f'{tz[:2]}:{tz[2:]}'
+        tz = f"{tz[:2]}:{tz[2:]}"
         return dict(
             matchid=self.id,
             date=self.time.strftime("%F") if self.time else None,

@@ -9,5 +9,3 @@ def json_dump_with_default(obj, methodname="json", **kwargs):
         return json.JSONEncoder().default(obj)
 
     return json.dumps(obj, default=_default, **kwargs)
-
-

@@ -164,7 +164,9 @@ async def main(
         logger.warning("Test-mode with static, fake data")
 
         fixtures = (
-            pathlib.Path(__file__).parent.parent.parent / "tests" / "csv_fixtures"
+            pathlib.Path(__file__).parent.parent.parent
+            / "tests"
+            / "csv_fixtures"
         )
 
         with open(fixtures / "playermatches.csv", newline="") as f:

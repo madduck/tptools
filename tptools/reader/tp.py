@@ -181,7 +181,9 @@ async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
                 await callback(logger)
 
     else:
-        logger.warning(f"No inotify support, resorting to polling ({pollsecs}s)…")
+        logger.warning(
+            f"No inotify support, resorting to polling ({pollsecs}s)…"
+        )
         mtime_last = 0
         while True:
             logger.debug(f"Polling {path}…")
@@ -236,9 +238,8 @@ async def load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
                 break
 
             except AsyncTPReader.UnspecifiedDriverError:
-                import ipdb
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702
 
-                ipdb.set_trace()  # noqa:E402,E702
                 await asyncio.sleep(1)
                 retries -= 1
                 if retries > 0:
