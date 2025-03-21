@@ -8,6 +8,7 @@ from tptools.reader.tp import (
     make_connstring_from_path,
     async_tp_watcher,
     AsyncTPReader,
+    load_tournament_from_tpfile,
 )
 from tptools.asyncio import asyncio_run
 from tptools.reader.csv import CSVReader
@@ -55,71 +56,6 @@ async def post_tournament_data(url, tournament, *, logger):
                 logger.error(f"Response error: {err}, retrying…")
 
             await asyncio.sleep(5)
-
-
-async def cb_load_tp_file(connstr, *, logger=None, retries=3):
-    entry_query = """
-        select e.id as entryid,
-        p1.id as player1id, p1.firstname as firstname1,
-            p1.name as name1, l1.name as club1, c1.code as country1,
-        p2.id as player2id, p2.firstname as firstname2,
-            p2.name as name2, l2.name as club2, c2.code as country2
-        from
-        ( ( ( ( (
-                  Entry e inner join Player p1 on e.player1 = p1.id
-                )
-                left outer join Player p2 on e.player2 = p2.id
-              )
-              left outer join Country c1 on p1.country = c1.id
-            )
-            left outer join Country c2 on p2.country = c2.id
-          )
-          left outer join Club l1 on p1.club = l1.id
-        )
-        left outer join Club l2 on p2.club = l2.id
-    """
-
-    match_query = """
-        select *, m.id as matchid, d.id as drawid,
-        d.name as drawname, v.name as eventname,
-        c.name as courtname, l.name as locationname
-        from
-        ( ( (
-              PlayerMatch m inner join Draw d on (m.draw = d.id)
-            )
-            inner join Event v on (d.event = v.id)
-          )
-          left outer join Court c on (m.court = c.id)
-        )
-        left outer join Location l on (d.location = l.id)
-    """
-
-    async with AsyncTPReader(logger=logger) as reader:
-        while True:
-            try:
-                await reader.connect(connstr)
-                break
-
-            except AsyncTPReader.UnspecifiedDriverError:
-                import ipdb; ipdb.set_trace()  # noqa:E402,E702
-                await asyncio.sleep(1)
-                retries -= 1
-                if retries > 0:
-                    continue
-                else:
-                    return
-
-        entries = reader.query(entry_query, klass=Entry)
-        matches = reader.query(match_query, klass=PlayerMatch)
-
-        entries = [e async for e in entries]
-        matches = [m async for m in matches]
-
-    tournament = Tournament(entries=entries, playermatches=matches)
-
-    if logger:
-        logger.info(f"Parsed tournament: {tournament}")
-    return tournament
 
 
 @click.command
@@ -193,7 +129,9 @@ async def main(
     if connstr:
 
         async def callback(logger):
-            tournament = await cb_load_tp_file(connstr, logger=logger)
+            tournament = await load_tournament_from_tpfile(
+                connstr, logger=logger
+            )
             if tournament:
                 await post_tournament_data(url, tournament, logger=logger)
 
