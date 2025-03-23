@@ -4,12 +4,16 @@ from aiohttp import web
 import asyncio
 import pathlib
 from contextlib import suppress
+import tempfile
+import shutil
+from collections.abc import Callable
 
 from tptools.reader.tp import (
     make_connstring_from_path,
     async_tp_watcher,
     AsyncTPReader,
     load_tournament_from_tpfile,
+    async_load_tournament_from_tpfile,
 )
 from tptools.tournament import Tournament
 from tptools.entry import Entry
@@ -20,6 +24,7 @@ logger = get_logger(__name__)
 
 
 TP_DEFAULT_USER = "Admin"
+APPKEY_TOURNAMENT_CB = web.AppKey("tournament_cb", Callable)
 APPKEY_TOURNAMENT = web.AppKey("tournament", Tournament)
 APPKEY_CONFIG = web.AppKey("config", dict)
 
@@ -35,7 +40,9 @@ async def matches(request):
             logger.debug(f"Setting '{p}=True'")
             include_params[p] = True
 
-    matches = request.app[APPKEY_TOURNAMENT].get_matches(**include_params)
+    matches = request.app[APPKEY_TOURNAMENT_CB](request.app).get_matches(
+        **include_params
+    )
 
     if court := request.query.get("court"):
         logger.info(f"Matches request received for '{court}'")
@@ -91,18 +98,37 @@ async def matches(request):
 
 @routes.get("/players")
 async def players(request):
-    entries = sorted(request.app[APPKEY_TOURNAMENT].get_entries())
+    entries = sorted(request.app[APPKEY_TOURNAMENT_CB](request.app).get_entries())
     names = [Entry.make_team_name(e.players) for e in entries]
     return web.Response(text="\n".join(names))
 
 
-async def watch_tp_file(app):
+async def watch_tp_file(app, work_on_copy=False):
     config = app[APPKEY_CONFIG]
-    connstr = config["connstr"]
 
-    async def callback(logger):
-        tournament = await load_tournament_from_tpfile(connstr, logger=logger)
-        app[APPKEY_TOURNAMENT] = tournament
+    async def callback(path, *, logger):
+        tpuser = config["tpuser"]
+        tppasswd = config["tppasswd"]
+
+        async def load_tournament(connstr):
+            tournament = await async_load_tournament_from_tpfile(connstr, logger=logger)
+            if tournament:
+                app[APPKEY_TOURNAMENT] = tournament
+            else:
+                logger.warn(
+                    f"Loading tournament from {connstr} " f"returned: {tournament}"
+                )
+
+        if work_on_copy:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpfile = pathlib.Path(tmpdir) / path.name
+                shutil.copy(path, tmpfile)
+                connstr = make_connstring_from_path(tmpfile, tpuser, tppasswd)
+                await load_tournament(connstr)
+
+        else:
+            connstr = make_connstring_from_path(path, tpuser, tppasswd)
+            await load_tournament(connstr)
 
     try:
         async with asyncio.TaskGroup() as tg:
@@ -182,20 +208,52 @@ async def watch_tp_file(app):
     is_flag=True,
     help="Output as little information as possible",
 )
+@click.option(
+    "--asynchronous",
+    "-a",
+    is_flag=True,
+    help="Query database asynchronously (BUGGY!)",
+)
 @click.pass_context
-def main(ctx, verbose, quiet, host, port, tpfile, tpuser, tppasswd, pollsecs):
+def main(
+    ctx,
+    verbose,
+    quiet,
+    asynchronous,
+    host,
+    port,
+    tpfile,
+    tpuser,
+    tppasswd,
+    pollsecs,
+):
     adjust_log_level(logger, verbose, quiet=quiet)
 
     tpfile = tpfile.absolute()
 
     app = web.Application()
-    app[APPKEY_CONFIG] = {
-        "tpfile": tpfile,
-        "connstr": make_connstring_from_path(tpfile, tpuser, tppasswd),
-        "pollsecs": pollsecs,
-    }
     app.add_routes(routes)
-    app.cleanup_ctx.append(watch_tp_file)
+
+    if asynchronous:
+
+        def get_tournament(app):
+            return app[APPKEY_TOURNAMENT]
+
+        app[APPKEY_CONFIG] = {
+            "tpfile": tpfile,
+            "tpuser": tpuser,
+            "tppasswd": tppasswd,
+            "pollsecs": pollsecs,
+        }
+        app.cleanup_ctx.append(watch_tp_file)
+
+    else:
+
+        def get_tournament(app):
+            connstr = make_connstring_from_path(tpfile, tpuser, tppasswd)
+            return load_tournament_from_tpfile(connstr, logger=logger)
+
+    app[APPKEY_TOURNAMENT_CB] = get_tournament
     web.run_app(app, host=host, port=port)
 
 
