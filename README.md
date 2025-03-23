@@ -50,6 +50,8 @@ pip 25.0.1 from C:\Users\martin\AppData\Local\Programs\Python\Python313\Lib\site
 
 I know way too little about Microsoft Windows or all their other stuff to make sense of how things are supposed to work, nor do I care. I run Windows in a virtual machine on top of Linux, with the sole purpose to run TournamentSoftware. I do not have Microsoft Office installed, and I think I read somewhere that the following is only necessary if you also do not have this software locally available.
 
+The `pyodbc` repo has [a page on Connecting to Microsoft Access](https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-Microsoft-Access) with more information.
+
 To test whether you need to install the Microsoft Access Database Engine haha (sorry, I crack up every time someone mentions Microsoft and "database" in the same sentence), you can run the following:
 
 ```
