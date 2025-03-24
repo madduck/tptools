@@ -7,7 +7,7 @@ import pathlib
 from tptools.reader.tp import (
     make_connstring_from_path,
     async_tp_watcher,
-    AsyncTPReader,
+    TPReader,
     load_tournament_from_tpfile,
 )
 from tptools.asyncio import asyncio_run
@@ -16,7 +16,8 @@ from tptools.entry import Entry
 from tptools.playermatch import PlayerMatch
 from tptools.tournament import Tournament
 from tptools.logger import get_logger, adjust_log_level
-from tptools.util import json_dump_with_default
+from tptools.util import json_dump_with_default, get_config_file_path
+from tptools.configfile import ConfigFile
 
 logger = get_logger(__name__)
 
@@ -79,11 +80,19 @@ async def post_tournament_data(url, tournament, *, logger):
     help="Password to use for TP file",
 )
 @click.option(
-    "--pollsecs",
-    "-p",
+    "--pollfreq",
+    "-f",
     type=click.INT,
     help="Frequency in seconds to poll TP file in the absence of inotify",
     default=30,
+)
+@click.option(
+    "--cfgfile",
+    "-c",
+    type=click.Path(path_type=pathlib.Path),
+    default=get_config_file_path(),
+    show_default=True,
+    help="Config file to read instead of default",
 )
 @click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
 @click.option(
@@ -95,31 +104,54 @@ async def post_tournament_data(url, tournament, *, logger):
 @click.option("--test", "-t", is_flag=True, help="Use test data for this run")
 @click.pass_context
 @asyncio_run
-async def main(ctx, verbose, quiet, url, tpfile, tpuser, tppasswd, test, pollsecs):
+async def main(
+    ctx,
+    cfgfile,
+    verbose,
+    quiet,
+    url,
+    tpfile,
+    tpuser,
+    tppasswd,
+    test,
+    pollfreq,
+):
     adjust_log_level(logger, verbose, quiet=quiet)
 
     if test:
         if tpfile:
             raise click.BadParameter("--tpfile and --test cannot be combined")
-        if tpuser and tpuser != TP_DEFAULT_USER:
+        if tpuser != TP_DEFAULT_USER:
             raise click.BadParameter("--tpuser and --test cannot be combined")
         if tppasswd:
             raise click.BadParameter("--tppasswd and --test cannot be combined")
         connstr = None
 
     elif tpfile:
-        if not tppasswd:
+        cfg = ConfigFile(cfgfile)
+
+        params = {}
+        for param in ("tpfile", "tpuser", "tppasswd", "pollfreq"):
+            params[param] = locals()[param] or cfg.get(f"{param}")
+        for param in ("url",):
+            params[param] = locals()[param] or cfg.get(f"squoresrv.{param}")
+
+        if not params["tppasswd"]:
             raise click.BadParameter("Missing TP password")
 
-        connstr = make_connstring_from_path(tpfile.absolute(), tpuser, tppasswd)
+        params["tpfile"] = params["tpfile"].expanduser().absolute()
+
+        connstr = make_connstring_from_path(
+            params["tpfile"], params["tpuser"], params["tppasswd"]
+        )
 
     else:
         raise click.BadParameter("--tpfile must be specified without --test")
 
     if connstr:
 
-        async def callback(logger):
-            tournament = await load_tournament_from_tpfile(connstr, logger=logger)
+        async def callback(path, logger):
+            tournament = load_tournament_from_tpfile(connstr, logger=logger)
             if tournament:
                 await post_tournament_data(url, tournament, logger=logger)
 
@@ -130,14 +162,14 @@ async def main(ctx, verbose, quiet, url, tpfile, tpuser, tppasswd, test, pollsec
                         path=tpfile,
                         logger=logger,
                         callback=callback,
-                        pollsecs=pollsecs,
+                        pollfreq=pollfreq,
                     ),
                     name="TPWatcher",
                 )
                 logger.debug(f"Created TP watcher task: {t1}")
 
-        except* AsyncTPReader.DriverMissingException:
-            if isinstance(t1.exception(), AsyncTPReader.DriverMissingException):
+        except* TPReader.DriverMissingException:
+            if isinstance(t1.exception(), TPReader.DriverMissingException):
                 logger.error("Missing Microsoft Access driver. Are you on Windows?")
                 sys.exit(1)
 

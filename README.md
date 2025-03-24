@@ -74,18 +74,7 @@ To verify that `tptools` are working, you may now run e.g.
 ```
 > tpwatcher --help
 Usage: tpwatcher [OPTIONS]
-
-Options:
-  -u, --url TEXT          URL to send events to (stdout if not provided)
-  -i, --tpfile PATH       TP file to watch and read
-  -U, --tpuser TEXT       User name to use for TP file  [default: Admin]
-  -P, --tppasswd TEXT     Password to use for TP file
-  -p, --pollsecs INTEGER  Frequency in seconds to poll TP file in the absence
-                          of inotify
-  -v, --verbose           Increase verbosity of log output
-  -q, --quiet             Output as little information as possible
-  -t, --test              Use test data for this run
-  --help                  Show this message and exit.
+[…]
 ```
 
 ## Configuration
@@ -101,6 +90,9 @@ pollfreq = 15
 
 [squoresrv]
 port = 8080
+
+[tpwatcher]
+url = "http://tcboard/api/tp/matches"
 ```
 
 ## Usage
@@ -185,6 +177,35 @@ And furthermore, there is [a bug in the Python aioodbc library](https://github.c
 Therefore, `squoresrv` currently defaults to synchronous access, meaning that *for every HTTP request*, it has to load the TP file, parse the data, and massage it into the Squore format. While this is terribly ugly, it seems that in practical terms, this isn't an issue. Reading and parsing happens in a fraction of a second, and there's hardly ever a situation wherein more than a handful of tablets request the matches feed at the exact same time.
 
 Asynchronous access can be turned on with `--asynchronous`, but here be dragons.
+
+### `tpwatcher` — informing others about pending matches
+
+With `tpwatcher`, you can send information about pending matches to a remote
+web service via HTTP. One use-case for this is to display upcoming matches with [tcboard](https://github.com/madduck/tcboard).
+
+```
+> tpwatcher --help
+Usage: tpwatcher [OPTIONS]
+
+Options:
+  -u, --url TEXT          URL to send events to (stdout if not provided)
+  -i, --tpfile PATH       TP file to watch and read
+  -U, --tpuser TEXT       User name to use for TP file  [default: Admin]
+  -P, --tppasswd TEXT     Password to use for TP file
+  -f, --pollfreq INTEGER  Frequency in seconds to poll TP file in the absence
+                          of inotify
+  -c, --cfgfile PATH      Config file to read instead of default  [default:
+                          %LOCALAPPDATA%\tptools\cfg.toml]
+  -v, --verbose           Increase verbosity of log output
+  -q, --quiet             Output as little information as possible
+  -t, --test              Use test data for this run
+  --help                  Show this message and exit.
+```
+
+For testing, `--test` exists, which just spews off data from a demo tournament. On the other hand, if you do *not* specify `--url`, and no URL is defined in the configuration file, then `tpwatcher` will just write anything it finds to `stdout`.
+
+> [!NOTE]
+> In the `winscripts` directory, you may find a batch file that starts `tpwatcher` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut tpwatcher`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above).
 
 ## Contributing
 
