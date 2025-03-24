@@ -19,6 +19,7 @@ from tptools.tournament import Tournament
 from tptools.entry import Entry
 from tptools.logger import get_logger, adjust_log_level
 from tptools.jsonfeed import JSONFeedMaker
+from tptools.util import is_truish
 
 logger = get_logger(__name__)
 
@@ -36,7 +37,7 @@ routes = web.RouteTableDef()
 async def matches(request):
     include_params = {}
     for p in ("include_played", "include_not_ready"):
-        if request.query.get(p) in ("1", "true", "yes"):
+        if is_truish(request.query.get(p)):
             logger.debug(f"Setting '{p}=True'")
             include_params[p] = True
 
@@ -49,11 +50,7 @@ async def matches(request):
 
     matches_by_court = {}
     matches_without_court = []
-    only_this_court = request.query.get("only_this_court") in (
-        "1",
-        "true",
-        "yes",
-    )
+    only_this_court = is_truish(request.query.get("only_this_court"))
     for match in sorted(matches, key=lambda m: m.time):
 
         if not match.court and not only_this_court:
