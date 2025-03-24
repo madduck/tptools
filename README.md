@@ -175,6 +175,6 @@ $ pre-commit install
 
 ## Legalese
 
-`pngx` is © 2025 martin f. krafft <pngx@pobox.madduck.net>.
+`tptools` is © 2024–5 martin f. krafft <tptools@pobox.madduck.net>.
 
 It is released under the terms of the MIT Licence.
