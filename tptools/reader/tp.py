@@ -247,7 +247,7 @@ class AsyncTPReader(TPReader):
         await self.disconnect()
 
 
-async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
+async def async_tp_watcher(*, path, logger, callback, pollfreq=30):
     try:
         from asyncinotify import Inotify, Mask
 
@@ -265,7 +265,9 @@ async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
                 await callback(path, logger=logger)
 
     else:
-        logger.warning(f"No inotify support, resorting to polling ({pollsecs}s)…")
+        logger.warning(
+            f"No inotify support, resorting to polling ({pollfreq}s)…"
+        )
         mtime_last = 0
         while True:
             logger.debug(f"Polling {path}…")
@@ -273,7 +275,7 @@ async def async_tp_watcher(*, path, logger, callback, pollsecs=30):
                 logger.debug(f"{path} has been modified.")
                 mtime_last = mtime
                 await callback(path, logger=logger)
-            await asyncio.sleep(pollsecs)
+            await asyncio.sleep(pollfreq)
 
 
 async def async_load_tournament_from_tpfile(connstr, *, logger=None, retries=3):

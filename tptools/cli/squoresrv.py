@@ -140,7 +140,7 @@ async def watch_tp_file(app, work_on_copy=False):
                     path=config["tpfile"],
                     logger=logger,
                     callback=callback,
-                    pollsecs=config["pollsecs"],
+                    pollfreq=config["pollfreq"],
                 ),
                 name="TPWatcher",
             )
@@ -164,19 +164,6 @@ async def watch_tp_file(app, work_on_copy=False):
 
 @click.command
 @click.option(
-    "--host",
-    "-h",
-    default="0.0.0.0",
-    help="Host to listen on (bind to)",
-)
-@click.option(
-    "--port",
-    "-p",
-    type=click.INT,
-    default=8000,
-    help="Port to listen on",
-)
-@click.option(
     "--tpfile",
     "-i",
     type=click.Path(path_type=pathlib.Path),
@@ -198,13 +185,31 @@ async def watch_tp_file(app, work_on_copy=False):
     help="Password to use for TP file",
 )
 @click.option(
-    "--pollsecs",
-    "-p",
+    "--pollfreq",
+    "-f",
     type=click.INT,
     help="Frequency in seconds to poll TP file in the absence of inotify",
     default=30,
+    show_default=True,
 )
-@click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
+@click.option(
+    "--host",
+    "-h",
+    default="0.0.0.0",
+    show_default=True,
+    help="Host to listen on (bind to)",
+)
+@click.option(
+    "--port",
+    "-p",
+    type=click.INT,
+    default=8000,
+    show_default=True,
+    help="Port to listen on",
+)
+@click.option(
+    "--verbose", "-v", count=True, help="Increase verbosity of log output"
+)
 @click.option(
     "--quiet",
     "-q",
@@ -228,7 +233,7 @@ def main(
     tpfile,
     tpuser,
     tppasswd,
-    pollsecs,
+    pollfreq,
 ):
     adjust_log_level(logger, verbose, quiet=quiet)
 
@@ -246,7 +251,7 @@ def main(
             "tpfile": tpfile,
             "tpuser": tpuser,
             "tppasswd": tppasswd,
-            "pollsecs": pollsecs,
+            "pollfreq": pollfreq,
         }
         app.cleanup_ctx.append(watch_tp_file)
 
