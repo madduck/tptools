@@ -88,6 +88,20 @@ Options:
   --help                  Show this message and exit.
 ```
 
+## Configuration
+
+All utilities in this package read a common configuration file to get default settings from. These settings can then be overridden with command-line options. The configuration file must be in [TOML format](https://en.wikipedia.org/wiki/TOML) and lives in `XDG_CONFIG_DIR/tptools/cfg.toml`, which is `%LOCALAPPDATA%\tptools\cfg.toml` on Windows. This location can be overridden by specifying `--cfgfile` on the command-line.
+
+The following is an example of this configuration file:
+
+```
+[squoresrv]
+tpfile = "%USERPROFILE%\Documents\Tournaments\Demo.tp"
+tppasswd = "topfsiekrit"
+port = 8080
+pollfreq = 15
+```
+
 ## Usage
 
 ### `squoresrv` — making matches available to Squore
@@ -104,14 +118,15 @@ $ squoresrv --help
 Usage: squoresrv [OPTIONS]
 
 Options:
-  -i, --tpfile PATH       TP file to watch and read  [required]
-  -U, --tpuser TEXT       User name to use for TP file  [default: Admin;
-                          required]
-  -P, --tppasswd TEXT     Password to use for TP file  [required]
+  -i, --tpfile PATH       TP file to watch and read
+  -U, --tpuser TEXT       User name to use for TP file  [default: Admin]
+  -P, --tppasswd TEXT     Password to use for TP file
   -f, --pollsecs INTEGER  Frequency in seconds to poll TP file in the absence
                           of inotify  [default: 30]
   -h, --host TEXT         Host to listen on (bind to)  [default: 0.0.0.0]
   -p, --port INTEGER      Port to listen on  [default: 80]
+  -c, --cfgfile PATH      Config file to read instead of default  [default:
+                          %LOCALAPPDATA%\tptools\cfg.toml]
   -v, --verbose           Increase verbosity of log output
   -q, --quiet             Output as little information as possible
   -a, --asynchronous      Query database asynchronously (BUGGY!)

@@ -32,7 +32,8 @@ dependencies = [
   "aioodbc",
   "asyncstdlib",
   "aiosqlite",
-  "click"
+  "click",
+  "platformdirs"
 ]
 
 [project.optional-dependencies]

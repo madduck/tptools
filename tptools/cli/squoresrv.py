@@ -19,10 +19,10 @@ from tptools.tournament import Tournament
 from tptools.entry import Entry
 from tptools.logger import get_logger, adjust_log_level
 from tptools.jsonfeed import JSONFeedMaker
-from tptools.util import is_truish
+from tptools.util import is_truish, get_config_file_path
+from tptools.configfile import ConfigFile
 
 logger = get_logger(__name__)
-
 
 TP_DEFAULT_USER = "Admin"
 APPKEY_TOURNAMENT_CB = web.AppKey("tournament_cb", Callable)
@@ -167,13 +167,11 @@ async def watch_tp_file(app, work_on_copy=False):
     "--tpfile",
     "-i",
     type=click.Path(path_type=pathlib.Path),
-    required=True,
     help="TP file to watch and read",
 )
 @click.option(
     "--tpuser",
     "-U",
-    required=True,
     default=TP_DEFAULT_USER,
     show_default=True,
     help="User name to use for TP file",
@@ -181,7 +179,6 @@ async def watch_tp_file(app, work_on_copy=False):
 @click.option(
     "--tppasswd",
     "-P",
-    required=True,
     help="Password to use for TP file",
 )
 @click.option(
@@ -207,6 +204,14 @@ async def watch_tp_file(app, work_on_copy=False):
     show_default=True,
     help="Port to listen on",
 )
+@click.option(
+    "--cfgfile",
+    "-c",
+    type=click.Path(path_type=pathlib.Path),
+    default=get_config_file_path(),
+    show_default=True,
+    help="Config file to read instead of default",
+)
 @click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
 @click.option(
     "--quiet",
@@ -223,6 +228,7 @@ async def watch_tp_file(app, work_on_copy=False):
 @click.pass_context
 def main(
     ctx,
+    cfgfile,
     verbose,
     quiet,
     asynchronous,
@@ -233,9 +239,15 @@ def main(
     tppasswd,
     pollfreq,
 ):
+    cfg = ConfigFile(cfgfile)
+
+    params = {}
+    for param in ("tpfile", "tpuser", "tppasswd", "pollfreq", "host", "port"):
+        params[param] = locals()[param] or cfg.get(f"squoresrv.{param}")
+
     adjust_log_level(logger, verbose, quiet=quiet)
 
-    tpfile = tpfile.absolute()
+    params["tpfile"] = params["tpfile"].expanduser().absolute()
 
     app = web.Application()
     app.add_routes(routes)
@@ -245,22 +257,19 @@ def main(
         def get_tournament(app):
             return app[APPKEY_TOURNAMENT]
 
-        app[APPKEY_CONFIG] = {
-            "tpfile": tpfile,
-            "tpuser": tpuser,
-            "tppasswd": tppasswd,
-            "pollfreq": pollfreq,
-        }
+        app[APPKEY_CONFIG] = params
         app.cleanup_ctx.append(watch_tp_file)
 
     else:
 
         def get_tournament(app):
-            connstr = make_connstring_from_path(tpfile, tpuser, tppasswd)
+            connstr = make_connstring_from_path(
+                params["tpfile"], params["tpuser"], params["tppasswd"]
+            )
             return load_tournament_from_tpfile(connstr, logger=logger)
 
     app[APPKEY_TOURNAMENT_CB] = get_tournament
-    web.run_app(app, host=host, port=port)
+    web.run_app(app, host=params["host"], port=params["port"])
 
 
 if __name__ == "__main__":
