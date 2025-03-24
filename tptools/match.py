@@ -52,13 +52,9 @@ class Match:
                 source = match_getter(playermatch[f"van{index}"])
                 if not source.get("entry"):
                     if planning == source["wn"]:
-                        return SourcePlayerMatch(
-                            source, SourcePlayerMatch.Role.WINNER
-                        )
+                        return SourcePlayerMatch(source, SourcePlayerMatch.Role.WINNER)
                     elif planning == source["vn"]:
-                        return SourcePlayerMatch(
-                            source, SourcePlayerMatch.Role.LOSER
-                        )
+                        return SourcePlayerMatch(source, SourcePlayerMatch.Role.LOSER)
                 return PlayerMatch(source)
 
             self._sources = [get_playermatch(s) for s in (1, 2)]
@@ -188,10 +184,7 @@ class Match:
         elif self.status == self.Status.PLAYER:
             return f"<Entry[{self._entry}]>"
 
-        return (
-            f"<Match[{self._playermatch.id}] {self.status} "
-            f"{self._playermatch}>"
-        )
+        return f"<Match[{self._playermatch.id}] {self.status} " f"{self._playermatch}>"
 
     __repr__ = __str__
 

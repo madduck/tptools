@@ -5,7 +5,7 @@ class BaseReader:
         *,
         auto_convert_int=True,
         auto_convert_bool=True,
-        auto_convert_emptystring=True
+        auto_convert_emptystring=True,
     ):
         self._auto_convert_int = auto_convert_int
         self._auto_convert_bool = auto_convert_bool

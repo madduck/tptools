@@ -20,17 +20,12 @@ def demo_playermatch_idmap(demo_playermatch_records):
 
 @pytest.fixture
 def demo_playermatch_records_elimination(demo_playermatch_records):
-    return [
-        r for r in demo_playermatch_records if r["drawname"] == "Elimination 1"
-    ]
+    return [r for r in demo_playermatch_records if r["drawname"] == "Elimination 1"]
 
 
 @pytest.fixture
 def demo_playermatch_elimination_idmap(demo_playermatch_records_elimination):
-    return {
-        r["planning"]: PlayerMatch(r)
-        for r in demo_playermatch_records_elimination
-    }
+    return {r["planning"]: PlayerMatch(r) for r in demo_playermatch_records_elimination}
 
 
 @pytest.fixture
@@ -40,9 +35,7 @@ def demo_playermatch_records_rr5(demo_playermatch_records):
 
 @pytest.fixture
 def demo_playermatch_rr5_idmap(demo_playermatch_records_rr5):
-    return {
-        r["planning"]: PlayerMatch(r) for r in demo_playermatch_records_rr5
-    }
+    return {r["planning"]: PlayerMatch(r) for r in demo_playermatch_records_rr5}
 
 
 @pytest.fixture
@@ -57,9 +50,7 @@ def demo_playerentry_idmap(demo_playerentry_records):
 
 
 @pytest.fixture
-def demo_draw_elimination(
-    demo_playermatch_records_elimination, demo_playerentry_idmap
-):
+def demo_draw_elimination(demo_playermatch_records_elimination, demo_playerentry_idmap):
     match = demo_playermatch_records_elimination[0]
     demo_draw = Draw(
         draw=match["drawname"],

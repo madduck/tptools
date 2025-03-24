@@ -34,23 +34,15 @@ def test_draw_get_upcoming_matches_elimination(demo_draw_elimination):
 
 
 def test_draw_get_matches_ready_elimination(demo_draw_elimination):
-    assert (
-        len(list(demo_draw_elimination.get_matches(include_not_ready=False)))
-        == 4
-    )
+    assert len(list(demo_draw_elimination.get_matches(include_not_ready=False))) == 4
 
 
 def test_draw_get_matches_with_not_ready_elimination(demo_draw_elimination):
-    assert (
-        len(list(demo_draw_elimination.get_matches(include_not_ready=True)))
-        == 10
-    )
+    assert len(list(demo_draw_elimination.get_matches(include_not_ready=True))) == 10
 
 
 def test_draw_get_matches_with_played_elimination(demo_draw_elimination):
-    assert (
-        len(list(demo_draw_elimination.get_matches(include_played=True))) == 4
-    )
+    assert len(list(demo_draw_elimination.get_matches(include_played=True))) == 4
 
 
 def test_draw_treewalk_rr5(demo_draw_rr5):

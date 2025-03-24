@@ -12,9 +12,7 @@ class Tournament:
             self._entry_getter = None
 
         if playermatches:
-            self.read_playermatches(
-                playermatches, entry_getter=self._entry_getter
-            )
+            self.read_playermatches(playermatches, entry_getter=self._entry_getter)
 
         self._court_xform = court_xform
 
@@ -33,15 +31,11 @@ class Tournament:
     def read_playermatches(self, playermatches, *, entry_getter=None):
         matches_by_draws = {}
         for playermatch in playermatches:
-            matches_by_draws.setdefault(playermatch["draw"], []).append(
-                playermatch
-            )
+            matches_by_draws.setdefault(playermatch["draw"], []).append(playermatch)
 
         for drawid, matches in matches_by_draws.items():
             if not (draw := self._draws.get(drawid)):
-                draw = Draw(
-                    event=matches[0]["eventname"], draw=matches[0]["drawname"]
-                )
+                draw = Draw(event=matches[0]["eventname"], draw=matches[0]["drawname"])
                 self._draws[drawid] = draw
 
             draw.read_playermatches(

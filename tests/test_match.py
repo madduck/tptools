@@ -36,8 +36,7 @@ def test_match_status_player(demo_match_elimination_idmap):
 
 def test_match_status_bye(demo_match_elimination_idmap):
     assert (
-        Match.get_match_status(demo_match_elimination_idmap[5002])
-        == Match.Status.BYE
+        Match.get_match_status(demo_match_elimination_idmap[5002]) == Match.Status.BYE
     )
 
 
@@ -67,12 +66,10 @@ def test_match_status_not_ready(demo_match_elimination_idmap):
 
 def test_match_status_won_against_bye(demo_match_elimination_idmap):
     assert (
-        Match.get_match_status(demo_match_elimination_idmap[4001])
-        == Match.Status.BYED
+        Match.get_match_status(demo_match_elimination_idmap[4001]) == Match.Status.BYED
     )
     assert (
-        Match.get_match_status(demo_match_elimination_idmap[4008])
-        == Match.Status.BYED
+        Match.get_match_status(demo_match_elimination_idmap[4008]) == Match.Status.BYED
     )
 
 
@@ -89,9 +86,7 @@ def test_match_entries_half_played(
 ):
     m = demo_match_elimination_idmap[2003]
     assert (
-        Match(
-            m.player1, match_getter=demo_playermatch_elimination_idmap.get
-        ).status
+        Match(m.player1, match_getter=demo_playermatch_elimination_idmap.get).status
         == Match.Status.READY
     )
     assert m.player2["name1"] == "Rood"
@@ -104,25 +99,17 @@ def test_match_entries_notplayed(
 ):
     m = demo_match_elimination_idmap[3003]
     assert (
-        Match(
-            m.player1, match_getter=demo_playermatch_elimination_idmap.get
-        ).status
+        Match(m.player1, match_getter=demo_playermatch_elimination_idmap.get).status
         == Match.Status.READY
     )
     assert (
-        Match(
-            m.player2, match_getter=demo_playermatch_elimination_idmap.get
-        ).status
+        Match(m.player2, match_getter=demo_playermatch_elimination_idmap.get).status
         == Match.Status.READY
     )
 
 
-@pytest.fixture(
-    params=[4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 3001, 3002]
-)
-def demo_match_elimination_winning_players_known(
-    request, demo_match_elimination_idmap
-):
+@pytest.fixture(params=[4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 3001, 3002])
+def demo_match_elimination_winning_players_known(request, demo_match_elimination_idmap):
     return demo_match_elimination_idmap[request.param]
 
 

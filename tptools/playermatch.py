@@ -47,12 +47,7 @@ class PlayerMatch(dict):
             return f"M{self.id}"
 
     def __repr__(self):
-        return (
-            "<"
-            f"{self.__class__.__name__} "
-            f"{self.id} ({self.status.name})"
-            ">"
-        )
+        return "<" f"{self.__class__.__name__} " f"{self.id} ({self.status.name})" ">"
 
     def get_entry(self, *, entry_getter):
         return entry_getter(self._entry)

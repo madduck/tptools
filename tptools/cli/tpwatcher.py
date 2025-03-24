@@ -59,9 +59,7 @@ async def post_tournament_data(url, tournament, *, logger):
 
 
 @click.command
-@click.option(
-    "--url", "-u", help="URL to send events to (stdout if not provided)"
-)
+@click.option("--url", "-u", help="URL to send events to (stdout if not provided)")
 @click.option(
     "--tpfile",
     "-i",
@@ -87,9 +85,7 @@ async def post_tournament_data(url, tournament, *, logger):
     help="Frequency in seconds to poll TP file in the absence of inotify",
     default=30,
 )
-@click.option(
-    "--verbose", "-v", count=True, help="Increase verbosity of log output"
-)
+@click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
 @click.option(
     "--quiet",
     "-q",
@@ -99,9 +95,7 @@ async def post_tournament_data(url, tournament, *, logger):
 @click.option("--test", "-t", is_flag=True, help="Use test data for this run")
 @click.pass_context
 @asyncio_run
-async def main(
-    ctx, verbose, quiet, url, tpfile, tpuser, tppasswd, test, pollsecs
-):
+async def main(ctx, verbose, quiet, url, tpfile, tpuser, tppasswd, test, pollsecs):
     adjust_log_level(logger, verbose, quiet=quiet)
 
     if test:
@@ -110,18 +104,14 @@ async def main(
         if tpuser and tpuser != TP_DEFAULT_USER:
             raise click.BadParameter("--tpuser and --test cannot be combined")
         if tppasswd:
-            raise click.BadParameter(
-                "--tppasswd and --test cannot be combined"
-            )
+            raise click.BadParameter("--tppasswd and --test cannot be combined")
         connstr = None
 
     elif tpfile:
         if not tppasswd:
             raise click.BadParameter("Missing TP password")
 
-        connstr = make_connstring_from_path(
-            tpfile.absolute(), tpuser, tppasswd
-        )
+        connstr = make_connstring_from_path(tpfile.absolute(), tpuser, tppasswd)
 
     else:
         raise click.BadParameter("--tpfile must be specified without --test")
@@ -129,9 +119,7 @@ async def main(
     if connstr:
 
         async def callback(logger):
-            tournament = await load_tournament_from_tpfile(
-                connstr, logger=logger
-            )
+            tournament = await load_tournament_from_tpfile(connstr, logger=logger)
             if tournament:
                 await post_tournament_data(url, tournament, logger=logger)
 
@@ -149,12 +137,8 @@ async def main(
                 logger.debug(f"Created TP watcher task: {t1}")
 
         except* AsyncTPReader.DriverMissingException:
-            if isinstance(
-                t1.exception(), AsyncTPReader.DriverMissingException
-            ):
-                logger.error(
-                    "Missing Microsoft Access driver. Are you on Windows?"
-                )
+            if isinstance(t1.exception(), AsyncTPReader.DriverMissingException):
+                logger.error("Missing Microsoft Access driver. Are you on Windows?")
                 sys.exit(1)
 
             else:
@@ -164,9 +148,7 @@ async def main(
         logger.warning("Test-mode with static, fake data")
 
         fixtures = (
-            pathlib.Path(__file__).parent.parent.parent
-            / "tests"
-            / "csv_fixtures"
+            pathlib.Path(__file__).parent.parent.parent / "tests" / "csv_fixtures"
         )
 
         with open(fixtures / "playermatches.csv", newline="") as f:

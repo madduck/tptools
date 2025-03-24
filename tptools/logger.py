@@ -80,9 +80,7 @@ def adjust_log_level(logger, verbosity, *, quiet=False):
         logger.warning("Log level at or below NOTSET")
 
     logger.setLevel(loglevel)
-    logger.info(
-        f"Logging at level {logging.getLevelName(logger.getEffectiveLevel())}"
-    )
+    logger.info(f"Logging at level {logging.getLevelName(logger.getEffectiveLevel())}")
 
 
 class LoggerAdapter(logging.LoggerAdapter):

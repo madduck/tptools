@@ -35,10 +35,7 @@ def test_playermatch_status_bye(demo_playermatch_idmap):
 
 def test_playermatch_get_entry(demo_playermatch_idmap, demo_playerentry_idmap):
     pm = demo_playermatch_idmap[41]
-    assert (
-        pm.get_entry(entry_getter=demo_playerentry_idmap.get)["name1"]
-        == "Hoekmans"
-    )
+    assert pm.get_entry(entry_getter=demo_playerentry_idmap.get)["name1"] == "Hoekmans"
 
 
 def test_playermatch_get_time_unscheduled(demo_playermatch_idmap):
@@ -69,7 +66,5 @@ def test_playermatch_get_location(demo_playermatch_idmap):
 
 
 def test_source_playermatch_status_pending(demo_playermatch_idmap):
-    pm = SourcePlayerMatch(
-        demo_playermatch_idmap[32], SourcePlayerMatch.Role.WINNER
-    )
+    pm = SourcePlayerMatch(demo_playermatch_idmap[32], SourcePlayerMatch.Role.WINNER)
     assert pm.status == PlayerMatch.Status.PENDING

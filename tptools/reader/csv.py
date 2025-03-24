@@ -12,7 +12,7 @@ class CSVReader(BaseReader):
         auto_convert_emptystring=True,
         auto_convert_int=True,
         auto_convert_bool=True,
-        makeiter=None
+        makeiter=None,
     ):
         super().__init__(
             auto_convert_emptystring=auto_convert_emptystring,
@@ -20,9 +20,7 @@ class CSVReader(BaseReader):
             auto_convert_bool=auto_convert_bool,
         )
         self._records = (
-            CSVReader._makeiter(stream)
-            if makeiter is None
-            else makeiter(stream)
+            CSVReader._makeiter(stream) if makeiter is None else makeiter(stream)
         )
 
     @staticmethod

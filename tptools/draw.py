@@ -6,9 +6,7 @@ logger = get_logger(__name__)
 
 
 class Draw:
-    def __init__(
-        self, *, event=None, draw=None, entry_getter=None, court_xform=None
-    ):
+    def __init__(self, *, event=None, draw=None, entry_getter=None, court_xform=None):
         self._playermatches = {}
         self._name = draw
         if event and event != draw:
@@ -19,17 +17,11 @@ class Draw:
     name = property(lambda s: s._name)
 
     def get_records_by_status(self, status):
-        return {
-            k: v for k, v in self._playermatches.items() if v.status == status
-        }
+        return {k: v for k, v in self._playermatches.items() if v.status == status}
 
-    players = property(
-        lambda s: s.get_records_by_status(PlayerMatch.Status.PLAYER)
-    )
+    players = property(lambda s: s.get_records_by_status(PlayerMatch.Status.PLAYER))
     byes = property(lambda s: s.get_records_by_status(PlayerMatch.Status.BYE))
-    matches = property(
-        lambda s: s.get_records_by_status(PlayerMatch.Status.MATCH)
-    )
+    matches = property(lambda s: s.get_records_by_status(PlayerMatch.Status.MATCH))
 
     def __str__(self):
         ret = "<Draw "
@@ -49,9 +41,7 @@ class Draw:
         for playermatch in playermatches:
             if playermatch.get("reversehomeaway"):
                 continue
-            self._add_playermatch(
-                playermatch, entry_getter or self._entry_getter
-            )
+            self._add_playermatch(playermatch, entry_getter or self._entry_getter)
 
     def get_matches(
         self,
