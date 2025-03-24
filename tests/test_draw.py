@@ -26,7 +26,7 @@ def test_draw_construction_namefull():
 def test_draw_treewalk_elimination(demo_draw_elimination):
     assert len(demo_draw_elimination.players) == 14
     assert len(demo_draw_elimination.byes) == 2
-    assert len(demo_draw_elimination.matches) == 16
+    assert len(demo_draw_elimination.matches) == 19
 
 
 def test_draw_get_upcoming_matches_elimination(demo_draw_elimination):
@@ -38,7 +38,7 @@ def test_draw_get_matches_ready_elimination(demo_draw_elimination):
 
 
 def test_draw_get_matches_with_not_ready_elimination(demo_draw_elimination):
-    assert len(list(demo_draw_elimination.get_matches(include_not_ready=True))) == 10
+    assert len(list(demo_draw_elimination.get_matches(include_not_ready=True))) == 13
 
 
 def test_draw_get_matches_with_played_elimination(demo_draw_elimination):
