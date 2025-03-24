@@ -247,6 +247,9 @@ def main(
     for param in ("host", "port"):
         params[param] = locals()[param] or cfg.get(f"squoresrv.{param}")
 
+    if not params.get("tppasswd"):
+        raise click.BadParameter("Missing TP password")
+
     adjust_log_level(logger, verbose, quiet=quiet)
 
     params["tpfile"] = params["tpfile"].expanduser().absolute()
