@@ -58,7 +58,6 @@ To test whether you need to install the Microsoft Access Database Engine haha (s
 > pip install pyodbc
 > python -c "import pyodbc; print('No, I am fine' if [d for d in pyodbc.drivers() if '*.mdb' in d] else 'Yes, I need to install the engine')"
 ```
-```
 
 If you get a "Yes", please download and install the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
 
