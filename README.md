@@ -147,6 +147,14 @@ The court parameter must match the exact court name used in TournamentSoftware.
 > [!NOTE]
 > The `config` dictionary has yet to be parametrised and is currently hard-coded.
 
+#### Configuring the Windows firewall
+
+When `squoresrv` is invoked the first time, Windows is expected to raise a hand and ask about how to handle a new program trying to bind a port. This is impressive!
+
+![Screenshot of Windows Firewall](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-firewall.png?raw=true)
+
+Please ensure to allow access for `Python.exe`. Unfortunately, doing so via this dialogue means that all Python scripts can use any port, but it's better than nothing. If you care about security, please make sure that only the actual listening port is open.
+
 #### A note on TP file access — polling, and synchronous access
 
 `squoresrv` was designed to access the TP file asynchronously. In an ideal world, a modification of the TP file would trigger a reload. Then, when a client requests e.g. the list of matches, the data could be served quickly from cache.
