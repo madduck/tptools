@@ -16,6 +16,9 @@ In addition to simple Python classes, `tptools` comprises a number of command-li
 
 * `tpwatcher` — a worker that submits planned matches to a server, such as provided by [tcboard](https://github.com/madduck/tcboard).
 
+> [!WARNING]
+> Microsoft Access is not a database designed for concurrent access. These tools rely on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to the tools within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
+
 ## Preparation
 
 To use `tptools`, you must prepare your Windows machine running TournamentSoftware as follows:
@@ -100,9 +103,6 @@ url = "http://tcboard/api/tp/matches"
 ### `squoresrv` — making matches available to Squore
 
 [Squore](https://squore.double-yellow.be/) is an amazing app for Android that can be used to score matches. To facilitate its use, Squore can subscribe to a feed of matches for referees to pick from, such that the player data do not have to be entered manually.
-
-> [!WARNING]
-> Microsoft Access is not a database designed for concurrent access. `squoresrv` relies on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to `squoresrv` within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
 
 `squoresrv` is an asynchronous web server that reads matches from TournamentSoftware and makes them available in the format expected by Squore:
 
