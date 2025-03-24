@@ -10,9 +10,7 @@ Under the hood, TournamentSoftware is a Microsoft Access Database (MDB) stored i
 > [!IMPORTANT]
 > The TP database is password-protected, and it is up to you to decide whether you want to obtain this password to be able to read the data, and where to get it. **`tptools` does not include this password, nor will we disclose it**, and none of the tools here will work without it.
 
-In addition to simple Python classes, `tptools` comprises a number of
-command-line utilities (using these classes) that are mainly designed to
-provide the data to other tools:
+In addition to simple Python classes, `tptools` comprises a number of command-line utilities (using these classes) that are mainly designed to provide the data to other tools:
 
 * `squoresrv` — a simple web server to provide so-called "matches" and "players" feeds in the format expected by [Squore](https://squore.double-yellow.be/);
 
@@ -90,7 +88,76 @@ Options:
   --help                  Show this message and exit.
 ```
 
-[to be continued]
+## Usage
+
+### `squoresrv` — making matches available to Squore
+
+[Squore](https://squore.double-yellow.be/) is an amazing app for Android that can be used to score matches. To facilitate its use, Squore can subscribe to a feed of matches for referees to pick from, such that the player data do not have to be entered manually.
+
+> [!WARNING]
+> Microsoft Access is not a database designed for concurrent access. `squoresrv` relies on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to `squoresrv` within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
+
+`squoresrv` is an asynchronous web server that reads matches from TournamentSoftware and makes them available in the format expected by Squore:
+
+```
+$ squoresrv --help
+Usage: squoresrv [OPTIONS]
+
+Options:
+  -i, --tpfile PATH       TP file to watch and read  [required]
+  -U, --tpuser TEXT       User name to use for TP file  [default: Admin;
+                          required]
+  -P, --tppasswd TEXT     Password to use for TP file  [required]
+  -f, --pollsecs INTEGER  Frequency in seconds to poll TP file in the absence
+                          of inotify  [default: 30]
+  -h, --host TEXT         Host to listen on (bind to)  [default: 0.0.0.0]
+  -p, --port INTEGER      Port to listen on  [default: 8000]
+  -v, --verbose           Increase verbosity of log output
+  -q, --quiet             Output as little information as possible
+  -a, --asynchronous      Query database asynchronously (BUGGY!)
+  --help                  Show this message and exit.
+```
+
+The options relating to accessing the TP file have to be provided. The two options `--host` and `--port` are optional, and if not provided, then the web server will bind to port 8000 on all local interfaces/IPs.
+
+Once running, the server provides two HTTP `GET` endpoints:
+
+1. `/players` — returns an alphabetically sorted list of all players in the tournament, one player per line;
+2. `/matches` — returns matches scheduled in TournamentSoftware.
+
+The `/matches` endpoint can be controlled using query parameters:
+
+| Parameter           | Type   | Effect                                 |
+|---------------------|--------|----------------------------------------|
+| `include_played`    | truthy | Include completed matches in output    |
+| `include_not_ready` | truthy | Include unscheduled matches in output  |
+| `court`             | text   | List matches on this court first       |
+| `only_this_court`   | truthy | Do not include matches on other courts |
+
+For instance:
+
+```
+$ curl "http://192.0.2.34/matches?court=3&only_this_court=1"
+{"config": {"Placeholder_Match": "${time} Uhr : ${FirstOfList:~${A}~${A.name}~} - ${FirstOfList:~${B}~${B.name}~} (${field}) : ${result}"}, "\u00a03": [{"id": 38, "court": "3", "A": {"name":
+…
+```
+
+The court parameter must match the exact court name used in TournamentSoftware.
+
+> [!NOTE]
+> The `config` dictionary has yet to be parametrised and is currently hard-coded.
+
+#### A note on TP file access — polling, and synchronous access
+
+`squoresrv` was designed to access the TP file asynchronously. In an ideal world, a modification of the TP file would trigger a reload. Then, when a client requests e.g. the list of matches, the data could be served quickly from cache.
+
+Unfortunately, Windows does not provide a sensible means to react to a file system event, like `inotify` on Linux. Therefore, `squoresrv` regularly polls the file to see if it's been modified (relying on the modification time stamp). The frequency defaults to 30 seconds, and can be controlled with the `--frequency` CLI option.
+
+And furthermore, there is [a bug in the Python aioodbc library](https://github.com/aio-libs/aioodbc/issues/463) and database access fails after a handful of changes, therefore making asynchronous access to the database currently impossible.
+
+Therefore, `squoresrv` currently defaults to synchronous access, meaning that *for every HTTP request*, it has to load the TP file, parse the data, and massage it into the Squore format. While this is terribly ugly, it seems that in practical terms, this isn't an issue. Reading and parsing happens in a fraction of a second, and there's hardly ever a situation wherein more than a handful of tablets request the matches feed at the exact same time.
+
+Asynchronous access can be turned on with `--asynchronous`, but here be dragons.
 
 ## Contributing
 
@@ -100,8 +167,7 @@ To contribute, please ensure you have the appropriate dependencies installed:
 $ pip install -e .[dev]
 ```
 
-and then install the Git pre-commit hooks that ensure that any commits conform
-with the Flake8 and Black conventions used by this project:
+and then install the Git pre-commit hooks that ensure that any commits conform with the Flake8 and Black conventions used by this project:
 
 ```
 $ pre-commit install
