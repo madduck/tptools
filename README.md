@@ -136,6 +136,9 @@ Options:
 
 The options relating to accessing the TP file have to be provided. The two options `--host` and `--port` are optional, and if not provided, then the web server will bind to port 80 on all local interfaces/IPs.
 
+> [!NOTE]
+> In the `winscripts` directory, you may find a batch file that starts `squoresrv` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut squoresrv`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above).
+
 Once running, the server provides two HTTP `GET` endpoints:
 
 1. `/players` — returns an alphabetically sorted list of all players in the tournament, one player per line;

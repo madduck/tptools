@@ -8,6 +8,7 @@ write_to = "_version.py"
 [project.scripts]
 tpwatcher = "tptools.cli.tpwatcher:main"
 squoresrv = "tptools.cli.squoresrv:main"
+tpshortcut = "tptools.cli.tpshortcut:main"
 
 [project]
 name = "tptools"
@@ -33,7 +34,8 @@ dependencies = [
   "asyncstdlib",
   "aiosqlite",
   "click",
-  "platformdirs"
+  "platformdirs",
+  "pywin32"
 ]
 
 [project.optional-dependencies]
