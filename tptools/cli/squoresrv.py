@@ -58,9 +58,13 @@ async def matches(request):
             matches_without_court.append(match)
 
         else:
-            sect = " " + match.court
+            # IMPORTANT: use a non-breaking space or else sorting in Squore is
+            # inconsistent
+            sect = "\xa0" + match.court
 
             if court == match.court:
+                # Prefixing the court/section name with a '+' will cause Squore
+                # to expand the section
                 sect = "+" + sect
                 logger.debug(f"Found match {match.id} on OUR court {match.court}")
 
@@ -74,7 +78,9 @@ async def matches(request):
             matches_by_court.setdefault(sect, []).append(match)
 
     if matches_without_court:
-        matches_by_court[" No court"] = matches_without_court
+        # IMPORTANT: use a non-breaking space or else sorting in Squore is
+        # inconsistent
+        matches_by_court["\xa0No court"] = matches_without_court
 
     config = {
         "Placeholder_Match": (
