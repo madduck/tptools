@@ -82,7 +82,7 @@ async def matches(request):
         # inconsistent
         matches_by_court["\xa0No court"] = matches_without_court
 
-    config = {
+    config = {  # TODO: parametrise
         "Placeholder_Match": (
             "${time} Uhr : "
             "${FirstOfList:~${A}~${A.name}~} - "
