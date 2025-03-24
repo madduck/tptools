@@ -265,9 +265,7 @@ async def async_tp_watcher(*, path, logger, callback, pollfreq=30):
                 await callback(path, logger=logger)
 
     else:
-        logger.warning(
-            f"No inotify support, resorting to polling ({pollfreq}s)…"
-        )
+        logger.warning(f"No inotify support, resorting to polling ({pollfreq}s)…")
         mtime_last = 0
         while True:
             logger.debug(f"Polling {path}…")

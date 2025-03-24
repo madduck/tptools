@@ -207,9 +207,7 @@ async def watch_tp_file(app, work_on_copy=False):
     show_default=True,
     help="Port to listen on",
 )
-@click.option(
-    "--verbose", "-v", count=True, help="Increase verbosity of log output"
-)
+@click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
 @click.option(
     "--quiet",
     "-q",
