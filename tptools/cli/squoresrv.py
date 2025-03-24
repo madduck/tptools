@@ -242,7 +242,9 @@ def main(
     cfg = ConfigFile(cfgfile)
 
     params = {}
-    for param in ("tpfile", "tpuser", "tppasswd", "pollfreq", "host", "port"):
+    for param in ("tpfile", "tpuser", "tppasswd", "pollfreq"):
+        params[param] = locals()[param] or cfg.get(f"{param}")
+    for param in ("host", "port"):
         params[param] = locals()[param] or cfg.get(f"squoresrv.{param}")
 
     adjust_log_level(logger, verbose, quiet=quiet)

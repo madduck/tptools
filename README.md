@@ -95,11 +95,12 @@ All utilities in this package read a common configuration file to get default se
 The following is an example of this configuration file:
 
 ```
-[squoresrv]
 tpfile = "%USERPROFILE%\Documents\Tournaments\Demo.tp"
 tppasswd = "topfsiekrit"
-port = 8080
 pollfreq = 15
+
+[squoresrv]
+port = 8080
 ```
 
 ## Usage
