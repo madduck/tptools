@@ -111,14 +111,14 @@ Options:
   -f, --pollsecs INTEGER  Frequency in seconds to poll TP file in the absence
                           of inotify  [default: 30]
   -h, --host TEXT         Host to listen on (bind to)  [default: 0.0.0.0]
-  -p, --port INTEGER      Port to listen on  [default: 8000]
+  -p, --port INTEGER      Port to listen on  [default: 80]
   -v, --verbose           Increase verbosity of log output
   -q, --quiet             Output as little information as possible
   -a, --asynchronous      Query database asynchronously (BUGGY!)
   --help                  Show this message and exit.
 ```
 
-The options relating to accessing the TP file have to be provided. The two options `--host` and `--port` are optional, and if not provided, then the web server will bind to port 8000 on all local interfaces/IPs.
+The options relating to accessing the TP file have to be provided. The two options `--host` and `--port` are optional, and if not provided, then the web server will bind to port 80 on all local interfaces/IPs.
 
 Once running, the server provides two HTTP `GET` endpoints:
 

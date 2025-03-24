@@ -203,7 +203,7 @@ async def watch_tp_file(app, work_on_copy=False):
     "--port",
     "-p",
     type=click.INT,
-    default=8000,
+    default=80,
     show_default=True,
     help="Port to listen on",
 )
