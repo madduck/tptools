@@ -25,7 +25,7 @@ class ConfigFile:
             return rv.get(keys[-1], default)
 
         except KeyError:
-            raise KeyError(key)
+            return default
 
     def set(self, key, value):
         self._data[key] = value
