@@ -4,10 +4,9 @@ import aiohttp
 import asyncio
 import pathlib
 
-from tptools.reader.tp import (
-    make_connstring_from_path,
+from tptools.reader.mdb import make_connstring_from_path, MDBReader
+from tptools.tpfile import (
     async_tp_watcher,
-    TPReader,
     load_tournament_from_tpfile,
 )
 from tptools.asyncio import asyncio_run
@@ -168,8 +167,8 @@ async def main(
                 )
                 logger.debug(f"Created TP watcher task: {t1}")
 
-        except* TPReader.DriverMissingException:
-            if isinstance(t1.exception(), TPReader.DriverMissingException):
+        except* MDBReader.DriverMissingException:
+            if isinstance(t1.exception(), MDBReader.DriverMissingException):
                 logger.error("Missing Microsoft Access driver. Are you on Windows?")
                 sys.exit(1)
 

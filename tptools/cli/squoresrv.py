@@ -8,13 +8,12 @@ import tempfile
 import shutil
 from collections.abc import Callable
 
-from tptools.reader.tp import (
-    make_connstring_from_path,
+from tptools.tpfile import (
     async_tp_watcher,
-    AsyncTPReader,
     load_tournament_from_tpfile,
     async_load_tournament_from_tpfile,
 )
+from tptools.reader.mdb import AsyncMDBReader, make_connstring_from_path
 from tptools.tournament import Tournament
 from tptools.entry import Entry
 from tptools.logger import get_logger, adjust_log_level
@@ -153,8 +152,8 @@ async def watch_tp_file(app, work_on_copy=False):
             with suppress(asyncio.CancelledError):
                 await task
 
-    except* AsyncTPReader.DriverMissingException:
-        if isinstance(task.exception(), AsyncTPReader.DriverMissingException):
+    except* AsyncMDBReader.DriverMissingException:
+        if isinstance(task.exception(), AsyncMDBReader.DriverMissingException):
             logger.error("Missing Microsoft Access driver. Are you on Windows?")
             sys.exit(1)
 
