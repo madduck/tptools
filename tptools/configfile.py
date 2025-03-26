@@ -1,6 +1,26 @@
 import tomllib
 import os.path
 import pathlib
+import platformdirs
+
+from tptools.util import PACKAGE
+
+
+def get_config_file_path(*, package=PACKAGE, filename="cfg.toml"):
+    cfgdir = platformdirs.user_config_path(PACKAGE)
+
+    localappdata = pathlib.Path(os.path.expandvars(r"%LOCALAPPDATA%"))
+    userprofile = pathlib.Path(os.path.expandvars(r"%USERPROFILE%"))
+    if cfgdir.is_relative_to(localappdata):
+        cfgdir = r"%LOCALAPPDATA%" / cfgdir.relative_to(localappdata).parent
+
+    if cfgdir.is_relative_to(userprofile):
+        cfgdir = r"%USERPROFILE%" / cfgdir.relative_to(userprofile).parent
+
+    elif cfgdir.is_relative_to(homedir := pathlib.Path.home()):
+        cfgdir = "~" / cfgdir.relative_to(homedir)
+
+    return cfgdir / filename
 
 
 class ConfigFile:
