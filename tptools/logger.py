@@ -1,4 +1,5 @@
 import logging
+import click
 
 logging.TRACE = logging.DEBUG - 1
 
@@ -41,17 +42,45 @@ class CustomFormatter(logging.Formatter):
         return super().format(record)
 
 
+class ClickStyleFormatter(logging.Formatter):
+
+    STYLES = {
+        logging.TRACE: {"fg": "bright_cyan"},
+        logging.DEBUG: {"fg": "cyan"},
+        logging.INFO: {},
+        logging.WARNING: {"fg": "black", "bg": "bright_yellow"},
+        logging.ERROR: {"fg": "white", "bg": "bright_red", "bold": True},
+        logging.CRITICAL: {
+            "fg": "bright_yellow",
+            "bg": "bright_red",
+            "bold": True,
+            "blink": True,
+        },
+    }
+
+    def format(self, record):
+        style = self.STYLES.get(record.levelno, {})
+        message = super().format(record)
+        return click.style(message, **style)
+
+
+class ClickEchoHandler(logging.StreamHandler):
+    def emit(self, record):
+        msg = self.format(record)
+        click.echo(msg + self.terminator, nl=False, file=self.stream)
+
+
 def get_logger(name=None, level=logging.INFO):
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    streamhandler = logging.StreamHandler()
+    streamhandler = ClickEchoHandler()
     fmt = (
         "%(asctime)s %(levelname)-8s %(message)s "
         "(%(filename)s:%(lineno)d, logger: %(name)s)"
     )
-    formatter = CustomFormatter(
+    formatter = ClickStyleFormatter(
         fmt=fmt,
         datefmt="%F %T",
     )
