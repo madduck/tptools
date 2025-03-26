@@ -29,13 +29,13 @@ dependencies = [
   "python-dateutil",
   "aiohttp",
   "aiohttp-basicauth-middleware",
-  "asyncinotify",
   "aioodbc",
   "asyncstdlib",
   "aiosqlite",
   "click",
   "platformdirs",
-  "pywin32"
+  "asyncinotify; sys_platform == 'linux'",
+  "pywin32; sys_platform == 'windows'"
 ]
 
 [project.optional-dependencies]
