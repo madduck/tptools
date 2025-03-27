@@ -101,7 +101,9 @@ async def matches(request):
     remote = request.headers.get("X-Forwarded-For", request.remote)
     logger.info(f"Matches request from {remote} {params}")
 
-    tournament = request.app[APPKEY_TOURNAMENT]
+    tournament = request.app.get(APPKEY_TOURNAMENT)
+    if not tournament:
+        raise web.HTTPServiceUnavailable(reason="Tournament not loaded")
 
     jret = tournament_to_squore(tournament, **params)
     return web.json_response(jret)
@@ -114,9 +116,11 @@ async def players(request):
     remote = request.headers.get("X-Forwarded-For", request.remote)
     logger.info(f"Players request from {remote}")
 
-    tournament = request.app[APPKEY_TOURNAMENT]
-    entries = sorted(tournament.get_entries())
+    tournament = request.app.get(APPKEY_TOURNAMENT)
+    if not tournament:
+        raise web.HTTPServiceUnavailable(reason="Tournament not loaded")
 
+    entries = sorted(tournament.get_entries())
     names = [Entry.make_team_name(e.players) for e in entries]
     return web.Response(text="\n".join(names))
 
