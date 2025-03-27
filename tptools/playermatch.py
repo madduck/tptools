@@ -84,6 +84,9 @@ class SourcePlayerMatch(PlayerMatch):
         WINNER = "Winner"
         LOSER = "Loser"
 
+        def json(self):
+            return self.value
+
     def __init__(self, other, role):
         super().__init__(other)
         self._role = role
