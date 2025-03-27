@@ -18,7 +18,7 @@ def make_connstring_from_path(
 ):
     params = OrderedDict(
         DRIVER=driver,
-        DBQ=path,
+        DBQ=path.absolute(),
         Pwd=pwd,
     )
 
