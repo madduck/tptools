@@ -56,7 +56,9 @@ def tournament_to_squore(
                 # Prefixing the court/section name with a '+' will cause Squore
                 # to expand the section
                 sect = "+" + sect
-                logger.debug(f"Found match {match.id} on OUR court {match.court}")
+                logger.debug(
+                    f"Found match {match.id} on OUR court {match.court}"
+                )
 
             elif only_this_court:
                 logger.debug(f"Skipping match on court {match.court}")
@@ -152,7 +154,9 @@ async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
             if retries > 0:
                 retries -= 1
                 if logger:
-                    logger.warning(f"Problem posting to {url}: {err}, retrying…")
+                    logger.warning(
+                        f"Problem posting to {url}: {err}, retrying…"
+                    )
                 await asyncio.sleep(sleep)
                 continue
 
@@ -211,7 +215,9 @@ async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
     is_flag=True,
     help="Print data to stdout when the input changes",
 )
-@click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
+@click.option(
+    "--verbose", "-v", count=True, help="Increase verbosity of log output"
+)
 @click.option(
     "--quiet",
     "-q",
@@ -277,7 +283,9 @@ def main(
             try:
                 click.echo(json_dump_with_default(matches))
             except Exception:
-                import ipdb; ipdb.set_trace()  # noqa:E402,E702
+                import ipdb
+
+                ipdb.set_trace()  # noqa:E402,E702
 
         if urls:
             async with asyncio.TaskGroup() as tg:
@@ -377,16 +385,18 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
                 logger.debug(f"async {connstr=}")
                 async with AsyncMDBReader(logger=logger) as reader:
                     await reader.connect(connstr)
-                    tournament = await async_load_tournament_from_tpdata(reader)
+                    tournament = await async_load_tournament_from_tpdata(
+                        reader
+                    )
 
             else:
                 from tptools.reader.mdb import MDBReader
                 from tptools.tpdata import load_tournament_from_tpdata
 
                 logger.debug(f"sync {connstr=}")
-                tournament = load_tournament_from_tpdata(
-                    MDBReader, connstr, logger=logger
-                )
+                with MDBReader(logger=logger) as reader:
+                    reader.connect(connstr)
+                    tournament = load_tournament_from_tpdata(reader)
 
             logger.debug(f"Got tournament: {tournament}")
             app[APPKEY_TOURNAMENT] = tournament

@@ -39,19 +39,15 @@ MATCH_QUERY = """
 """
 
 
-def load_tournament_from_tpdata(Reader, connstr, *, logger=None, retries=3):
-    with Reader(logger=logger) as reader:
-        reader.connect(connstr, retries=retries)
-        entries = reader.query(ENTRY_QUERY, klass=Entry)
-        matches = reader.query(MATCH_QUERY, klass=PlayerMatch)
+def load_tournament_from_tpdata(reader):
+    entries = reader.query(ENTRY_QUERY, klass=Entry)
+    matches = reader.query(MATCH_QUERY, klass=PlayerMatch)
 
-        return Tournament(entries=entries, playermatches=matches)
+    return Tournament(entries=entries, playermatches=matches)
 
 
-async def async_load_tournament_from_tpdata(Reader, connstr, *, logger=None, retries=3):
-    async with Reader(logger=logger) as reader:
-        await reader.connect(connstr)
-        entries = [e async for e in reader.query(ENTRY_QUERY, klass=Entry)]
-        matches = [m async for m in reader.query(MATCH_QUERY, klass=PlayerMatch)]
+async def async_load_tournament_from_tpdata(reader):
+    entries = [e async for e in reader.query(ENTRY_QUERY, klass=Entry)]
+    matches = [m async for m in reader.query(MATCH_QUERY, klass=PlayerMatch)]
 
-        return Tournament(entries=entries, playermatches=matches)
+    return Tournament(entries=entries, playermatches=matches)
