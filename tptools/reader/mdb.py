@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 import asyncstdlib as a
 
-from .base import BaseReader, AsyncBaseReader
+from .base import SyncBaseReader, AsyncBaseReader
 
 
 def make_connstring_from_path(
@@ -31,7 +31,7 @@ def make_connstring_from_path(
     return ";".join(f"{k}={v}" for k, v in params.items())
 
 
-class MDBReader(BaseReader):
+class MDBReader(SyncBaseReader):
 
     def __init__(
         self,

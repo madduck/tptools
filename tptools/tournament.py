@@ -25,7 +25,7 @@ class Tournament:
     __repr__ = __str__
 
     def read_entries(self, entries):
-        self._entries = {r["entryid"]: Entry(r) for r in entries}
+        self._entries = {r["entryid"]: r for r in entries}
         self._entry_getter = self._entries.get
 
     def read_playermatches(self, playermatches, *, entry_getter=None):

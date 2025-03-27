@@ -363,7 +363,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
 
             if cfg.get("asynchronous"):
                 from tptools.reader.mdb import AsyncMDBReader
-                from tptools.tpfile import async_load_tournament_from_tpfile
+                from tptools.tpdata import async_load_tournament_from_tpdata
 
                 warnings.warn(
                     "Asynchronous ODBC access is buggy, "
@@ -371,16 +371,16 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
                     RuntimeWarning,
                 )
                 logger.debug(f"async {connstr=}")
-                tournament = await async_load_tournament_from_tpfile(
+                tournament = await async_load_tournament_from_tpdata(
                     AsyncMDBReader, connstr, logger=logger
                 )
 
             else:
                 from tptools.reader.mdb import MDBReader
-                from tptools.tpfile import load_tournament_from_tpfile
+                from tptools.tpdata import load_tournament_from_tpdata
 
                 logger.debug(f"sync {connstr=}")
-                tournament = load_tournament_from_tpfile(
+                tournament = load_tournament_from_tpdata(
                     MDBReader, connstr, logger=logger
                 )
 
