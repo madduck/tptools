@@ -375,9 +375,9 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
                     RuntimeWarning,
                 )
                 logger.debug(f"async {connstr=}")
-                tournament = await async_load_tournament_from_tpdata(
-                    AsyncMDBReader, connstr, logger=logger
-                )
+                async with AsyncMDBReader(logger=logger) as reader:
+                    await reader.connect(connstr)
+                    tournament = await async_load_tournament_from_tpdata(reader)
 
             else:
                 from tptools.reader.mdb import MDBReader
