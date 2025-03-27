@@ -1,10 +1,6 @@
-import asyncio
-import time
-
 from tptools.entry import Entry
 from tptools.playermatch import PlayerMatch
 from tptools.tournament import Tournament
-from tptools.reader.mdb import MDBReader, AsyncMDBReader
 
 ENTRY_QUERY = """
     select e.id as entryid,
@@ -43,74 +39,19 @@ MATCH_QUERY = """
 """
 
 
-def load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
-    with MDBReader(logger=logger) as reader:
-        while True:
-            try:
-                reader.connect(connstr)
-                break
-
-            except (
-                MDBReader.MissingDriverException,
-                MDBReader.InvalidPasswordError,
-            ):
-                raise
-
-            except MDBReader.ReaderException as err:
-                if logger:
-                    logger.warn(str(err))
-
-                time.sleep(1)
-                retries -= 1
-                if retries > 0:
-                    if logger:
-                        logger.debug(f"retrying {retries} times…")
-                    continue
-                else:
-                    if logger:
-                        logger.error("Giving up!")
-                    raise
-
+def load_tournament_from_tpfile(Reader, connstr, *, logger=None, retries=3):
+    with Reader(logger=logger) as reader:
+        reader.connect(connstr, retries=retries)
         entries = list(reader.query(ENTRY_QUERY, klass=Entry))
         matches = list(reader.query(MATCH_QUERY, klass=PlayerMatch))
 
     return Tournament(entries=entries, playermatches=matches)
 
 
-async def async_load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
-    async with AsyncMDBReader(logger=logger) as reader:
-        while True:
-            try:
-                await reader.connect(connstr)
-                break
-
-            except (
-                MDBReader.MissingDriverException,
-                MDBReader.InvalidPasswordError,
-            ) as err:
-                if logger:
-                    logger.error(str(err))
-                raise
-
-            except MDBReader.ReaderException as err:
-                if logger:
-                    logger.warn(str(err))
-
-                await asyncio.sleep(1)
-                retries -= 1
-                if retries > 0:
-                    if logger:
-                        logger.debug(f"retrying {retries} times…")
-                    continue
-                else:
-                    if logger:
-                        logger.error("Giving up!")
-                    raise
-
-        entries = reader.query(ENTRY_QUERY, klass=Entry)
-        matches = reader.query(MATCH_QUERY, klass=PlayerMatch)
-
-        entries = [e async for e in entries]
-        matches = [m async for m in matches]
+async def async_load_tournament_from_tpfile(Reader, connstr, *, logger=None, retries=3):
+    async with Reader(logger=logger) as reader:
+        await reader.connect(connstr)
+        entries = [e async for e in reader.query(ENTRY_QUERY, klass=Entry)]
+        matches = [m async for m in reader.query(MATCH_QUERY, klass=PlayerMatch)]
 
     return Tournament(entries=entries, playermatches=matches)

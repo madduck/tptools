@@ -56,9 +56,7 @@ def tournament_to_squore(
                 # Prefixing the court/section name with a '+' will cause Squore
                 # to expand the section
                 sect = "+" + sect
-                logger.debug(
-                    f"Found match {match.id} on OUR court {match.court}"
-                )
+                logger.debug(f"Found match {match.id} on OUR court {match.court}")
 
             elif only_this_court:
                 logger.debug(f"Skipping match on court {match.court}")
@@ -150,9 +148,7 @@ async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
             if retries > 0:
                 retries -= 1
                 if logger:
-                    logger.warning(
-                        f"Problem posting to {url}: {err}, retrying…"
-                    )
+                    logger.warning(f"Problem posting to {url}: {err}, retrying…")
                 await asyncio.sleep(sleep)
                 continue
 
@@ -211,9 +207,7 @@ async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
     is_flag=True,
     help="Print data to stdout when the input changes",
 )
-@click.option(
-    "--verbose", "-v", count=True, help="Increase verbosity of log output"
-)
+@click.option("--verbose", "-v", count=True, help="Increase verbosity of log output")
 @click.option(
     "--quiet",
     "-q",
@@ -278,7 +272,7 @@ def main(
         if stdout:
             try:
                 click.echo(json_dump_with_default(matches))
-            except Exception as err:
+            except Exception:
                 import ipdb; ipdb.set_trace()  # noqa:E402,E702
 
         if urls:
@@ -317,9 +311,7 @@ def main(
     "-f",
     metavar="SECONDS",
     type=click.IntRange(min=1),
-    help=(
-        "Frequency in seconds to poll TP file in the absence of inotify"
-    ),
+    help=("Frequency in seconds to poll TP file in the absence of inotify"),
     default=30,
     show_default=True,
 )
@@ -370,6 +362,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
         async def load_tournament():
 
             if cfg.get("asynchronous"):
+                from tptools.reader.mdb import AsyncMDBReader
                 from tptools.tpfile import async_load_tournament_from_tpfile
 
                 warnings.warn(
@@ -379,15 +372,16 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
                 )
                 logger.debug(f"async {connstr=}")
                 tournament = await async_load_tournament_from_tpfile(
-                    connstr, logger=logger
+                    AsyncMDBReader, connstr, logger=logger
                 )
 
             else:
+                from tptools.reader.mdb import MDBReader
                 from tptools.tpfile import load_tournament_from_tpfile
 
                 logger.debug(f"sync {connstr=}")
                 tournament = load_tournament_from_tpfile(
-                    connstr, logger=logger
+                    MDBReader, connstr, logger=logger
                 )
 
             logger.debug(f"Got tournament: {tournament}")

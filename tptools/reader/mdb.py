@@ -51,7 +51,7 @@ class MDBReader(BaseReader):
         self._conn = None
         self._cursor = None
 
-    def connect(self, connstr):
+    def _connect(self, connstr, *, retries=3):
         if self._logger:
             self._logger.debug(f"Connecting with connstr '{connstr}'")
         self._connstr = connstr
@@ -120,7 +120,7 @@ class AsyncMDBReader(AsyncBaseReader):
         self._conn = None
         self._cursor = None
 
-    async def connect(self, connstr):
+    async def _connect(self, connstr, *, retries=3):
         if self._logger:
             self._logger.debug(f"Connecting with connstr '{connstr}'")
         try:

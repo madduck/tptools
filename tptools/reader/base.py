@@ -1,3 +1,7 @@
+import asyncio
+import time
+
+
 class BaseReader:
 
     class ReaderException(Exception):
@@ -25,10 +29,12 @@ class BaseReader:
         auto_convert_int=True,
         auto_convert_bool=True,
         auto_convert_emptystring=True,
+        logger=None,
     ):
         self._auto_convert_int = auto_convert_int
         self._auto_convert_bool = auto_convert_bool
         self._auto_convert_emptystring = auto_convert_emptystring
+        self._logger = logger
         self._records = {}
 
     def __iter__(self):
@@ -56,8 +62,35 @@ class BaseReader:
     def __next__(self):
         return {k: self._auto_convert(v) for k, v in next(self._records).items()}
 
-    def connect(self, connstr):
+    def _connect(self, connstr):
         raise NotImplementedError
+
+    def connect(self, connstr, *, retries=3):
+        while True:
+            try:
+                self._connect(connstr)
+                break
+
+            except (
+                BaseReader.MissingDriverException,
+                BaseReader.InvalidPasswordError,
+            ):
+                raise
+
+            except BaseReader.ReaderException as err:
+                if self._logger:
+                    self._logger.warn(str(err))
+
+                retries -= 1
+                if retries > 0:
+                    time.sleep(1)
+                    if self._logger:
+                        self._logger.debug(f"retrying {retries} times…")
+                    continue
+                else:
+                    if self._logger:
+                        self._logger.error("Giving up!")
+                    raise
 
     def disconnect(self):
         raise NotImplementedError
@@ -88,11 +121,13 @@ class AsyncBaseReader(BaseReader):
         auto_convert_int=True,
         auto_convert_bool=True,
         auto_convert_emptystring=True,
+        logger=None,
     ):
         super().__init__(
             auto_convert_int=auto_convert_int,
             auto_convert_bool=auto_convert_bool,
             auto_convert_emptystring=auto_convert_emptystring,
+            logger=logger,
         )
         del self.__enter__
         del self.__exit__
@@ -105,8 +140,35 @@ class AsyncBaseReader(BaseReader):
     async def __anext__(self):
         return {k: self._auto_convert(v) for k, v in next(self._records).items()}
 
-    async def connect(self, connstr):
+    async def _connect(self, connstr):
         raise NotImplementedError
+
+    async def connect(self, connstr, *, retries=3):
+        while True:
+            try:
+                await self._connect(connstr)
+                break
+
+            except (
+                BaseReader.MissingDriverException,
+                BaseReader.InvalidPasswordError,
+            ):
+                raise
+
+            except BaseReader.ReaderException as err:
+                if self._logger:
+                    self._logger.warn(str(err))
+
+                retries -= 1
+                if retries > 0:
+                    await asyncio.sleep(1)
+                    if self._logger:
+                        self._logger.debug(f"retrying {retries} times…")
+                    continue
+                else:
+                    if self._logger:
+                        self._logger.error("Giving up!")
+                    raise
 
     async def disconnect(self):
         raise NotImplementedError
