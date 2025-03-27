@@ -48,4 +48,9 @@ class ConfigFile:
             return default
 
     def set(self, key, value):
-        self._data[key] = value
+        d = self._data
+        keys = key.split(".")
+        for k in keys[:-1]:
+            d = d.setdefault(k, {})
+
+        d[keys[-1]] = value
