@@ -69,9 +69,7 @@ class MDBReader(SyncBaseReader):
                 raise self.UnspecifiedDriverError()
 
             else:
-                import ipdb
-
-                ipdb.set_trace()  # noqa:E402,E702
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702 # fmt: skip
                 raise
 
         else:
@@ -148,9 +146,7 @@ class AsyncMDBReader(AsyncBaseReader):
                 raise self.UnspecifiedDriverError()
 
             else:
-                import ipdb
-
-                ipdb.set_trace()  # noqa:E402,E702
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702 # fmt: skip
                 raise
 
         else:

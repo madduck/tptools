@@ -284,9 +284,7 @@ def main(
             try:
                 click.echo(json_dump_with_default(matches))
             except Exception:
-                import ipdb
-
-                ipdb.set_trace()  # noqa:E402,E702
+                import ipdb; ipdb.set_trace()  # noqa:E402,E702 # fmt: skip
 
         if urls:
             async with asyncio.TaskGroup() as tg:
