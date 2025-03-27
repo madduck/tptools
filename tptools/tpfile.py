@@ -77,9 +77,7 @@ def load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
     return Tournament(entries=entries, playermatches=matches)
 
 
-async def async_load_tournament_from_tpfile(
-    connstr, *, logger=None, retries=3
-):
+async def async_load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
     async with AsyncMDBReader(logger=logger) as reader:
         while True:
             try:
@@ -115,8 +113,4 @@ async def async_load_tournament_from_tpfile(
         entries = [e async for e in entries]
         matches = [m async for m in matches]
 
-    tournament = Tournament(entries=entries, playermatches=matches)
-
-    if logger:
-        logger.info(f"Parsed tournament: {tournament}")
-    return tournament
+    return Tournament(entries=entries, playermatches=matches)
