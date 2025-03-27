@@ -50,81 +50,64 @@ def load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
                 reader.connect(connstr)
                 break
 
-            except MDBReader.UnspecifiedDriverError:
-                logger.info("Access driver connection yielded an unspecified error")
+            except (
+                MDBReader.MissingDriverException,
+                MDBReader.InvalidPasswordError,
+            ):
+                raise
 
-            except MDBReader.ConnectionTimeoutError:
-                logger.info("Access driver failed to reconnect within due time")
+            except MDBReader.MDBException as err:
+                if logger:
+                    logger.warn(str(err))
 
-            time.sleep(1)
-            retries -= 1
-            if retries > 0:
-                logger.debug(f"retrying {retries} times…")
-                continue
-            else:
-                logger.error("Access connection failed with unspecified error")
-                return
+                time.sleep(1)
+                retries -= 1
+                if retries > 0:
+                    if logger:
+                        logger.debug(f"retrying {retries} times…")
+                    continue
+                else:
+                    if logger:
+                        logger.error("Giving up!")
+                    raise
 
         entries = list(reader.query(ENTRY_QUERY, klass=Entry))
         matches = list(reader.query(MATCH_QUERY, klass=PlayerMatch))
 
-    tournament = Tournament(entries=entries, playermatches=matches)
-
-    if logger:
-        logger.info(f"Parsed tournament: {tournament}")
-    return tournament
+    return Tournament(entries=entries, playermatches=matches)
 
 
-async def async_tp_watcher(*, path, logger, callback, pollfreq=30):
-    try:
-        from asyncinotify import Inotify, Mask
-
-        _INOTIFY = True
-    except TypeError:
-        _INOTIFY = False
-
-    if _INOTIFY:
-        with Inotify() as inotify:
-            inotify.add_watch(path, Mask.MODIFY | Mask.ATTRIB)
-            logger.debug(f"Added watcher on {path}")
-            await callback(path, logger=logger)
-            async for event in inotify:
-                logger.debug(f"Event in {path}: {event}")
-                await callback(path, logger=logger)
-
-    else:
-        logger.warning(f"No inotify support, resorting to polling ({pollfreq}s)…")
-        mtime_last = 0
-        while True:
-            logger.debug(f"Polling {path}…")
-            if (mtime := path.stat().st_mtime) > mtime_last:
-                logger.debug(f"{path} has been modified.")
-                mtime_last = mtime
-                await callback(path, logger=logger)
-            await asyncio.sleep(pollfreq)
-
-
-async def async_load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
+async def async_load_tournament_from_tpfile(
+    connstr, *, logger=None, retries=3
+):
     async with AsyncMDBReader(logger=logger) as reader:
         while True:
             try:
                 await reader.connect(connstr)
                 break
 
-            except AsyncMDBReader.UnspecifiedDriverError:
-                logger.info("Access driver connection yielded an unspecified error")
+            except (
+                MDBReader.MissingDriverException,
+                MDBReader.InvalidPasswordError,
+            ) as err:
+                if logger:
+                    logger.error(str(err))
+                raise
 
-            except AsyncMDBReader.ConnectionTimeoutError:
-                logger.info("Access driver failed to reconnect within due time")
+            except MDBReader.MDBException as err:
+                if logger:
+                    logger.warn(str(err))
 
-            await asyncio.sleep(1)
-            retries -= 1
-            if retries > 0:
-                logger.debug(f"retrying {retries} times…")
-                continue
-            else:
-                logger.error("Access connection failed with unspecified error")
-                return
+                await asyncio.sleep(1)
+                retries -= 1
+                if retries > 0:
+                    if logger:
+                        logger.debug(f"retrying {retries} times…")
+                    continue
+                else:
+                    if logger:
+                        logger.error("Giving up!")
+                    raise
 
         entries = reader.query(ENTRY_QUERY, klass=Entry)
         matches = reader.query(MATCH_QUERY, klass=PlayerMatch)

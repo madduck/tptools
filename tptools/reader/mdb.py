@@ -33,14 +33,28 @@ def make_connstring_from_path(
 
 class MDBReader(BaseReader):
 
-    class DriverMissingException(RuntimeError):
+    class MDBException(Exception):
         pass
 
-    class UnspecifiedDriverError(RuntimeError):
-        pass
+    class MissingDriverException(MDBException):
+        def __init__(self):
+            super().__init__("Missing driver for Microsoft Access file")
 
-    class ConnectionTimeoutError(RuntimeError):
-        pass
+    class InvalidPasswordError(MDBException):
+        def __init__(self):
+            super().__init__("Invalid password for Microsoft Access file")
+
+    class UnspecifiedDriverError(MDBException):
+        def __init__(self):
+            super().__init__(
+                "Microsoft Access driver threw an unspecified error"
+            )
+
+    class ConnectionTimeoutError(MDBException):
+        def __init__(self):
+            super().__init__(
+                "Unable to read Microsoft Access file within due time"
+            )
 
     def __init__(self, *, auto_convert_int=True, auto_convert_bool=True, logger=None):
         super().__init__(
@@ -60,8 +74,14 @@ class MDBReader(BaseReader):
             self._conn = pyodbc.connect(connstr)
 
         except pyodbc.Error as err:
-            if "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'" in str(err):
-                raise self.DriverMissingException()
+            if (
+                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
+                in str(err)
+            ):
+                raise self.MissingDriverException()
+
+            elif "Not a valid password." in str(err):
+                raise self.InvalidPasswordError()
 
             elif "The driver did not supply an error" in str(err):
                 raise self.UnspecifiedDriverError()
@@ -131,8 +151,14 @@ class AsyncMDBReader(MDBReader):
             raise self.ConnectionTimeoutError()
 
         except pyodbc.Error as err:
-            if "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'" in str(err):
-                raise self.DriverMissingException()
+            if (
+                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
+                in str(err)
+            ):
+                raise self.MissingDriverException()
+
+            elif "Not a valid password." in str(err):
+                raise self.InvalidPasswordError()
 
             elif "The driver did not supply an error" in str(err):
                 raise self.UnspecifiedDriverError()
