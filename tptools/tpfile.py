@@ -56,7 +56,7 @@ def load_tournament_from_tpfile(connstr, *, logger=None, retries=3):
             ):
                 raise
 
-            except MDBReader.MDBException as err:
+            except MDBReader.ReaderException as err:
                 if logger:
                     logger.warn(str(err))
 
@@ -94,7 +94,7 @@ async def async_load_tournament_from_tpfile(
                     logger.error(str(err))
                 raise
 
-            except MDBReader.MDBException as err:
+            except MDBReader.ReaderException as err:
                 if logger:
                     logger.warn(str(err))
 

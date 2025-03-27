@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 import asyncstdlib as a
 
-from .base import BaseReader
+from .base import BaseReader, AsyncBaseReader
 
 
 def make_connstring_from_path(
@@ -33,33 +33,18 @@ def make_connstring_from_path(
 
 class MDBReader(BaseReader):
 
-    class MDBException(Exception):
-        pass
-
-    class MissingDriverException(MDBException):
-        def __init__(self):
-            super().__init__("Missing driver for Microsoft Access file")
-
-    class InvalidPasswordError(MDBException):
-        def __init__(self):
-            super().__init__("Invalid password for Microsoft Access file")
-
-    class UnspecifiedDriverError(MDBException):
-        def __init__(self):
-            super().__init__(
-                "Microsoft Access driver threw an unspecified error"
-            )
-
-    class ConnectionTimeoutError(MDBException):
-        def __init__(self):
-            super().__init__(
-                "Unable to read Microsoft Access file within due time"
-            )
-
-    def __init__(self, *, auto_convert_int=True, auto_convert_bool=True, logger=None):
+    def __init__(
+        self,
+        *,
+        auto_convert_int=True,
+        auto_convert_bool=True,
+        auto_convert_emptystring=False,
+        logger=None,
+    ):
         super().__init__(
             auto_convert_int=auto_convert_int,
             auto_convert_bool=auto_convert_bool,
+            auto_convert_emptystring=auto_convert_emptystring,
         )
         self._logger = logger
         self._connstr = None
@@ -74,10 +59,7 @@ class MDBReader(BaseReader):
             self._conn = pyodbc.connect(connstr)
 
         except pyodbc.Error as err:
-            if (
-                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
-                in str(err)
-            ):
+            if "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'" in str(err):
                 raise self.MissingDriverException()
 
             elif "Not a valid password." in str(err):
@@ -117,21 +99,26 @@ class MDBReader(BaseReader):
         if self._logger:
             self._logger.debug(f"Query yielded {n} result(s)")
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, type, value, traceback):
-        self.disconnect()
+class AsyncMDBReader(AsyncBaseReader):
 
-
-class AsyncMDBReader(MDBReader):
-
-    def __init__(self, *, auto_convert_int=True, auto_convert_bool=True, logger=None):
+    def __init__(
+        self,
+        *,
+        auto_convert_int=True,
+        auto_convert_bool=True,
+        auto_convert_emptystring=False,
+        logger=None,
+    ):
         super().__init__(
             auto_convert_int=auto_convert_int,
             auto_convert_bool=auto_convert_bool,
-            logger=logger,
+            auto_convert_emptystring=auto_convert_emptystring,
         )
+        self._logger = logger
+        self._connstr = None
+        self._conn = None
+        self._cursor = None
 
     async def connect(self, connstr):
         if self._logger:
@@ -151,10 +138,7 @@ class AsyncMDBReader(MDBReader):
             raise self.ConnectionTimeoutError()
 
         except pyodbc.Error as err:
-            if (
-                "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'"
-                in str(err)
-            ):
+            if "Can't open lib 'Microsoft Access Driver (*.mdb, *.accdb)'" in str(err):
                 raise self.MissingDriverException()
 
             elif "Not a valid password." in str(err):
@@ -193,9 +177,3 @@ class AsyncMDBReader(MDBReader):
             yield wrapper_fn(d) if callable(wrapper_fn) else d
         if self._logger:
             self._logger.debug(f"Query yielded {n} result(s)")
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, type, value, traceback):
-        await self.disconnect()
