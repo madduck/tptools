@@ -341,7 +341,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
     merge_cli_opts_into_cfg(
         locals(),
         cfg,
-        exclude=("ctx", "cfgfile", "cfg"),
+        exclude=("obj", "cfg"),
         typemap={"tp_file": pathlib.Path},
     )
     app = obj["app"]
