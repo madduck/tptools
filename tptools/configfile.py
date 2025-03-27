@@ -25,10 +25,11 @@ def get_config_file_path(*, package=PACKAGE, filename="cfg.toml"):
 
 class ConfigFile:
 
-    def __init__(self, path):
+    def __init__(self, path, *, section=None):
         self._data = {}
         self._path = pathlib.Path(os.path.expandvars(path)).expanduser()
         self._load_file(self._path)
+        self._section = section
 
     def _load_file(self, path):
         if path and path.exists():
@@ -36,6 +37,9 @@ class ConfigFile:
                 self._data = tomllib.load(f)
 
     def get(self, key, default=None):
+        if self._section:
+            key = ".".join((self._section, key))
+
         rv = self._data
         try:
             keys = key.split(".")
@@ -48,6 +52,9 @@ class ConfigFile:
             return default
 
     def set(self, key, value):
+        if self._section:
+            key = ".".join((self._section, key))
+
         d = self._data
         keys = key.split(".")
         for k in keys[:-1]:
