@@ -31,7 +31,7 @@ class ConfigFile:
         self._load_file(self._path)
 
     def _load_file(self, path):
-        if path:
+        if path and path.exists():
             with open(path, "rb") as f:
                 self._data = tomllib.load(f)
 
