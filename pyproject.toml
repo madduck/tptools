@@ -6,8 +6,7 @@ build-backend = "hatchling.build"
 write_to = "_version.py"
 
 [project.scripts]
-tpwatcher = "tptools.cli.tpwatcher:main"
-squoresrv = "tptools.cli.squoresrv:main"
+tpsrv = "tptools.cli.tpsrv:main"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [project]

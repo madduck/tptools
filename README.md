@@ -10,14 +10,10 @@ Under the hood, TournamentSoftware is a Microsoft Access Database (MDB) stored i
 > [!IMPORTANT]
 > The TP database is password-protected, and it is up to you to decide whether you want to obtain this password to be able to read the data, and where to get it. **`tptools` does not include this password, nor will we disclose it**, and none of the tools here will work without it.
 
-In addition to simple Python classes, `tptools` comprises a number of command-line utilities (using these classes) that are mainly designed to provide the data to other tools:
-
-* `squoresrv` — a simple web server to provide so-called "matches" and "players" feeds in the format expected by [Squore](https://squore.double-yellow.be/);
-
-* `tpwatcher` — a worker that submits planned matches to a server, such as provided by [tcboard](https://github.com/madduck/tcboard).
+In addition to simple Python classes, `tptools` provides a command-line utility designed to provide data to other tools, such as [Squore](https://squore.double-yellow.be/) and [tcboard](https://github.com/madduck/tcboard): `tpsrv`. See below for details.
 
 > [!WARNING]
-> Microsoft Access is not a database designed for concurrent access. These tools rely on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to the tools within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
+> Microsoft Access is not a database designed for concurrent access. `tpsrv` relies on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to the tools within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
 
 ## Preparation
 
@@ -75,68 +71,106 @@ If you run this command again, it will download the latest version and upgrade a
 To verify that `tptools` are working, you may now run e.g.
 
 ```
-> tpwatcher --help
-Usage: tpwatcher [OPTIONS]
+> tpsrv --help
+Usage: tpsrv [OPTIONS]
 […]
 ```
 
+### Configuring the Windows firewall
+
+When `tpsrv` is invoked the first time, Windows is expected to raise a hand and ask about how to handle a new program trying to bind a port. This is impressive!
+
+![Screenshot of Windows Firewall](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-firewall.png?raw=true)
+
+Please ensure to allow access for `Python.exe`. Unfortunately, doing so via this dialogue means that all Python scripts can use any port, but it's better than nothing. If you care about security, please make sure that only the actual listening port is open.
+
+Once running, the server has two modes:
+
+1. it provides HTTP endpoints, currently only for Squore:
+
+2. it pushes information about all matches to all URLs provided, as well as the console, if `--stdout` is specified.
+
 ## Configuration
 
-All utilities in this package read a common configuration file to get default settings from. These settings can then be overridden with command-line options. The configuration file must be in [TOML format](https://en.wikipedia.org/wiki/TOML) and lives in `XDG_CONFIG_DIR/tptools/cfg.toml`, which is `%LOCALAPPDATA%\tptools\cfg.toml` on Windows. This location can be overridden by specifying `--cfgfile` on the command-line.
+There is a common configuration file for `tptools` to get default settings from. These settings can then be overridden with command-line options. The configuration file must be in [TOML format](https://en.wikipedia.org/wiki/TOML) and lives in `$XDG_CONFIG_DIR/tptools/cfg.toml`, which is `%LOCALAPPDATA%\tptools\cfg.toml` on Windows. This location can be overridden by specifying `--cfgfile` on the command-line.
 
 The following is an example of this configuration file:
 
 ```
-tpfile = "%USERPROFILE%\Documents\Tournaments\Demo.tp"
-tppasswd = "topfsiekrit"
-pollfreq = 15
-
-[squoresrv]
+[tpsrv]
 port = 8080
-
-[tpwatcher]
-url = "http://tcboard/api/tp/matches"
+tpfile = "%USERPROFILE%\Documents\Tournaments\Demo.tp"
+tppasswd = "ThisIsNotTheRealPassword"
+pollfreq = 15
+urls = [ "http://tcboard/api/tp/matches" ]
 ```
-
-## Usage
-
-### `squoresrv` — making matches available to Squore
 
 [Squore](https://squore.double-yellow.be/) is an amazing app for Android that can be used to score matches. To facilitate its use, Squore can subscribe to a feed of matches for referees to pick from, such that the player data do not have to be entered manually.
 
-`squoresrv` is an asynchronous web server that reads matches from TournamentSoftware and makes them available in the format expected by Squore:
+## Usage of `tpsrv`
+
+At its core, `tpsrv` is an asynchronous web server designed to serve data on
+request to apps, such as Squore. The listening socket can be configured using CLI options.
+
+It also has the ability to inform remote services, such as TCBoard, and send the current data there, whenever the data change. Look into the `--stdout` and `--url` options for this mode.
 
 ```
-$ squoresrv --help
-Usage: squoresrv [OPTIONS]
+> tpsrv --help
+Usage: tpsrv [OPTIONS] COMMAND [ARGS]...
+
+  Serve match and player data via HTTP
 
 Options:
-  -i, --tpfile PATH       TP file to watch and read
-  -U, --tpuser TEXT       User name to use for TP file  [default: Admin]
-  -P, --tppasswd TEXT     Password to use for TP file
-  -f, --pollsecs INTEGER  Frequency in seconds to poll TP file in the absence
-                          of inotify  [default: 30]
-  -h, --host TEXT         Host to listen on (bind to)  [default: 0.0.0.0]
-  -p, --port INTEGER      Port to listen on  [default: 80]
-  -c, --cfgfile PATH      Config file to read instead of default  [default:
-                          %LOCALAPPDATA%\tptools\cfg.toml]
-  -v, --verbose           Increase verbosity of log output
-  -q, --quiet             Output as little information as possible
-  -a, --asynchronous      Query database asynchronously (BUGGY!)
+  -c, --cfgfile PATH  Config file to read instead of default  [default:
+                      %LOCALAPPDATA%\tptools\cfg.toml]
+  -h, --host IP       Host to listen on (bind to)  [default: 0.0.0.0]
+  -p, --port PORT     Port to listen on  [default: 8000; 1024<=x<=65535]
+  -u, --url URL       POST data to this URL when the input changes
+                      (can be specified more than once)
+  -o, --stdout        Print data to stdout when the input changes
+  -v, --verbose       Increase verbosity of log output
+  -q, --quiet         Output as little information as possible
+  --help              Show this message and exit.
+
+Commands:
+  tp  Serve match and player data from a TP file
+```
+
+The actual work is done by components, listed here as "Commands". For now, only `tp` exists as a sub-command, which causes `tpsrv` to read data from a TP file. In the future, other access methods will be provided, such as accessing SQlite exports, or maybe TournamentSoftware APIs.
+
+Here is the `tp` sub-command:
+
+```
+> tpsrv.exe tp --help
+Usage: tpsrv tp [OPTIONS] TP_FILE
+
+  Serve match and player data from a TP file
+
+Options:
+  -u, --user UID          User name to access TP file  [default: Admin]
+  -p, --passwd PASSWORD   Password to access TP file
+  -f, --pollfreq SECONDS  Frequency in seconds to poll TP file in the absence
+                          of inotify  [default: 30; x>=1]
+  -c, --work-on-copy      Always make a copy of the TP file before reading it
+  -a, --asynchronous      Access TP file asynchronously (BUGGY)
   --help                  Show this message and exit.
 ```
 
-The options relating to accessing the TP file have to be provided. The two options `--host` and `--port` are optional, and if not provided, then the web server will bind to port 80 on all local interfaces/IPs.
+On Linux, `tpsrv tp` can use `inotify` to react to changes; On Windows, `tpsrv tp` must resort to polling at regular intervals, which can be controlled with `--pollfreq`.
+
+In an ideal world, access to the TP file would be done asynchronously. However, due to [a bug in aioodbc](https://github.com/aio-libs/aioodbc/issues/463), this does not work reliably. Thus, `tpsrv tp` loads the TP file synchronously on change, which shouldn't be a problem in practice. Asynchronous mode can be activated with `--asynchhronous`, though here be dragons.
 
 > [!NOTE]
-> In the `winscripts` directory, you may find a batch file that starts `squoresrv` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut squoresrv`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above).
+> In the `winscripts` directory, you may find a batch file that starts `tpsrv tp` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut tpsrv tp`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above for all the other settings).
 
-Once running, the server provides two HTTP `GET` endpoints:
+### The Squore endpoints
 
-1. `/players` — returns an alphabetically sorted list of all players in the tournament, one player per line;
-2. `/matches` — returns matches scheduled in TournamentSoftware.
+These are accessible via `HTTP GET`:
 
-The `/matches` endpoint can be controlled using query parameters:
+   1. `/squore/players` — returns an alphabetically sorted list of all players in the tournament, one player per line;
+   2. `/squore/matches` — returns matches scheduled in TournamentSoftware.
+
+The `/squore/matches` endpoint can be controlled using query parameters:
 
 | Parameter           | Type   | Effect                                 |
 |---------------------|--------|----------------------------------------|
@@ -148,7 +182,7 @@ The `/matches` endpoint can be controlled using query parameters:
 For instance:
 
 ```
-$ curl "http://192.0.2.34/matches?court=3&only_this_court=1"
+> curl "http://192.0.2.34/squore/matches?court=3&only_this_court=1"
 {"config": {"Placeholder_Match": "${time} Uhr : ${FirstOfList:~${A}~${A.name}~} - ${FirstOfList:~${B}~${B.name}~} (${field}) : ${result}"}, "\u00a03": [{"id": 38, "court": "3", "A": {"name":
 …
 ```
@@ -156,69 +190,20 @@ $ curl "http://192.0.2.34/matches?court=3&only_this_court=1"
 The court parameter must match the exact court name used in TournamentSoftware.
 
 > [!NOTE]
-> The `config` dictionary has yet to be parametrised and is currently hard-coded.
-
-#### Configuring the Windows firewall
-
-When `squoresrv` is invoked the first time, Windows is expected to raise a hand and ask about how to handle a new program trying to bind a port. This is impressive!
-
-![Screenshot of Windows Firewall](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-firewall.png?raw=true)
-
-Please ensure to allow access for `Python.exe`. Unfortunately, doing so via this dialogue means that all Python scripts can use any port, but it's better than nothing. If you care about security, please make sure that only the actual listening port is open.
-
-#### A note on TP file access — polling, and synchronous access
-
-`squoresrv` was designed to access the TP file asynchronously. In an ideal world, a modification of the TP file would trigger a reload. Then, when a client requests e.g. the list of matches, the data could be served quickly from cache.
-
-Unfortunately, Windows does not provide a sensible means to react to a file system event, like `inotify` on Linux. Therefore, `squoresrv` regularly polls the file to see if it's been modified (relying on the modification time stamp). The frequency defaults to 30 seconds, and can be controlled with the `--frequency` CLI option.
-
-And furthermore, there is [a bug in the Python aioodbc library](https://github.com/aio-libs/aioodbc/issues/463) and database access fails after a handful of changes, therefore making asynchronous access to the database currently impossible.
-
-Therefore, `squoresrv` currently defaults to synchronous access, meaning that *for every HTTP request*, it has to load the TP file, parse the data, and massage it into the Squore format. While this is terribly ugly, it seems that in practical terms, this isn't an issue. Reading and parsing happens in a fraction of a second, and there's hardly ever a situation wherein more than a handful of tablets request the matches feed at the exact same time.
-
-Asynchronous access can be turned on with `--asynchronous`, but here be dragons.
-
-### `tpwatcher` — informing others about pending matches
-
-With `tpwatcher`, you can send information about pending matches to a remote
-web service via HTTP. One use-case for this is to display upcoming matches with [tcboard](https://github.com/madduck/tcboard).
-
-```
-> tpwatcher --help
-Usage: tpwatcher [OPTIONS]
-
-Options:
-  -u, --url TEXT          URL to send events to (stdout if not provided)
-  -i, --tpfile PATH       TP file to watch and read
-  -U, --tpuser TEXT       User name to use for TP file  [default: Admin]
-  -P, --tppasswd TEXT     Password to use for TP file
-  -f, --pollfreq INTEGER  Frequency in seconds to poll TP file in the absence
-                          of inotify
-  -c, --cfgfile PATH      Config file to read instead of default  [default:
-                          %LOCALAPPDATA%\tptools\cfg.toml]
-  -v, --verbose           Increase verbosity of log output
-  -q, --quiet             Output as little information as possible
-  -t, --test              Use test data for this run
-  --help                  Show this message and exit.
-```
-
-For testing, `--test` exists, which just spews off data from a demo tournament. On the other hand, if you do *not* specify `--url`, and no URL is defined in the configuration file, then `tpwatcher` will just write anything it finds to `stdout`.
-
-> [!NOTE]
-> In the `winscripts` directory, you may find a batch file that starts `tpwatcher` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut tpwatcher`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above).
+> The `config` dictionary served to Squore has yet to be parametrised and is currently hard-coded.
 
 ## Contributing
 
 To contribute, please ensure you have the appropriate dependencies installed:
 
 ```
-$ pip install -e .[dev]
+> pip install -e .[dev]
 ```
 
 and then install the Git pre-commit hooks that ensure that any commits conform with the Flake8 and Black conventions used by this project:
 
 ```
-$ pre-commit install
+> pre-commit install
 ```
 
 ## Legalese
