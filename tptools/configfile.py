@@ -61,3 +61,15 @@ class ConfigFile:
             d = d.setdefault(k, {})
 
         d[keys[-1]] = value
+
+
+def merge_cli_opts_into_cfg(opts, cfg, *, exclude=None, typemap=None):
+    exclude = () if exclude is None else exclude
+    typemap = {} if typemap is None else typemap
+
+    for opt, val in opts.items():
+        if opt in exclude:
+            continue
+
+        elif val is not None:
+            cfg.set(opt, typemap.get(opt, lambda s: s)(opts[opt]))
