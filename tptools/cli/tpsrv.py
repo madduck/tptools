@@ -16,6 +16,7 @@ from tptools.configfile import (
     ConfigFile,
     merge_cli_opts_into_cfg,
 )
+from tptools.fswatcher import make_watcher_ctx
 
 logger = get_logger(__name__)
 
@@ -354,22 +355,10 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
     )
     app = obj["app"]
     logger = app.logger
-
-    # The following is best understood working your way up from the bottom,
-    # starting at 1:
-
-    # ========================================================================
-    # 2. The job of `tp_handler` is essentially to invoke `run_fn` made
-    #    available by the main CLI entry point and passed via the context
-    #    object, either with a watcher function in asynchronous mode, or with a
-    #    getter function in synchronous mode.
-    #
-    #    In synchronous mode, we can return the Tournament directly, whereas
-    #    in asynchronous mode, we cache it in the `app` dict.
     run_fn = obj["run_fn"]
     changed_fn = obj["changed_fn"]
 
-    def tp_handler(connstr):
+    def tp_handler(path, connstr, *, pollfreq):
 
         async def load_tournament():
 
@@ -402,36 +391,14 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
             app[APPKEY_TOURNAMENT] = tournament
             await changed_fn(tournament)
 
-        async def watch_tp_file(app):
-            from tptools.fswatcher import async_fswatcher
-
-            path = cfg.get("tp_file")
-            try:
-                async with asyncio.TaskGroup() as tg:
-                    task = tg.create_task(
-                        async_fswatcher(
-                            path=path,
-                            callback=load_tournament,
-                            logger=logger,
-                            pollfreq=cfg.get("pollfreq"),
-                        ),
-                        name="TPWatcher",
-                    )
-                    logger.debug(f"Created TP watcher task: {task}")
-
-                    yield
-
-                    app.logger.debug(f"Tearing down TP watcher task: {task}")
-                    task.cancel()
-
-            except* FileNotFoundError:
-                # override the silly Windows error message
-                raise FileNotFoundError(f"TP file does not exist: {path}")
-
-            except* Exception:
-                raise task.exception()
-
-        run_fn(watcher_ctx=watch_tp_file)
+        run_fn(
+            watcher_ctx=make_watcher_ctx(
+                path=path,
+                callback=load_tournament,
+                pollfreq=pollfreq,
+                logger=logger,
+            )
+        )
 
     tp_file = cfg.get("tp_file")
     if cfg.get("work_on_copy"):
@@ -444,13 +411,13 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
             connstr = make_connstring_from_path(
                 tmpfile, cfg.get("user"), cfg.get("password")
             )
-            tp_handler(connstr)
+            tp_handler(tp_file, connstr, pollfreq=cfg.get("pollfreq"))
 
     else:
         connstr = make_connstring_from_path(
             tp_file, cfg.get("user"), cfg.get("password")
         )
-        tp_handler(connstr)
+        tp_handler(tp_file, connstr, pollfreq=cfg.get("pollfreq"))
 
 
 if __name__ == "__main__":

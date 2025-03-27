@@ -36,3 +36,34 @@ async def async_fswatcher(*, path, callback, logger=None, pollfreq=None):
                 mtime_last = mtime
                 await callback()
             await asyncio.sleep(pollfreq)
+
+
+def make_watcher_ctx(*, path, callback, pollfreq, name=None, logger=None):
+
+    async def watcher_ctx(app):
+        try:
+            async with asyncio.TaskGroup() as tg:
+                task = tg.create_task(
+                    async_fswatcher(
+                        path=path,
+                        callback=callback,
+                        logger=logger,
+                        pollfreq=pollfreq
+                    ),
+                    name=name or f"Watcher[{path}]",
+                )
+                logger.debug(f"Created watcher task: {task}")
+
+                yield
+
+                app.logger.debug(f"Tearing down watcher task: {task}")
+                task.cancel()
+
+        except* FileNotFoundError:
+            # override the silly Windows error message
+            raise FileNotFoundError(f"Path does not exist: {path}")
+
+        except* Exception:
+            raise task.exception()
+
+    return watcher_ctx
