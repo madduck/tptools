@@ -358,7 +358,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
 
     def tp_handler(path, connstr, *, pollfreq):
 
-        async def load_tournament():
+        async def load_tournament(path):
 
             if cfg.get("asynchronous"):
                 from tptools.reader.mdb import AsyncMDBReader

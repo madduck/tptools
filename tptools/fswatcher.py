@@ -17,11 +17,11 @@ async def async_fswatcher(*, path, callback, logger=None, pollfreq=None):
             inotify.add_watch(path, Mask.MODIFY | Mask.ATTRIB)
             if logger:
                 logger.debug(f"Added watcher on {path}")
-            await callback()
+            await callback(path)
             async for event in inotify:
                 if logger:
                     logger.debug(f"Event in {path}: {event}")
-                await callback()
+                await callback(path)
 
     else:
         if logger:
@@ -34,7 +34,7 @@ async def async_fswatcher(*, path, callback, logger=None, pollfreq=None):
                 if logger:
                     logger.debug(f"{path} has been modified.")
                 mtime_last = mtime
-                await callback()
+                await callback(path)
             await asyncio.sleep(pollfreq)
 
 
