@@ -5,10 +5,6 @@ build-backend = "hatchling.build"
 [tool.setuptools_scm]
 write_to = "_version.py"
 
-[project.scripts]
-tpsrv = "tptools.cli.tpsrv:main"
-tpshortcut = "tptools.cli.tpshortcut:main"
-
 [project]
 name = "tptools"
 version = "0.0.1"
@@ -42,20 +38,28 @@ dev = [
   "pytest",
   "aiohttp-devtools",
   "ipdb",
-  "black",
-  "flake8",
+  "mypy",
+  "ruff",
   "pre-commit"
 ]
 
-[tool.black]
-exclude = '''
-/(
-    \.git
-  | \.tox
-  | __pycache__
-  | .direnv
-)/
-'''
+[project.scripts]
+tpsrv = "tptools.cli.tpsrv:main"
+tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.lint]
+select = ["B", "C", "E", "F", "I", "W", "B9"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["ipdb"]
+ignore_missing_imports = true
