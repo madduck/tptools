@@ -1,24 +1,25 @@
-import click
-import sys
-import aiohttp
-from aiohttp import web
 import asyncio
 import pathlib
+import sys
 import warnings
 
-from tptools.tournament import Tournament
-from tptools.entry import Entry
-from tptools.logger import get_logger, adjust_log_level
-from tptools.jsonfeed import JSONFeedMaker
-from tptools.util import is_truish, json_dump_with_default
+import aiohttp
+import click
+from aiohttp import web
+
 from tptools.configfile import (
-    get_config_file_path,
     ConfigFile,
+    get_config_file_path,
     merge_cli_opts_into_cfg,
 )
+from tptools.entry import Entry
 from tptools.fswatcher import make_watcher_ctx
 
 logger = get_logger(__name__)
+from tptools.jsonfeed import JSONFeedMaker
+from tptools.logger import adjust_log_level, get_logger
+from tptools.tournament import Tournament
+from tptools.util import is_truish, json_dump_with_default
 
 TP_DEFAULT_USER = "Admin"
 APPKEY_TOURNAMENT = web.AppKey("tournament", Tournament)
@@ -42,8 +43,8 @@ def tournament_to_squore(
 
     matches_by_court = {}
     matches_without_court = []
-    for match in sorted(matches, key=lambda m: m.time):
 
+    for match in sorted(matches, key=lambda m: m.time):
         if not match.court and not only_this_court:
             logger.debug(f"Found a match {match.id} without an assigned court")
             matches_without_court.append(match)
@@ -63,6 +64,7 @@ def tournament_to_squore(
 
             elif only_this_court:
                 logger.debug(f"Skipping match on court {match.court}")
+
                 continue
 
             else:
@@ -88,6 +90,7 @@ def tournament_to_squore(
     }
 
     jfm = JSONFeedMaker(matches=matches_by_court, **config)
+
     return jfm.get_data()
 
 
@@ -96,6 +99,7 @@ async def matches(request):
     logger = request.app.logger
 
     params = {"court": request.query.get("court")}
+
     for p in ("only_this_court", "include_played", "include_not_ready"):
         val = is_truish(request.query.get(p))
         logger.debug(f"Setting '{p}={val}'")
@@ -105,10 +109,12 @@ async def matches(request):
     logger.info(f"Matches request from {remote} {params}")
 
     tournament = request.app.get(APPKEY_TOURNAMENT)
+
     if not tournament:
         raise web.HTTPServiceUnavailable(reason="Tournament not loaded")
 
     jret = tournament_to_squore(tournament, **params)
+
     return web.json_response(jret)
 
 
@@ -120,17 +126,20 @@ async def players(request):
     logger.info(f"Players request from {remote}")
 
     tournament = request.app.get(APPKEY_TOURNAMENT)
+
     if not tournament:
         raise web.HTTPServiceUnavailable(reason="Tournament not loaded")
 
     entries = sorted(tournament.get_entries())
     names = [Entry.make_team_name(e.players) for e in entries]
+
     return web.Response(text="\n".join(names))
 
 
 async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
     if logger:
         logger.info(f"Posting matches to {url}")
+
     while True:
         try:
             async with aiohttp.ClientSession(
@@ -139,36 +148,41 @@ async def post_matches(url, matches, *, retries=3, sleep=1, logger=None):
             ) as session:
                 async with session.post(url, json=matches) as resp:
                     rt = await resp.json()
+
                     if logger:
                         logger.info(
                             "Success transferring "
                             f"{rt.get('nrecords', '(no count returned)')} "
                             "matches to {url}"
                         )
+
                     break
 
         except (
             aiohttp.ClientConnectorError,
             aiohttp.ClientResponseError,
         ) as err:
-
             if retries > 0:
                 retries -= 1
+
                 if logger:
                     logger.warning(
                         f"Problem posting to {url}: {err}, retrying…"
                     )
                 await asyncio.sleep(sleep)
+
                 continue
 
             else:
                 if logger:
                     logger.error(f"Giving up posting to {url}: {err}")
+
                 break
 
         except aiohttp.ServerDisconnectedError:
             if logger:
                 logger.error(f"Server at {url} disconnected.")
+
             break
 
 
@@ -280,6 +294,7 @@ def main(
         matches = list(
             tournament.get_matches(include_played=True, include_not_ready=True)
         )
+
         if stdout:
             try:
                 click.echo(json_dump_with_default(matches))
@@ -357,9 +372,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
     changed_fn = obj["changed_fn"]
 
     def tp_handler(path, connstr, *, pollfreq):
-
         async def load_tournament(path):
-
             if cfg.get("asynchronous"):
                 from tptools.reader.mdb import AsyncMDBReader
                 from tptools.tpdata import async_load_tournament_from_tpdata
@@ -372,9 +385,7 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
                 logger.debug(f"async {connstr=}")
                 async with AsyncMDBReader(logger=logger) as reader:
                     await reader.connect(connstr)
-                    tournament = await async_load_tournament_from_tpdata(
-                        reader
-                    )
+                    tournament = await async_load_tournament_from_tpdata(reader)
 
             else:
                 from tptools.reader.mdb import MDBReader
@@ -399,9 +410,10 @@ def tp(obj, tp_file, user, password, pollfreq, work_on_copy, asynchronous):
         )
 
     tp_file = cfg.get("tp_file")
+
     if cfg.get("work_on_copy"):
-        import tempfile
         import shutil
+        import tempfile
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpfile = pathlib.Path(tmpdir) / tp_file.name

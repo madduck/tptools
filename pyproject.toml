@@ -44,7 +44,7 @@ dev = [
 ]
 
 [project.scripts]
-tpsrv = "tptools.cli.tpsrv:main"
+tpsrv = "tptools.tpsrv.cli:main"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
