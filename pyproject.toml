@@ -7,40 +7,39 @@ write_to = "_version.py"
 
 [project]
 name = "tptools"
-version = "0.0.1"
-authors = [
-  { name="martin f. krafft", email="tptools@pobox.madduck.net" },
-]
+version = "0.1.0"
+authors = [{ name = "martin f. krafft", email = "tptools@pobox.madduck.net" }]
 description = "A set of tools to export data from with TournamentSoftware"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
 dependencies = [
   "python-dateutil",
   "aiohttp",
   "aiohttp-basicauth-middleware",
-  "aioodbc",
-  "asyncstdlib",
   "aiosqlite",
+  "watchdog",
   "click",
-  "platformdirs",
+  "click_extra",
   "asyncinotify; sys_platform == 'linux'",
-  "pywin32; sys_platform == 'windows'"
+  "pywin32; sys_platform == 'windows'",
+  "sqlalchemy-access; sys_platform == 'windows'",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest",
+  "pytest-asyncio",
   "aiohttp-devtools",
   "ipdb",
   "mypy",
   "ruff",
-  "pre-commit"
+  "pre-commit",
 ]
 
 [project.scripts]
@@ -48,10 +47,11 @@ tpsrv = "tptools.tpsrv.cli:main"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
+addopts = "-ra"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
-line-length = 80
+line-length = 88
 
 [tool.ruff.lint]
 select = ["B", "C", "E", "F", "I", "W", "B9"]
@@ -61,5 +61,5 @@ strict = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["ipdb"]
+module = "ipdb"
 ignore_missing_imports = true

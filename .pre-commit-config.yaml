@@ -6,9 +6,11 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - pydantic
-          - returns
           - click
+          - types-pywin32
+          - types-python-dateutil
+          - pytest
+          - pytest-asyncio
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.4
     hooks:
