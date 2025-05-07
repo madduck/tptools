@@ -44,6 +44,7 @@ dev = [
   "pre-commit",
   "coverage",
   "pytest-cov",
+  "types-pywin32",
 ]
 
 [project.scripts]
@@ -72,6 +73,7 @@ ignore_missing_imports = true
 
 [tool.coverage.run]
 branch = true
+omit = ["tptools/cli/tpshortcut.py"]
 
 [tool.coverage.report]
 exclude_also = [
