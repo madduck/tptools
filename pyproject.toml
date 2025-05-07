@@ -41,6 +41,8 @@ dev = [
   "mypy",
   "ruff",
   "pre-commit",
+  "coverage",
+  "pytest-cov",
 ]
 
 [project.scripts]
@@ -48,7 +50,7 @@ tpsrv = "tptools.tpsrv.cli:main"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
@@ -64,3 +66,17 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 module = "ipdb"
 ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+  'def __repr__',
+  'if TYPE_CHECKING:',
+  'class .*\bProtocol\):',
+  '@overload',
+  '@(abc\.)?abstractmethod',
+  'raise NotImplementedError',
+  'raise AssertionError',
+]
