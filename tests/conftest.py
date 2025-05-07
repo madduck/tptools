@@ -1,7 +1,7 @@
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.models import Club, Country, Draw, Event, Stage
+from tptools.models import Club, Country, Draw, Event, Player, Stage
 
 
 @pytest.fixture
@@ -67,3 +67,20 @@ def country2() -> Country:
 
 
 country1copy = country1
+
+
+@pytest.fixture
+def player1(club1: Club, country2: Country) -> Player:
+    return Player(
+        id=1, firstname="Martin", lastname="Krafft", club=club1, country=country2
+    )
+
+
+@pytest.fixture
+def player2(club2: Club, country1: Country) -> Player:
+    return Player(
+        id=2, firstname="Iddo", lastname="Hoeve", club=club2, country=country1
+    )
+
+
+player1copy = player1
