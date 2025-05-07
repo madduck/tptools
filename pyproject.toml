@@ -35,6 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest",
+  "pytest-mock",
   "pytest-asyncio",
   "aiohttp-devtools",
   "ipdb",
