@@ -5,17 +5,7 @@ import pathlib
 PACKAGE = pathlib.Path(__file__).parent.parent.name
 
 
-def json_dump_with_default(obj, methodname="json", **kwargs):
-    def _default(obj):
-        if callable(fn := getattr(obj, methodname, None)):
-            return fn()
-
-        return json.JSONEncoder().default(obj)
-
-    return json.dumps(obj, default=_default, **kwargs)
-
-
-def is_truish(value):
+def is_truish(value: Any) -> bool:
     if not value:
         return False
 
