@@ -82,7 +82,8 @@ drop view if exists PlayerMatchView;
 create view PlayerMatchView as
   select
     m.id,
-    v.name as event, d.name as draw, d.drawtype, d.drawsize,
+    v.id as eventid, v.name as event,
+    d.id as drawid, d.name as draw, d.drawtype, d.drawsize,
     m.matchnr,
     m.entry as entryid, p.firstname, p.name,
     m.planning, m.van1, m.van2, m.wn, m.vn,
