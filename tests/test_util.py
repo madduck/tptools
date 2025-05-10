@@ -8,6 +8,38 @@ import tptools.util as util
 type StrTable = list[list[str]]
 
 
+@pytest.mark.parametrize(
+    "value,result",
+    [
+        (None, False),
+        (0, False),
+        ("", False),
+        ("no", False),
+        ("0", False),
+        (False, False),
+        (True, True),
+        (1, True),
+        ("1", True),
+        ("t", True),
+        ("true", True),
+        ("True", True),
+        ("TRUE", True),
+        ("y", True),
+        ("yes", True),
+        ("Yes", True),
+        ("YES", True),
+        ("j", True),
+        ("ja", True),
+        ("Ja", True),
+        ("JA", True),
+        ("trustme", True),
+        ("anything", False),
+    ],
+)
+def test_is_truish(value: Any, result: bool) -> None:
+    assert util.is_truish(value) is result
+
+
 @pytest.fixture
 def columns() -> StrTable:
     return [
