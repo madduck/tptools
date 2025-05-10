@@ -15,6 +15,7 @@ class Event(Model, table=True):
     abbreviation: str | None = None
     gender: int
     stages: list["Stage"] = Relationship(back_populates="event")
+    entries: list["Entry"] = Relationship(back_populates="event")
 
     def _repr_name(self) -> str:
         return self.abbreviation if self.abbreviation is not None else self.name
@@ -110,6 +111,14 @@ class Player(Model, table=True):
         default=None, sa_column=Column("country", Integer, ForeignKey("country.id"))
     )
     country: Country = Relationship(back_populates="players")
+    entries: list["Entry"] = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": (
+                "or_(Player.id==Entry.player1id_,Player.id==Entry.player2id_)"
+            ),
+            "viewonly": True,
+        }
+    )
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -127,3 +136,64 @@ class Player(Model, table=True):
     )
     __repr_fields__ = ("id", "lastname", "firstname", "country?.name", "club?.name")
     __eq_fields__ = ("lastname", "firstname", "club", "country")
+    __none_sorts_last__ = True
+
+
+class Entry(Model, table=True):
+    id: int = Field(primary_key=True)
+    eventid_: int = Field(sa_column=Column("event", ForeignKey("event.id")))
+    event: Event = Relationship(back_populates="entries")
+    player1id_: int | None = Field(
+        default=None, sa_column=Column("player1", ForeignKey("player.id"))
+    )
+    player1: Player = Relationship(
+        sa_relationship_kwargs={
+            "foreign_keys": "Entry.player1id_",
+            "primaryjoin": "Entry.player1id_ == Player.id",
+        }
+    )
+    player2id_: int | None = Field(
+        default=None, sa_column=Column("player2", ForeignKey("player.id"))
+    )
+    player2: Player | None = Relationship(
+        sa_relationship_kwargs={
+            "foreign_keys": "Entry.player2id_",
+            "primaryjoin": "Entry.player2id_ == Player.id",
+        }
+    )
+
+    @model_serializer(mode="wrap")
+    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        ret: dict[str, Any] = nxt(self)
+        for f in ("player1", "player2", "event"):
+            del ret[f"{f}id_"]
+            ret[f] = getattr(self, f)
+        return ret
+
+    @property
+    def players(self) -> tuple[Player, Player | None]:
+        return self.player1, self.player2
+
+    @property
+    def name(self) -> str:
+        return "&".join(p.name for p in self.players if p)
+
+    def __init__(
+        self,
+        player1: Player,
+        player2: Player | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if player1 == player2:
+            raise ValueError(f"player2 cannot be the same as player1: {player1}")
+        kwargs |= {"player1": player1, "player2": player2}
+        super().__init__(**kwargs)
+
+    __str_template__ = "{self.name}"
+    __repr_fields__ = [
+        "id",
+        "event.name",
+        "player1.name",
+        "player2?.name",
+    ]
+    __eq_fields__ = ["event", "player1", "player2"]

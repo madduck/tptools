@@ -1,7 +1,9 @@
+from collections.abc import Callable
+
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.models import Club, Country, Draw, Event, Player, Stage
+from tptools.models import Club, Country, Draw, Entry, Event, Player, Stage
 
 
 @pytest.fixture
@@ -84,3 +86,38 @@ def player2(club2: Club, country1: Country) -> Player:
 
 
 player1copy = player1
+
+
+@pytest.fixture
+def entry1(event1: Event, player1: Player) -> Entry:
+    return Entry(id=1, event=event1, player1=player1)
+
+
+@pytest.fixture
+def entry2(event2: Event, player2: Player) -> Entry:
+    return Entry(id=2, event=event2, player1=player2)
+
+
+entry1copy = entry1
+
+
+type EntryFactoryType = Callable[[int, Event, str], Entry]
+
+
+@pytest.fixture
+def EntryFactory() -> EntryFactoryType:
+    def entry_maker(id: int, event: Event, name: str) -> Entry:
+        p = Player(id=id, lastname="", firstname=name)
+        return Entry(p, event=event)
+
+    return entry_maker
+
+
+@pytest.fixture
+def entry12(event1: Event, player1: Player, player2: Player) -> Entry:
+    return Entry(id=1, event=event1, player1=player1, player2=player2)
+
+
+@pytest.fixture
+def entry21(event2: Event, player1: Player, player2: Player) -> Entry:
+    return Entry(id=2, event=event2, player1=player2, player2=player1)
