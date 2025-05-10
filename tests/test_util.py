@@ -1,10 +1,15 @@
-import pytest
+from typing import Any
 
-import tptools.reader.util as util
+import pytest
+from pytest_mock import MockerFixture
+
+import tptools.util as util
+
+type StrTable = list[list[str]]
 
 
 @pytest.fixture
-def columns():
+def columns() -> StrTable:
     return [
         ["zero", "other", "stuff"],
         ["one", "other", "stuff"],
@@ -13,31 +18,31 @@ def columns():
     ]
 
 
-def test_get_record_from_row(columns):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns)))
-    rec = util.get_record_from_row(columns, row)
-    for col in columns:
+def test_get_record_from_row(columns: StrTable) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames)))
+    rec = util.get_record_from_row(columnnames, row)
+    for col in columnnames:
         assert col in rec
 
-    for i, col in enumerate(columns):
+    for i, col in enumerate(columnnames):
         assert rec[col] == i
 
 
-def test_get_record_from_row_skipcols(columns):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns)))
+def test_get_record_from_row_skipcols(columns: StrTable) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames)))
     skipcols = ["two", "zero"]
-    rec = util.get_record_from_row(columns, row, skipcols=["two", "zero"])
-    assert len(rec) == len(columns) - len(skipcols)
+    rec = util.get_record_from_row(columnnames, row, skipcols=["two", "zero"])
+    assert len(rec) == len(columnnames) - len(skipcols)
 
 
-def test_get_record_from_row_skipcols_extra(columns):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns)))
+def test_get_record_from_row_skipcols_extra(columns: StrTable) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames)))
     skipcols = ["two", "zero", "hundred"]
-    rec = util.get_record_from_row(columns, row, skipcols=["two", "zero"])
-    assert len(rec) == len(columns) - len(skipcols) + 1
+    rec = util.get_record_from_row(columnnames, row, skipcols=["two", "zero"])
+    assert len(rec) == len(columnnames) - len(skipcols) + 1
 
 
 @pytest.mark.parametrize(
@@ -48,10 +53,12 @@ def test_get_record_from_row_skipcols_extra(columns):
         (1, 4),
     ],
 )
-def test_get_record_from_row_skipcols_nonstrict_rowvar(columns, rowdiff, result):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns) + rowdiff))
-    rec = util.get_record_from_row(columns, row)
+def test_get_record_from_row_skipcols_nonstrict_rowvar(
+    columns: StrTable, rowdiff: int, result: int
+) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames) + rowdiff))
+    rec = util.get_record_from_row(columnnames, row)
     assert len(rec) == result
 
 
@@ -63,27 +70,29 @@ def test_get_record_from_row_skipcols_nonstrict_rowvar(columns, rowdiff, result)
         (1, 4),
     ],
 )
-def test_get_record_from_row_skipcols_nonstrict_colvar(columns, coldiff, result):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns)))
-    rec = util.get_record_from_row(columns[: len(columns) + coldiff], row)
+def test_get_record_from_row_skipcols_nonstrict_colvar(
+    columns: StrTable, coldiff: int, result: int
+) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames)))
+    rec = util.get_record_from_row(columnnames[: len(columnnames) + coldiff], row)
     assert len(rec) == result
 
 
 @pytest.mark.parametrize("rowdiff", [-1, 1])
-def test_get_record_from_row_skipcols_strict(columns, rowdiff):
-    columns = [c[0] for c in columns]
-    row = list(range(len(columns) - rowdiff))
+def test_get_record_from_row_skipcols_strict(columns: StrTable, rowdiff: int) -> None:
+    columnnames = [c[0] for c in columns]
+    row = list(range(len(columnnames) - rowdiff))
     with pytest.raises(ValueError):
-        util.get_record_from_row(columns, row, strict=True)
+        util.get_record_from_row(columnnames, row, strict=True)
 
 
 @pytest.mark.parametrize("input,output", [(1, 1), ("2", 2), ("three", "three")])
-def test_coerce_int(input, output):
+def test_coerce_int(input: Any, output: Any) -> None:
     assert util.try_coerce_int(input) == output
 
 
-def test_sequence_int_coercion():
+def test_sequence_int_coercion() -> None:
     gen = util.coerce_values(
         util.try_coerce_int, {"one": 1, "two": "2", "three": "drei"}.items()
     )
@@ -116,11 +125,11 @@ def test_sequence_int_coercion():
         (3, 3),
     ],
 )
-def test_coerce_bool(input, output):
+def test_coerce_bool(input: Any, output: Any) -> None:
     assert util.try_coerce_bool(input) == output
 
 
-def test_sequence_bool_coercion():
+def test_sequence_bool_coercion() -> None:
     gen = util.coerce_values(
         util.try_coerce_bool, {"one": "t", "two": True, "three": ""}.items()
     )
@@ -132,11 +141,11 @@ def test_sequence_bool_coercion():
 @pytest.mark.parametrize(
     "input,output", [("", None), ("string", "string"), (None, None)]
 )
-def test_coerce_emptystring(input, output):
+def test_coerce_emptystring(input: Any, output: Any) -> None:
     assert util.try_coerce_emptystring(input) == output
 
 
-def test_sequence_emptystring_coercion():
+def test_sequence_emptystring_coercion() -> None:
     gen = util.coerce_values(
         util.try_coerce_emptystring,
         {"one": "", "two": None, "three": "drei"}.items(),
