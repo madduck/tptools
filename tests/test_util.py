@@ -185,3 +185,19 @@ def test_sequence_emptystring_coercion() -> None:
     assert next(gen)[1] is None
     assert next(gen)[1] is None
     assert next(gen)[1] is not None
+
+
+def test_dict_key_translator() -> None:
+    source = {"a": 1, "b": 2}
+    translation = {"a": "A"}
+    result = util.dict_key_translator(source, translation)
+    assert result["A"] == source["a"]
+    assert "b" in result
+
+
+def test_dict_key_translator_strict() -> None:
+    source = {"a": 1, "b": 2}
+    translation = {"a": "A"}
+    result = util.dict_key_translator(source, translation, strict=True)
+    assert result["A"] == source["a"]
+    assert "b" not in result

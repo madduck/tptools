@@ -1,6 +1,6 @@
 import json
 import pathlib
-from collections.abc import Callable, Generator, Iterable, MutableMapping
+from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from typing import Any
 
 PACKAGE = pathlib.Path(__file__).parent.parent.name
@@ -73,3 +73,13 @@ def coerce_values(
     coerce_fn: Callable[[Any], Any], seq: Iterable[tuple[str, Any]]
 ) -> Generator[tuple[str, Any]]:
     return ((k, coerce_fn(v)) for k, v in seq)
+
+
+def dict_key_translator[T](
+    indata: Mapping[str, T], xlate: Mapping[str, str], *, strict: bool = False
+) -> MutableMapping[str, T]:
+    return {
+        xlate.get(key, key): value
+        for key, value in indata.items()
+        if (key in xlate or not strict)
+    }
