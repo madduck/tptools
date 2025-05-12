@@ -1,7 +1,10 @@
 import json
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
+from datetime import datetime
 from typing import Any
+
+from dateutil.parser import parse as date_parser
 
 PACKAGE = pathlib.Path(__file__).parent.parent.name
 
@@ -83,3 +86,23 @@ def dict_key_translator[T](
         for key, value in indata.items()
         if (key in xlate or not strict)
     }
+
+
+def normalise_time(
+    time: datetime | str | None, *, nodate_value: datetime
+) -> None | datetime:
+    ret = None
+    if time is None:
+        return None
+
+    elif isinstance(time, str):
+        ret = date_parser(time)
+
+    else:
+        ret = time
+
+    if not isinstance(nodate_value, datetime):
+        # screw pyright, which cannot be disabled for this line with type:ignore
+        raise ValueError("nodate_value must be a datetime instance")
+
+    return ret if ret != nodate_value else None

@@ -45,6 +45,7 @@ dev = [
   "coverage",
   "pytest-cov",
   "types-pywin32",
+  "types-python-dateutil",
 ]
 
 [project.scripts]

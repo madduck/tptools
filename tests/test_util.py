@@ -1,3 +1,5 @@
+import logging
+from datetime import datetime
 from typing import Any
 
 import pytest
@@ -201,3 +203,19 @@ def test_dict_key_translator_strict() -> None:
     result = util.dict_key_translator(source, translation, strict=True)
     assert result["A"] == source["a"]
     assert "b" not in result
+
+
+_DT = datetime(1970, 1, 2, 3, 4, 5)
+_DTx = datetime(1976, 5, 4, 3, 2, 1)
+
+
+@pytest.mark.parametrize(
+    "input,result", [(None, None), (_DT, _DT), (_DTx, None), (_DT.isoformat(), _DT)]
+)
+def test_normalise_time(input: Any, result: Any) -> None:
+    assert util.normalise_time(input, nodate_value=_DTx) == result
+
+
+def test_normalise_time_nodate_datetime() -> None:
+    with pytest.raises(ValueError, match="nodate_value must be a datetime instance"):
+        util.normalise_time(_DT, nodate_value="1970-01-02 03:04:05")  # type: ignore
