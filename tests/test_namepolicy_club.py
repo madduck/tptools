@@ -1,0 +1,21 @@
+import pytest
+
+from tptools.models import Club
+from tptools.namepolicy import ClubNamePolicy
+
+
+@pytest.fixture
+def policy() -> ClubNamePolicy:
+    return ClubNamePolicy()
+
+
+def test_constructor(policy: ClubNamePolicy) -> None:
+    _ = policy
+
+
+def test_passthrough(policy: ClubNamePolicy, club1: Club) -> None:
+    assert policy(club1) == "RSC"
+
+
+def test_no_club(policy: ClubNamePolicy) -> None:
+    _ = policy(None)
