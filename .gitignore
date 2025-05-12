@@ -4,3 +4,7 @@ __pycache__
 .*.sw?
 *.py[oc]
 _version.py
+/.stignore
+/.envrc
+.coverage
+Squore.dev_court_map.toml
