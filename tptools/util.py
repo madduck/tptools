@@ -106,3 +106,7 @@ def normalise_time(
         raise ValueError("nodate_value must be a datetime instance")
 
     return ret if ret != nodate_value else None
+
+
+def zero_to_none[T](value: T) -> None | T:
+    return None if value == 0 else value

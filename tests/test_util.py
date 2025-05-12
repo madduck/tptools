@@ -219,3 +219,10 @@ def test_normalise_time(input: Any, result: Any) -> None:
 def test_normalise_time_nodate_datetime() -> None:
     with pytest.raises(ValueError, match="nodate_value must be a datetime instance"):
         util.normalise_time(_DT, nodate_value="1970-01-02 03:04:05")  # type: ignore
+
+
+@pytest.mark.parametrize(
+    "input,result", [(None, None), (1, 1), (-1, -1), ("str", "str"), (0, None)]
+)
+def test_normalise_zero_to_none(input: Any, result: Any) -> None:
+    assert util.zero_to_none(input) == result
