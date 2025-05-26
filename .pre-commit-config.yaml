@@ -7,13 +7,19 @@ repos:
       - id: mypy
         additional_dependencies:
           - click
+          - click_extra
+          - sqlmodel
+          - pydantic
           - types-pywin32
           - types-python-dateutil
           - pytest
           - pytest-asyncio
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.11.11
     hooks:
-      - id: ruff
-        args: [ --fix ]
+      - id: ruff-check
+        args: [--show-fixes]
       - id: ruff-format
+        args: [--diff]
+
+fail_fast: true

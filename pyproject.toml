@@ -22,6 +22,7 @@ dependencies = [
   "python-dateutil",
   "aiohttp",
   "aiohttp-basicauth-middleware",
+  "sqlmodel",
   "aiosqlite",
   "watchdog",
   "click",
