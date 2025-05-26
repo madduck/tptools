@@ -68,3 +68,24 @@ class Draw(Model, table=True):
     __str_template__ = "{self.name}, {self.stage}"
     __repr_fields__ = ("id", "name", "stage.name", ("type", _type_repr, False), "size")
     __eq_fields__ = ("stage", "name", "type", "size")
+
+
+class Club(Model, table=True):
+    id: int = Field(primary_key=True)
+    name: str
+
+    __str_template__ = "{self.name}"
+    __repr_fields__ = ("id", "name")
+    __eq_fields__ = ("name",)
+    __none_sorts_last__ = True
+
+
+class Country(Model, table=True):
+    id: int = Field(primary_key=True)
+    name: str
+    code: str | None = None
+
+    __str_template__ = "{self.name}"
+    __repr_fields__ = ("id", "name", "code?")
+    __eq_fields__ = ("name", "code")
+    __none_sorts_last__ = True
