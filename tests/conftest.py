@@ -3,7 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.models import Club, Country, Draw, Entry, Event, Player, Stage
+from tptools.models import Club, Country, Draw, Entry, Event, Location, Player, Stage
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 
 
@@ -162,3 +162,16 @@ def slot21(entry21: Entry) -> Slot:
 @pytest.fixture
 def slot12(entry12: Entry) -> Slot:
     return Slot(content=entry12)
+
+
+@pytest.fixture
+def location1() -> Location:
+    return Location(id=1, name="Sports4You")
+
+
+@pytest.fixture
+def location2() -> Location:
+    return Location(id=2, name="WeCare Germering")
+
+
+location1copy = location1

@@ -197,3 +197,12 @@ class Entry(Model, table=True):
         "player2?.name",
     ]
     __eq_fields__ = ["event", "player1", "player2"]
+
+
+class Location(Model, table=True):
+    id: int = Field(primary_key=True)
+    name: str
+
+    __str_template__ = "{self.name}"
+    __repr_fields__ = ("id", "name")
+    __eq_fields__ = ("name",)
