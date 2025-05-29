@@ -202,7 +202,34 @@ class Entry(Model, table=True):
 class Location(Model, table=True):
     id: int = Field(primary_key=True)
     name: str
+    courts: list["Court"] = Relationship(back_populates="location")
 
     __str_template__ = "{self.name}"
-    __repr_fields__ = ("id", "name")
+    __repr_fields__ = ("id", "name", "numcourts")
     __eq_fields__ = ("name",)
+
+    @property
+    def numcourts(self) -> int:
+        return len(self.courts)
+
+
+class Court(Model, table=True):
+    id: int = Field(primary_key=True)
+    name: str
+    locationid_: int | None = Field(
+        default=None, sa_column=Column("location", ForeignKey("location.id"))
+    )
+    location: Location = Relationship(back_populates="courts")
+    sortorder: int | None = None
+    playermatches: list["PlayerMatch"] = Relationship(back_populates="court")
+
+    @model_serializer(mode="wrap")
+    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        ret: dict[str, Any] = nxt(self)
+        del ret["locationid_"]
+        ret["location"] = self.location
+        return ret
+
+    __str_template__ = "{self.location}, {self.name}"
+    __repr_fields__ = ("id", "name", "location?.name", "sortorder?")
+    __eq_fields__ = ("location", "sortorder", "name")

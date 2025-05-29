@@ -4,7 +4,7 @@ from tptools.models import Location
 
 
 def test_repr(location1: Location) -> None:
-    assert repr(location1) == "Location(id=1, name='Sports4You')"
+    assert repr(location1) == "Location(id=1, name='Sports4You', numcourts=0)"
 
 
 def test_str(location1: Location) -> None:
