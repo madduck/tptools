@@ -1,4 +1,6 @@
 from collections.abc import Callable
+from datetime import datetime
+from typing import Any
 
 import pytest
 
@@ -12,6 +14,7 @@ from tptools.models import (
     Event,
     Location,
     Player,
+    PlayerMatch,
     Stage,
 )
 from tptools.slot import Bye, Playceholder, Slot, Unknown
@@ -198,3 +201,89 @@ def court2(location2: Location) -> Court:
 
 
 court1copy = court1
+
+
+type PlayerMatchFactoryType = Callable[..., PlayerMatch]
+
+
+@pytest.fixture
+def PlayerMatchFactory(draw1: Draw) -> PlayerMatchFactoryType:
+    def playermatch_maker(**kwargs: Any) -> PlayerMatch:
+        defaults = {
+            "id": kwargs.get("planning", 1),
+            "draw": draw1,
+        }
+        return PlayerMatch(**defaults | kwargs)
+
+    return playermatch_maker
+
+
+type PlayerFactoryType = Callable[..., PlayerMatch]
+
+
+@pytest.fixture
+def PlayerFactory(
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry
+) -> PlayerFactoryType:
+    def player_maker(**kwargs: Any) -> PlayerMatch:
+        defaults = {"id": kwargs.get("planning", 1), "entry": entry1}
+        enforced = {"van1": None, "van2": None, "matchnr": None}
+        return PlayerMatchFactory(**defaults | kwargs | enforced)
+
+    return player_maker
+
+
+@pytest.fixture
+def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: Entry) -> PlayerMatch:
+    return PlayerFactory(id=1, planning=4001, wn=3001, vn=3005, entry=entry1)
+
+
+@pytest.fixture
+def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: Entry) -> PlayerMatch:
+    return PlayerFactory(id=2, planning=4002, wn=3001, vn=3005, entry=entry2)
+
+
+pmplayer1copy = pmplayer1
+
+
+@pytest.fixture
+def pmbye(PlayerFactory: PlayerFactoryType) -> PlayerMatch:
+    return PlayerFactory(planning=4008, entry=None)
+
+
+@pytest.fixture
+def pm1(
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry, court1: Court
+) -> PlayerMatch:
+    return PlayerMatchFactory(
+        id=141,
+        matchnr=14,
+        entry=entry1,
+        planning=3001,
+        van1=4001,
+        van2=4002,
+        wn=2001,
+        vn=2003,
+        court=court1,
+        time=datetime(2025, 6, 1, 11, 30),
+    )
+
+
+@pytest.fixture
+def pm2(
+    PlayerMatchFactory: PlayerMatchFactoryType,
+    entry1: Entry,
+) -> PlayerMatch:
+    return PlayerMatchFactory(
+        id=421,
+        matchnr=42,
+        entry=entry1,
+        planning=2001,
+        van1=3001,
+        van2=3002,
+        wn=1001,
+        vn=1002,
+    )
+
+
+pm1copy = pm1

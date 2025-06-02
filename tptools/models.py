@@ -1,12 +1,15 @@
+from datetime import datetime
+from functools import partial
 from typing import Any
 
 from pydantic import SerializerFunctionWrapHandler, model_serializer
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlmodel import Field, Relationship
 
 from .basemodel import Model
 from .drawtype import DrawType
-from .util import EnumAsInteger
+from .playermatchstatus import PlayerMatchStatus
+from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
 
 
 class Event(Model, table=True):
@@ -55,6 +58,7 @@ class Draw(Model, table=True):
         default=None, sa_column=Column("stage", ForeignKey("stage.id"))
     )
     stage: Stage = Relationship(back_populates="draws")
+    playermatches: list["PlayerMatch"] = Relationship(back_populates="draw")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -161,6 +165,7 @@ class Entry(Model, table=True):
             "primaryjoin": "Entry.player2id_ == Player.id",
         }
     )
+    playermatches: list["PlayerMatch"] = Relationship(back_populates="entry")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -233,3 +238,157 @@ class Court(Model, table=True):
     __str_template__ = "{self.location}, {self.name}"
     __repr_fields__ = ("id", "name", "location?.name", "sortorder?")
     __eq_fields__ = ("location", "sortorder", "name")
+
+
+class PlayerMatch(Model, table=True):
+    id: int = Field(primary_key=True)
+    drawid_: int = Field(sa_column=Column("draw", ForeignKey("draw.id")))
+    draw: Draw = Relationship(back_populates="playermatches")
+    matchnr: int
+    entryid_: int | None = Field(
+        default=None, sa_column=Column("entry", ForeignKey("entry.id"))
+    )
+    entry: Entry | None = Relationship(back_populates="playermatches")
+    time: datetime | None = Field(default=None, sa_column=Column("plandate", DateTime))
+    courtid_: int | None = Field(
+        default=None, sa_column=Column("court", ForeignKey("court.id"))
+    )
+    court: Court | None = Relationship(back_populates="playermatches")
+    winner: int | None = None
+    planning: int
+    van1: int | None = None
+    van2: int | None = None
+    # wn/wn need to differentiate between 0 and None, unlike e.g. winner and van1/2,
+    # where we want the data to be normalised (0 → None). But wn/vn seems like the only
+    # way in a group draw to distinguish whether a match is played or notplayed.
+    wn: int | None = None
+    vn: int | None = None
+    reversehomeaway: bool = False
+
+    @model_serializer(mode="wrap")
+    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        ret: dict[str, Any] = nxt(self)
+        for f in ("draw", "entry", "court"):
+            del ret[f"{f}id_"]
+            ret[f] = getattr(self, f)
+        return ret
+
+    @property
+    def van(self) -> tuple[int, int] | tuple[None, None]:
+        van1 = zero_to_none(self.van1)
+        van2 = zero_to_none(self.van2)
+
+        match (van1, van2, self.reversehomeaway):
+            case (None, None, _):
+                return None, None
+            case (int(_), int(_), False):
+                return van1, van2
+            case (int(_), int(_), True):
+                return van2, van1
+
+        raise AssertionError("van{1,2} inconsistent")
+
+    @property
+    def scheduled(self) -> bool:
+        return (
+            normalise_time(self.time, nodate_value=datetime(1899, 12, 30)) is not None
+        )
+
+    @property
+    def status(self) -> PlayerMatchStatus:
+        try:
+            if self.van[0] is None:
+                if self.entry is None:
+                    return PlayerMatchStatus.BYE
+                else:
+                    return PlayerMatchStatus.PLAYER
+
+            else:
+                winner = zero_to_none(self.winner)
+                if self.draw.type == DrawType.GROUP:
+                    if winner is not None:
+                        return PlayerMatchStatus.PLAYED
+
+                    elif self.wn == 0 and self.vn == 0:
+                        return PlayerMatchStatus.NOTPLAYED
+
+                    else:
+                        return PlayerMatchStatus.READY
+
+                elif self.entry is not None:
+                    return (
+                        PlayerMatchStatus.READY
+                        if winner is None
+                        else PlayerMatchStatus.PLAYED
+                    )
+                else:
+                    return (
+                        PlayerMatchStatus.PENDING
+                        if winner is None
+                        else PlayerMatchStatus.NOTPLAYED
+                    )
+
+        except AssertionError as err:
+            raise RuntimeError(f"{self} has an invalid status: {str(err)}") from err
+
+    def _status_repr(self) -> str:
+        return self.status.name.lower()
+
+    def _time_repr(self) -> str:
+        return repr(self.time).replace("datetime.", "")
+
+    def _ll_repr(self, attr1: str, attr2: str) -> str | None:
+        return reduce_common_prefix(
+            str(a) if (a := getattr(self, attr1, None)) is not None else None,
+            str(b) if (b := getattr(self, attr2, None)) is not None else None,
+        )
+
+    def _van_repr(self) -> str | None:
+        return reduce_common_prefix(*map(str, self.van))
+
+    __str_template__ = (
+        "{self.id}: [{self.draw.name}:{self.matchnr}] "
+        "[{self._van_repr()} → "
+        "{self.planning} → "
+        "{self._ll_repr('wn', 'vn')}] "
+        "'{self.entry}' ({self._status_repr()})"
+    )
+
+    __repr_fields__ = (
+        "id",
+        "draw.name",
+        "matchnr",
+        "entry?.players",
+        ("time", _time_repr, False),
+        "court?.name",
+        "winner",
+        "planning",
+        ("van", _van_repr, False),
+        ("wnvn", partial(_ll_repr, attr1="wn", attr2="vn"), False),
+        ("status", _status_repr, False),
+    )
+
+    __eq_fields__ = (
+        "draw",
+        "matchnr",
+        "entry",
+        "time",
+        "court",
+        "winner",
+        "planning",
+    )
+    __cmp_fields__ = (
+        "draw",
+        "matchnr",
+        "time",
+        "court",
+        "id",
+    )
+    __none_sorts_last__ = True
+
+    __massage_fields__ = {
+        "van1": zero_to_none,
+        "van2": zero_to_none,
+        "winner": zero_to_none,
+        "time": partial(normalise_time, nodate_value=datetime(1899, 12, 30)),
+    }

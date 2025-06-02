@@ -3,6 +3,7 @@ from collections.abc import Generator
 from typing import Any
 
 import pytest
+from sqlalchemy import ScalarResult
 from sqlmodel import Session, create_engine, select
 
 from tptools.models import PlayerMatch
