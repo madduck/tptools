@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 
 from tptools.drawtype import DrawType
+from tptools.match import Match
 from tptools.models import (
     Club,
     Country,
@@ -287,3 +288,55 @@ def pm2(
 
 
 pm1copy = pm1
+
+
+type MatchFactoryType = Callable[..., Match]
+
+
+@pytest.fixture
+def MatchFactory() -> MatchFactoryType:
+    def match_maker(
+        pm: PlayerMatch,
+        entry2: Entry | None,
+        lldiff: int,
+        pldiff: int | None = None,
+        iddiff: int = 1,
+    ) -> Match:
+        if pm.entry is not None and entry2 is not None:
+            entry = entry2.model_copy(update={"event": pm.entry.event})
+        else:
+            entry = None
+        pm2 = pm.model_copy(
+            update={
+                "entry": entry,
+                "id": pm.id + iddiff,
+                "wn": pm.wn + lldiff if pm.wn is not None else None,
+                "vn": pm.vn + lldiff if pm.vn is not None else None,
+                "planning": pm.planning + (lldiff if pldiff is None else pldiff),
+                "winner": ((3 - pm.winner) % 3) if pm.winner is not None else None,
+            }
+        )
+        return Match(pm1=pm, pm2=pm2)
+
+    return match_maker
+
+
+@pytest.fixture
+def match1(
+    MatchFactory: MatchFactoryType,
+    pm1: PlayerMatch,
+    entry2: Entry,
+) -> Match:
+    return MatchFactory(pm1, entry2, lldiff=4)
+
+
+match1copy = match1
+
+
+@pytest.fixture
+def match2(
+    MatchFactory: MatchFactoryType,
+    pm2: PlayerMatch,
+    entry2: Entry,
+) -> Match:
+    return MatchFactory(pm2, entry2, lldiff=2)
