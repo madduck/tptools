@@ -110,3 +110,26 @@ def normalise_time(
 
 def zero_to_none[T](value: T) -> None | T:
     return None if value == 0 else value
+
+
+def reduce_common_prefix(
+    a: str | None, b: str | None, *, joinstr: str = "/"
+) -> str | None:
+    if a is None and b is None:
+        return None
+    elif a is None or len(a) == 0:
+        return f"/{b}"
+    elif b is None or len(b) == 0:
+        return f"{a}/"
+
+    n = 0
+    for i, j in zip(a, b, strict=False):
+        if i != j:
+            break
+        n += 1
+
+    if len(a[n:]) != len(b[n:]):
+        return f"{a[:n]}…{a[n:]}{joinstr}…{b[n:]}"
+    else:
+        b = b[n:]
+        return f"{a}{joinstr}{b or '='}"

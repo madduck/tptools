@@ -226,3 +226,31 @@ def test_normalise_time_nodate_datetime() -> None:
 )
 def test_normalise_zero_to_none(input: Any, result: Any) -> None:
     assert util.zero_to_none(input) == result
+
+
+@pytest.mark.parametrize(
+    "a,b,joinstr,result",
+    [
+        ("11", "11", None, "11/="),
+        ("11", "12", None, "11/2"),
+        ("11", "12", "@", "11@2"),
+        ("11", "22", None, "11/22"),
+        ("12", "34", None, "12/34"),
+        ("12", "13", None, "12/3"),
+        ("12", "134", None, "1…2/…34"),
+        ("12", "134", "…", "1…2……34"),
+        ("12", "1", None, "1…2/…"),
+        ("", "34", None, "/34"),
+        ("12", "", None, "12/"),
+        ("1", "1", None, "1/="),
+        ("1", None, None, "1/"),
+        (None, "1", None, "/1"),
+        (None, None, None, None),
+        (None, None, "@", None),
+    ],
+)
+def test_reduce_common_prefix(a: str, b: str, joinstr: str | None, result: str) -> None:
+    if joinstr is None:
+        assert util.reduce_common_prefix(a, b) == result
+    else:
+        assert util.reduce_common_prefix(a, b, joinstr=joinstr) == result
