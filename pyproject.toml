@@ -55,7 +55,7 @@ tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "integration"]
-addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail"
+addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb"
 asyncio_default_fixture_loop_scope = "function"
 log_level = "DEBUG"
 log_format = "%(name)s %(levelname)s %(message)s"
