@@ -38,7 +38,7 @@ dev = [
   "pytest-mock",
   "pytest-asyncio",
   "pytest-subtests",
-  "aiohttp-devtools",
+  "pytest-ruff",
   "ipdb",
   "mypy",
   "ruff",
@@ -55,7 +55,7 @@ tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "integration"]
-addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb"
+addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb --ruff --ruff-format"
 asyncio_default_fixture_loop_scope = "function"
 log_level = "DEBUG"
 log_format = "%(name)s %(levelname)s %(message)s"
