@@ -6,7 +6,10 @@ import pytest
 from sqlalchemy import ScalarResult
 from sqlmodel import Session, create_engine, select
 
-from tptools.models import PlayerMatch
+from tptools.match import Match
+from tptools.matchmaker import MatchMaker
+from tptools.models import Entry, PlayerMatch
+from tptools.playermatchstatus import PlayerMatchStatus
 
 
 @pytest.fixture(scope="session")
@@ -35,6 +38,23 @@ def sqlite_ro_session(
     atexit.register(teardown)
 
 
-@pytest.fixture(scope="module")
-def all_playermatches(sqlite_ro_session: Session) -> ScalarResult[PlayerMatch]:
-    return sqlite_ro_session.exec(select(PlayerMatch))
+@pytest.fixture
+def all_entries(sqlite_ro_session: Session) -> Generator[list[Entry], Any]:
+    yield list(sqlite_ro_session.exec(select(Entry)))
+
+
+@pytest.fixture
+def all_playermatches(sqlite_ro_session: Session) -> Generator[list[PlayerMatch], Any]:
+    yield list(sqlite_ro_session.exec(select(PlayerMatch)))
+
+
+@pytest.fixture
+def all_matches(all_playermatches: list[PlayerMatch]) -> set[Match]:
+    mm = MatchMaker()
+    for pm in all_playermatches:
+        if pm.status in (PlayerMatchStatus.BYE, PlayerMatchStatus.PLAYER):
+            continue
+        mm.add_playermatch(pm)
+
+    assert len(mm.unmatched) == 0
+    return mm.matches
