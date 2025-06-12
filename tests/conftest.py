@@ -19,6 +19,7 @@ from tptools.models import (
     Stage,
 )
 from tptools.slot import Bye, Playceholder, Slot, Unknown
+from tptools.tpdata import TPData
 
 
 @pytest.fixture
@@ -340,3 +341,25 @@ def match2(
     entry2: Entry,
 ) -> Match:
     return MatchFactory(pm2, entry2, lldiff=2)
+
+
+@pytest.fixture
+def tpdata1(match1: Match, match2: Match, entry1: Entry, entry2: Entry) -> TPData:
+    t = TPData(name="Test 1")
+    t.add_match(match1)
+    t.add_match(match2)
+    t.add_entry(entry1)
+    t.add_entry(entry2)
+    return t
+
+
+@pytest.fixture
+def tpdata2(match1: Match, entry1: Entry, entry2: Entry) -> TPData:
+    t = TPData(name="Test 2")
+    t.add_match(match1)
+    t.add_entry(entry1)
+    t.add_entry(entry2)
+    return t
+
+
+tpdata1copy = tpdata1

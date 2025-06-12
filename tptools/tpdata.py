@@ -1,0 +1,102 @@
+from collections.abc import Iterable
+
+from pydantic import BaseModel, model_serializer
+from sqlmodel import Session, select
+
+from tptools.matchmaker import MatchMaker
+from tptools.matchstatus import MatchStatus
+from tptools.models import Court, Draw, Entry, PlayerMatch, Setting
+
+from .match import Match
+from .mixins import ComparableMixin, ReprMixin, StrMixin
+
+
+class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
+    name: str | None = None
+    matches: set[Match] = set()
+    entries: set[Entry] = set()
+
+    def add_entry(self, entry: Entry) -> None:
+        if entry in self.entries:
+            raise ValueError(f"{entry!r} already added")
+        self.entries.add(entry)
+
+    def add_entries(self, entries: Iterable[Entry]) -> None:
+        self.entries |= set(entries)
+
+    def add_match(self, match: Match) -> None:
+        if match in self.matches:
+            raise ValueError(f"{match!r} already added")
+        self.matches.add(match)
+
+    def add_matches(self, matches: Iterable[Match]) -> None:
+        self.matches |= set(matches)
+
+    @property
+    def nmatches(self) -> int:
+        return len(self.matches)
+
+    def get_matches(
+        self, include_played: bool = False, include_not_ready: bool = True
+    ) -> set[Match]:
+        if include_played and include_not_ready:
+            return self.matches
+
+        accepted_statuses = set(MatchStatus)
+        if not include_played:
+            accepted_statuses.remove(MatchStatus.PLAYED)
+            accepted_statuses.remove(MatchStatus.NOTPLAYED)
+        if not include_not_ready:
+            accepted_statuses.remove(MatchStatus.PENDING)
+
+        return {m for m in self.matches if m.status in accepted_statuses}  # pyright: ignore[reportUnhashable]
+
+    def get_matches_by_draw(self, draw: Draw) -> set[Match]:
+        return {m for m in self.matches if m.draw == draw}  # pyright: ignore[reportUnhashable]
+
+    def get_draws(self) -> set[Draw]:
+        return {m.draw for m in self.matches}  # pyright: ignore[reportUnhashable]
+
+    def get_courts(self) -> set[Court]:
+        return {m.court for m in self.matches if m.court}  # pyright: ignore[reportUnhashable]
+
+    @property
+    def nentries(self) -> int:
+        return len(self.entries)
+
+    def get_entries(self) -> set[Entry]:
+        return self.entries
+
+    __eq_fields__ = (
+        "name",
+        "entries",
+        "matches",
+    )
+    __str_template__ = "{self.name} ({self.nentries} entries, {self.nmatches} matches)"
+    __repr_fields__ = ("name?", "nentries", "nmatches")
+
+    @model_serializer
+    def serialise_with_lists(self) -> dict[str, list[Entry] | list[Match]]:
+        return {
+            "entries": list(self.entries),
+            "matches": list(self.matches),
+        }
+
+
+async def load_tournament(db_session: Session) -> TPData:
+    tset = db_session.exec(
+        select(Setting).where(Setting.name == "Tournament")
+    ).one_or_none()
+    entries = db_session.exec(select(Entry))
+    mm = MatchMaker()
+    for pm in db_session.exec(select(PlayerMatch)):
+        mm.add_playermatch(pm)
+
+    mm.resolve_unmatched()
+    mm.resolve_match_entries()
+
+    return TPData(
+        name=tset.value if tset is not None else None,
+        entries=set(entries),
+        matches=set(mm.matches),
+    )
