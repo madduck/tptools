@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import partial
-from typing import Any
+from typing import Any, ClassVar
 
 from pydantic import SerializerFunctionWrapHandler, model_serializer
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
@@ -10,6 +10,18 @@ from .basemodel import Model
 from .drawtype import DrawType
 from .playermatchstatus import PlayerMatchStatus
 from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
+
+
+class Setting(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Settings"
+    id: int = Field(primary_key=True)
+    name: str
+    value: str | None
+
+    __repr_fields__ = ("id", "name", "value")
+    __str_template__ = "{self.name}={repr(self.value)}"
+    __eq_fields__ = ("name", "value")
 
 
 class Event(Model, table=True):
