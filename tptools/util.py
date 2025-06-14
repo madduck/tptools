@@ -1,9 +1,8 @@
-import json
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, Never
+from typing import Any
 
 from dateutil.parser import parse as date_parser
 from sqlalchemy import Dialect, Integer, TypeDecorator
@@ -160,3 +159,28 @@ class EnumAsInteger[EnumType: IntEnum](TypeDecorator[EnumType]):
 
     def copy(self, **_: Any) -> "EnumAsInteger[EnumType]":
         return EnumAsInteger(self._enum_type)
+
+
+def make_mdb_odbc_connstring(
+    path: pathlib.Path,
+    *,
+    uid: str | None = None,
+    pwd: str | None = None,
+    driver: str = "{Microsoft Access Driver (*.mdb, *.accdb)}",
+    exclusive: bool = False,
+) -> str:
+    params = {
+        "DRIVER": driver,
+        "DBQ": path.absolute(),
+    }
+
+    if pwd is not None:
+        params["Pwd"] = pwd
+
+    if uid is not None and uid != "Admin":
+        params["Uid"] = uid
+
+    if exclusive:
+        params["Exclusive"] = 1
+
+    return ";".join(f"{k}={v}" for k, v in params.items())

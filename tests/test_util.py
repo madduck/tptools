@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import IntEnum
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -299,3 +300,34 @@ def test_enumasinteger_result_wrong_type(
 
 def test_enumasinteger_copy(EnumAsIntegerInstance: DummyEnumAsInteger) -> None:
     assert isinstance(EnumAsIntegerInstance.copy(), util.EnumAsInteger)
+
+
+def test_mdb_odbc_connstr() -> None:
+    assert util.make_mdb_odbc_connstring(Path("/path/to/db"), uid="uid", pwd="pwd") == (
+        "DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+        "DBQ=/path/to/db;Pwd=pwd;Uid=uid"
+    )
+
+
+def test_mdb_odbc_connstr_no_uid() -> None:
+    assert util.make_mdb_odbc_connstring(Path("/path/to/db"), pwd="pwd") == (
+        "DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=/path/to/db;Pwd=pwd"
+    )
+
+
+def test_mdb_odbc_connstr_no_pwd() -> None:
+    assert util.make_mdb_odbc_connstring(Path("/path/to/db"), uid="uid") == (
+        "DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=/path/to/db;Uid=uid"
+    )
+
+
+def test_mdb_odbc_connstr_admin_no_uid() -> None:
+    assert util.make_mdb_odbc_connstring(
+        Path("/path/to/db"), uid="Admin", pwd="pwd"
+    ) == ("DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=/path/to/db;Pwd=pwd")
+
+
+def test_mdb_odbc_connstr_exclusive() -> None:
+    assert "Exclusive=" in util.make_mdb_odbc_connstring(
+        Path("/path/to/db"), exclusive=True
+    )
