@@ -1,0 +1,38 @@
+# For the available values, see
+# https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/prefs/ShareMatchPrefs.java
+# LinkWithFullDetails, Summary, SummaryMultiple, SummaryToDefault, PostResult, SheetInEmail
+shareAction = "PostResult"
+
+# If shareAction == "PostResult", the URL where to POST the results.
+# Use the special value "me" such that results are posted back to tpsrv.
+# TODO: interaction with MQTT?
+PostResult = "me"
+
+# What to POST to the URL:
+# https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/prefs/PostDataPreference.java
+# Basic, BasicWithJsonDetails, JsonDetailsOnly
+postDataPreference = "JsonDetailsOnly"
+
+# Message to prompt the user prior to results submission
+captionForPostMatchResultToSite = "Submit match result to tournament control"
+
+autoSuggestToPostResult = true
+
+LiveScoreUrl = ""                          #TODO: what to put here?
+turnOnLiveScoringForMatchesFromFeed = true
+postEveryChangeToSupportLiveScore = true
+
+hideCompletedMatchesFromFeed = true
+
+Placeholder_Match = "${time} ${FirstOfList:~${A}~${A.name}~} - ${FirstOfList:~${B}~${B.name}~} (Match #${matchnr}, ${draw.event}::${draw.stage}::${draw.name}) : ${result}"
+
+skipMatchSettings = true
+useHandInHandOutScoring = true
+numberOfPointsToWinGame = 11
+numberOfGamesToWinMatch = 3
+timerPauseBetweenGames = 90
+
+# For the available values, see
+# https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/model/TieBreakFormat.java
+# TwoClearPoints, SelectOneOrTwo, SelectOneTwoOrThree, SelectOneOrThree, SuddenDeath
+tieBreakFormat = "TwoClearPoints"

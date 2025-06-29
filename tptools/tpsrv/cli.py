@@ -1,0 +1,190 @@
+import asyncio
+import importlib
+import logging
+import pathlib
+from contextlib import AsyncExitStack
+from typing import Never
+
+import click
+import click_extra as clickx
+import uvicorn
+from click_async_plugins import (
+    ITC,
+    PluginFactory,
+    plugin_group,
+    setup_plugins,
+)
+from click_async_plugins.util import create_plugin_task
+from click_extra.config import Formats
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, PlainTextResponse
+from starlette.types import StatefulLifespan, StatelessLifespan
+
+from tptools.util import silence_logger
+
+from .tp_proc import tp_proc
+from .util import TpsrvContext, pass_tpsrv
+
+PLUGINS = [
+    "debug",
+    "tp",
+    "tp_stdout",
+    "tp_post",
+    "stdout",
+    "post",
+    "squoresrv",
+    "sq_stdout",
+]
+
+
+try:
+    from uvloop import new_event_loop
+
+except ImportError:
+    from asyncio import new_event_loop  # type: ignore[assignment]
+
+for name, level in (
+    ("asyncio", logging.WARNING),
+    ("watchdog", logging.WARNING),
+    ("click_async_plugins.itc", logging.INFO),
+    ("click_extra", logging.INFO),
+    ("tptools.tpload", logging.INFO),
+    ("tptools.matchmaker", logging.DEBUG),
+    ("httpx", logging.WARNING),
+    ("httpcore.connection", logging.INFO),
+    ("httpcore.http11", logging.INFO),
+):
+    silence_logger(name, level=level)
+
+logger = clickx.new_extra_logger(
+    format="{asctime} {name} {levelname} {message} ({filename}:{lineno})",
+    datefmt="%F %T",
+    level=logging.WARNING,
+)
+
+
+def make_app(
+    lifespan: StatelessLifespan[FastAPI] | StatefulLifespan[FastAPI] | None = None,
+    *,
+    app_class: type[FastAPI] = FastAPI,
+) -> FastAPI:
+    app = app_class(lifespan=lifespan)
+    app.state.changeevent = asyncio.Event()
+
+    def favicon() -> FileResponse:
+        return FileResponse(
+            pathlib.Path(__file__).parent.parent.parent / "assets" / "favicon.ico",
+            media_type="image/png",
+        )
+
+    def robotstxt() -> str:
+        return "User-agent: *\nDisallow: /\n"
+
+    app.get("/favicon.ico", response_class=FileResponse)(favicon)
+    app.get("/robots.txt", response_class=PlainTextResponse)(robotstxt)
+
+    return app
+
+
+@plugin_group
+@clickx.config_option(  # type: ignore[misc]
+    strict=True,
+    show_default=True,
+    formats=Formats.TOML,
+    default=pathlib.Path(click.get_app_dir("tptools")) / "cfg.toml",
+)
+@clickx.verbose_option(default_logger=logger)  # type: ignore[misc]
+@click.option(
+    "--host",
+    "-h",
+    metavar="IP",
+    default="0.0.0.0",
+    show_default=True,
+    help="Host to listen on (bind to)",
+)
+@click.option(
+    "--port",
+    "-p",
+    metavar="PORT",
+    type=click.IntRange(min=1024, max=65535),
+    default=8000,
+    show_default=True,
+    help="Port to listen on",
+)
+@click.pass_context
+def tpsrv(
+    ctx: click.Context,
+    host: str,
+    port: int,
+) -> None:
+    """Serve match and player data via HTTP"""
+
+    # the options will be used in the result_callback function down below
+    _ = host, port
+    ctx.obj = TpsrvContext(api=FastAPI(), itc=ITC())
+
+
+for plugin in PLUGINS:
+    try:
+        mod = importlib.import_module(f".{plugin}", __package__)
+
+    except ImportError as exc:
+        logger.warning(f"Plugin '{plugin}' cannot be loaded: ({exc})")
+
+    else:
+        subcmd = getattr(mod, plugin)
+        tpsrv.add_command(subcmd)
+        logger.debug(f"Added plugin to tpsrv: {plugin}")
+
+
+@tpsrv.result_callback()
+@pass_tpsrv
+def runit(
+    tpsrv: TpsrvContext,
+    plugin_factories: list[PluginFactory],
+    host: str,
+    port: int,
+) -> Never:
+    loop = new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    config = uvicorn.Config(tpsrv.api, host=host, port=port)
+    server = uvicorn.Server(config)
+
+    # We do not use FastAPI's/Starlette's lifespan because of
+    # https://github.com/fastapi/fastapi/discussions/13878
+    # but handle the lifespan ourselves outside of the server process:
+    async def lifespan(plugin_factories: list[PluginFactory]) -> None:
+        async with AsyncExitStack() as stack:
+            tasks = await setup_plugins(plugin_factories, tpsrv, stack=stack)
+            tpproc = await stack.enter_async_context(tp_proc(tpsrv))
+            if tpproc is not None:
+                tpproc.__name__ = "tp_proc"
+            tasks.append(tpproc)
+
+            async with asyncio.TaskGroup() as tg:
+                for task in tasks:
+                    create_plugin_task(task, create_task_fn=tg.create_task)
+
+                await server.serve()
+
+    try:
+        loop.run_until_complete(lifespan(plugin_factories))
+
+    except* asyncio.CancelledError:
+        logger.info("Cancelling…")
+
+    except* click.ClickException as exc:
+        for e in exc.exceptions:
+            raise e from exc
+
+    except* Exception as err:
+        import ipdb
+
+        logger.exception("Something went really wrong")
+
+        ipdb.set_trace()  # noqa: E402 E702 I001 # fmt: skip
+
+        click.get_current_context().exit(1)
+
+    click.get_current_context().exit(0)

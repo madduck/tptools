@@ -2,6 +2,9 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.setuptools_scm]
 write_to = "_version.py"
 
@@ -23,10 +26,16 @@ dependencies = [
   "aiohttp",
   "aiohttp-basicauth-middleware",
   "sqlmodel",
+  "uvloop; sys_platform == 'linux'",
   "aiosqlite",
   "watchdog",
   "click",
   "click_extra",
+  "click-async-plugins @ git+https://github.com/madduck/click-async-plugins",
+  "yarl",
+  "fastapi",
+  "uvicorn",
+  "httpx",
   "asyncinotify; sys_platform == 'linux'",
   "pywin32; sys_platform == 'windows'",
   "sqlalchemy-access; sys_platform == 'windows'",
@@ -50,7 +59,7 @@ dev = [
 ]
 
 [project.scripts]
-tpsrv = "tptools.tpsrv.cli:main"
+tpsrv = "tptools.tpsrv.cli:tpsrv"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
