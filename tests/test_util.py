@@ -1,9 +1,11 @@
+import logging
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
 from sqlalchemy import Dialect
 
 import tptools.util as util
@@ -331,3 +333,17 @@ def test_mdb_odbc_connstr_exclusive() -> None:
     assert "Exclusive=" in util.make_mdb_odbc_connstring(
         Path("/path/to/db"), exclusive=True
     )
+
+
+@pytest.mark.parametrize("level", [None, logging.ERROR])
+def test_silence_logger(level: int | None, mocker: MockerFixture) -> None:
+    logger = mocker.MagicMock(spec=logging.Logger)
+
+    kwargs: dict[str, Any] = {"get_logger_fn": lambda _: logger}
+    if level is not None:
+        kwargs["level"] = level
+    util.silence_logger("test", **kwargs)
+
+    assert logger.propagate is False
+    assert logger.setLevel.call_count == 1
+    assert logger.setLevel.call_args.args[0] == level or logging.WARNING

@@ -1,3 +1,4 @@
+import logging
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from datetime import datetime
@@ -184,3 +185,14 @@ def make_mdb_odbc_connstring(
         params["Exclusive"] = 1
 
     return ";".join(f"{k}={v}" for k, v in params.items())
+
+
+def silence_logger(
+    loggername: str,
+    *,
+    level: int = logging.WARNING,
+    get_logger_fn: Callable[[str], logging.Logger] = logging.getLogger,
+) -> None:
+    logger = get_logger_fn(loggername)
+    logger.setLevel(level)
+    logger.propagate = False
