@@ -9,6 +9,8 @@ repos:
           - click
           - click_extra
           - sqlmodel
+          - fastapi
+          - starlette
           - pydantic
           - types-pywin32
           - types-python-dateutil
