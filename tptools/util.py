@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from datetime import datetime
 from enum import IntEnum
-from typing import Any
+from typing import Any, Never
 
 from dateutil.parser import parse as date_parser
 from sqlalchemy import Dialect, Integer, TypeDecorator
@@ -196,3 +197,9 @@ def silence_logger(
     logger = get_logger_fn(loggername)
     logger.setLevel(level)
     logger.propagate = False
+
+
+async def sleep_forever(sleep: float = 1, *, forever: bool = True) -> Never | None:
+    while await asyncio.sleep(sleep, forever):
+        pass
+    return None

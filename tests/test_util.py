@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 from enum import IntEnum
@@ -347,3 +348,16 @@ def test_silence_logger(level: int | None, mocker: MockerFixture) -> None:
     assert logger.propagate is False
     assert logger.setLevel.call_count == 1
     assert logger.setLevel.call_args.args[0] == level or logging.WARNING
+
+
+@pytest.mark.asyncio
+async def test_sleep_not_forever() -> None:
+    assert await util.sleep_forever(0, forever=False) is None
+
+
+@pytest.mark.asyncio
+async def test_sleep_forever() -> None:
+    task = asyncio.create_task(util.sleep_forever(0.001))
+    await asyncio.sleep(0.01)
+    task.cancel()
+    assert task.cancelling() == 1
