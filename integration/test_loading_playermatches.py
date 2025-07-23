@@ -141,24 +141,16 @@ PLAYERMATCH_ID_BY_STATUS = {
         1633,
     ],  # }}}
     PlayerMatchStatus.PENDING: [  # {{{
+        1469,  # two byes leading in
+        1470,  # two byes leading in
         1465,
         1466,
-        1480,
-        1482,
-        1197,
-        1198,
         1201,
         1202,
         1203,
         1204,
-        1210,
-        1212,
         1463,
         1464,
-        1467,
-        1468,
-        1469,
-        1470,
         1471,
         1472,
         1473,
@@ -167,8 +159,6 @@ PLAYERMATCH_ID_BY_STATUS = {
         1476,
         1477,
         1478,
-        1479,
-        1481,
         1487,
         1488,
         1489,
@@ -177,16 +167,9 @@ PLAYERMATCH_ID_BY_STATUS = {
         1492,
         1493,
         1494,
-        1503,
-        1505,
-        1506,
-        1507,
-        1509,
-        1510,
         1599,
         1601,
         1606,
-        1607,
         1608,
         1620,
         1621,
@@ -195,12 +178,30 @@ PLAYERMATCH_ID_BY_STATUS = {
         1625,
         1626,
         1627,
-        1628,
         1629,
-    ],  # }}}
-    PlayerMatchStatus.READY: [  # {{{
+        # the following are all "ready" in the sense that the two
+        # opponents are known, but there is no way to find that
+        # out from just the PlayerMatch
+        1197,
+        1198,
+        1210,
+        1212,
+        1467,
+        1468,
+        1479,
+        1481,
+        1480,  # no time/court assigned
+        1482,  # no time/court assigned
+        1503,
+        1507,
+        1505,
+        1509,
+        1506,
+        1510,
         1575,
         1577,
+        1607,
+        1628,
     ],  # }}}
 }
 

@@ -12,7 +12,6 @@ def test_player(pmstatus: PlayerMatchStatus) -> None:
     "pmstatus",
     [
         PlayerMatchStatus.PENDING,
-        PlayerMatchStatus.READY,
         PlayerMatchStatus.PLAYED,
         PlayerMatchStatus.NOTPLAYED,
     ],

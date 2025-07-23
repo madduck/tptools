@@ -108,8 +108,8 @@ def test_unscheduled(pm2: PlayerMatch) -> None:
 @pytest.mark.parametrize(
     "useentry,winner,status",
     [
+        (True, None, PlayerMatchStatus.PENDING),
         (False, None, PlayerMatchStatus.PENDING),
-        (True, None, PlayerMatchStatus.READY),
         (True, 1, PlayerMatchStatus.PLAYED),
         (False, 1, PlayerMatchStatus.NOTPLAYED),
     ],
@@ -130,8 +130,8 @@ def test_status_not_group(
 @pytest.mark.parametrize(
     "useentry,wn,vn,winner,status",
     [
-        (True, None, None, None, PlayerMatchStatus.READY),
-        (False, None, None, None, PlayerMatchStatus.READY),
+        (True, None, None, None, PlayerMatchStatus.PENDING),
+        (False, None, None, None, PlayerMatchStatus.PENDING),
         (True, None, None, 1, PlayerMatchStatus.PLAYED),
         (False, None, None, 1, PlayerMatchStatus.PLAYED),
         (False, 0, 0, None, PlayerMatchStatus.NOTPLAYED),

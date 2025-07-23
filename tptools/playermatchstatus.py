@@ -5,7 +5,6 @@ class PlayerMatchStatus(StrEnum):
     BYE = auto()
     PLAYER = auto()
     PENDING = auto()
-    READY = auto()
     PLAYED = auto()
     NOTPLAYED = auto()
 

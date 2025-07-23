@@ -313,20 +313,16 @@ class PlayerMatch(Model, table=True):
                         return PlayerMatchStatus.NOTPLAYED
 
                     else:
-                        return PlayerMatchStatus.READY
+                        return PlayerMatchStatus.PENDING
 
-                elif self.entry is not None:
-                    return (
-                        PlayerMatchStatus.READY
-                        if winner is None
-                        else PlayerMatchStatus.PLAYED
-                    )
+                elif winner is None:
+                    return PlayerMatchStatus.PENDING
+
+                elif self.entry is None:
+                    return PlayerMatchStatus.NOTPLAYED
+
                 else:
-                    return (
-                        PlayerMatchStatus.PENDING
-                        if winner is None
-                        else PlayerMatchStatus.NOTPLAYED
-                    )
+                    return PlayerMatchStatus.PLAYED
 
         except AssertionError as err:
             raise RuntimeError(f"{self} has an invalid status: {str(err)}") from err
