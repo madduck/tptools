@@ -2,9 +2,11 @@ import json
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any
+from enum import IntEnum
+from typing import Any, Never
 
 from dateutil.parser import parse as date_parser
+from sqlalchemy import Dialect, Integer, TypeDecorator
 
 PACKAGE = pathlib.Path(__file__).parent.parent.name
 
@@ -133,3 +135,28 @@ def reduce_common_prefix(
     else:
         b = b[n:]
         return f"{a}{joinstr}{b or '='}"
+
+
+class EnumAsInteger[EnumType: IntEnum](TypeDecorator[EnumType]):
+    impl = Integer  # underlying database type
+
+    def __init__(self, enum_type: type[EnumType]):
+        super().__init__()
+        self._enum_type = enum_type
+
+    def process_bind_param(self, value: EnumType | None, dialect: Dialect) -> int:
+        _ = dialect
+        if isinstance(value, self._enum_type):
+            return value.value
+        raise ValueError(
+            f"expected {self._enum_type.__name__} value, got {value.__class__.__name__}"
+        )
+
+    def process_result_value(self, value: Any | None, dialect: Dialect) -> EnumType:
+        _ = dialect
+        if isinstance(value, int):
+            return self._enum_type(value)
+        raise ValueError(f"expected an integer, got {value.__class__.__name__}")
+
+    def copy(self, **_: Any) -> "EnumAsInteger[EnumType]":
+        return EnumAsInteger(self._enum_type)

@@ -1,9 +1,9 @@
-import logging
 from datetime import datetime
+from enum import IntEnum
 from typing import Any
 
 import pytest
-from pytest_mock import MockerFixture
+from sqlalchemy import Dialect
 
 import tptools.util as util
 
@@ -254,3 +254,48 @@ def test_reduce_common_prefix(a: str, b: str, joinstr: str | None, result: str) 
         assert util.reduce_common_prefix(a, b) == result
     else:
         assert util.reduce_common_prefix(a, b, joinstr=joinstr) == result
+
+
+class DummyEnum(IntEnum):
+    ONE = 1
+    TWO = 2
+
+
+type DummyEnumAsInteger = util.EnumAsInteger[DummyEnum]
+
+
+@pytest.fixture
+def EnumAsIntegerInstance() -> DummyEnumAsInteger:
+    return util.EnumAsInteger(DummyEnum)
+
+
+def test_enumasinteger_bind(EnumAsIntegerInstance: DummyEnumAsInteger) -> None:
+    assert (
+        EnumAsIntegerInstance.process_bind_param(DummyEnum.ONE, Dialect())
+        == DummyEnum.ONE.value
+    )
+
+
+def test_enumasinteger_bind_wrong_type(
+    EnumAsIntegerInstance: DummyEnumAsInteger,
+) -> None:
+    with pytest.raises(ValueError, match="expected DummyEnum value"):
+        _ = EnumAsIntegerInstance.process_bind_param("string", Dialect())  # type: ignore[arg-type]
+
+
+def test_enumasinteger_result(EnumAsIntegerInstance: DummyEnumAsInteger) -> None:
+    assert (
+        EnumAsIntegerInstance.process_result_value(DummyEnum.ONE.value, Dialect())
+        == DummyEnum.ONE
+    )
+
+
+def test_enumasinteger_result_wrong_type(
+    EnumAsIntegerInstance: DummyEnumAsInteger,
+) -> None:
+    with pytest.raises(ValueError, match="expected an integer"):
+        _ = EnumAsIntegerInstance.process_result_value("string", Dialect())
+
+
+def test_enumasinteger_copy(EnumAsIntegerInstance: DummyEnumAsInteger) -> None:
+    assert isinstance(EnumAsIntegerInstance.copy(), util.EnumAsInteger)
