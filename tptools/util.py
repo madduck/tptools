@@ -1,10 +1,11 @@
 import asyncio
 import logging
+import os
 import pathlib
 from collections.abc import Callable, Generator, Iterable, Mapping, MutableMapping
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, Never
+from typing import Any, Never, TextIO
 
 from dateutil.parser import parse as date_parser
 from sqlalchemy import Dialect, Integer, TypeDecorator
@@ -203,3 +204,21 @@ async def sleep_forever(sleep: float = 1, *, forever: bool = True) -> Never | No
     while await asyncio.sleep(sleep, forever):
         pass
     return None
+
+
+def nonblocking_write(s: str, /, *, file: TextIO, eol: str | None = None) -> int:
+    written = 0
+
+    if eol is not None:
+        s += eol
+
+    bytes = s.encode()
+
+    while written < len(bytes):
+        try:
+            written += os.write(file.fileno(), bytes[written:])
+
+        except OSError:  # pragma: nocover TODO: how do I test for this branch?
+            pass
+
+    return written

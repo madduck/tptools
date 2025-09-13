@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import pathlib
+from contextlib import nullcontext
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
-from typing import Any
+from typing import Any, ContextManager
 
 import pytest
 from pytest_mock import MockerFixture
@@ -361,3 +363,21 @@ async def test_sleep_forever() -> None:
     await asyncio.sleep(0.01)
     task.cancel()
     assert task.cancelling() == 1
+
+
+@pytest.mark.parametrize(
+    "instr, eol, exp",
+    [
+        ("foobar", None, nullcontext(6)),
+        ("foobar", "\n", nullcontext(7)),
+        # TODO:test data that would block…
+    ],
+)
+def test_nonblocking_write(
+    tmp_path: pathlib.Path,
+    instr: str,
+    eol: str | None,
+    exp: ContextManager[int | Exception],
+) -> None:
+    with open(tmp_path / "file", "wb", buffering=0) as f, exp as res:
+        assert util.nonblocking_write(instr, file=f, eol=eol) == res  # type: ignore[arg-type]
