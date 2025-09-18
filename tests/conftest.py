@@ -4,6 +4,7 @@ import pytest
 
 from tptools.drawtype import DrawType
 from tptools.models import Club, Country, Draw, Entry, Event, Player, Stage
+from tptools.slot import Bye, Playceholder, Slot, Unknown
 
 
 @pytest.fixture
@@ -121,3 +122,43 @@ def entry12(event1: Event, player1: Player, player2: Player) -> Entry:
 @pytest.fixture
 def entry21(event2: Event, player1: Player, player2: Player) -> Entry:
     return Entry(id=2, event=event2, player1=player2, player2=player1)
+
+
+@pytest.fixture
+def unknown() -> Unknown:
+    return Unknown()
+
+
+@pytest.fixture
+def bye() -> Bye:
+    return Bye()
+
+
+@pytest.fixture
+def winner() -> Playceholder:
+    return Playceholder(matchnr=14, winner=True)
+
+
+@pytest.fixture
+def loser() -> Playceholder:
+    return Playceholder(matchnr=14, winner=False)
+
+
+@pytest.fixture
+def slot1(entry1: Entry) -> Slot:
+    return Slot(content=entry1)
+
+
+@pytest.fixture
+def slot2(entry2: Entry) -> Slot:
+    return Slot(content=entry2)
+
+
+@pytest.fixture
+def slot21(entry21: Entry) -> Slot:
+    return Slot(content=entry21)
+
+
+@pytest.fixture
+def slot12(entry12: Entry) -> Slot:
+    return Slot(content=entry12)
