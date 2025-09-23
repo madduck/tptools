@@ -381,3 +381,13 @@ def test_nonblocking_write(
 ) -> None:
     with open(tmp_path / "file", "wb", buffering=0) as f, exp as res:
         assert util.nonblocking_write(instr, file=f, eol=eol) == res  # type: ignore[arg-type]
+
+
+def test_dict_value_replace_bool_with_int() -> None:
+    dct = {"int": 42, "str": "string", "float": 3.14}
+    bools = {"true": True, "false": False}
+    res = util.dict_value_replace_bool_with_int(dct | bools)
+
+    assert res.pop("true") == 1
+    assert res.pop("false") == 0
+    assert res == dct
