@@ -31,7 +31,7 @@ dependencies = [
   "watchdog",
   "click",
   "click_extra",
-  "click-async-plugins @ https://github.com/madduck/click-async-plugins/archive/refs/head/main.zip",
+  "click-async-plugins @ https://github.com/madduck/click-async-plugins/archive/refs/heads/main.zip",
   "yarl",
   "fastapi",
   "uvicorn",
