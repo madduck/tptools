@@ -12,7 +12,8 @@ from pydantic import (
 
 from tptools.mixins import ReprMixin, StrMixin
 from tptools.mixins.comparable import ComparableMixin
-from tptools.models import Court as TPCourt, Location
+from tptools.models import Court as TPCourt
+from tptools.models import Location
 from tptools.namepolicy import (
     CourtNamePolicy,
 )

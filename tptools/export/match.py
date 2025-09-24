@@ -13,8 +13,8 @@ from pydantic import (
 )
 
 from tptools.match import Match as TPMatch
-from tptools.mixins import ReprMixin, StrMixin
 from tptools.matchstatus import MatchStatus
+from tptools.mixins import ReprMixin, StrMixin
 
 logger = logging.getLogger(__name__)
 

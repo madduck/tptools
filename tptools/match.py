@@ -1,17 +1,14 @@
 import logging
 from datetime import datetime
-from functools import partial, partialmethod
-from typing import Any, Callable, Literal, Self, cast, reveal_type
+from functools import partial
+from typing import Any, Callable, Literal, Self, cast
 
 from pydantic import BaseModel, model_validator
-from pydantic.fields import PropertyT
-
-from tptools.slot import Bye
 
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .models import Court, Draw, Entry, PlayerMatch
-from .slot import Slot, SlotType, Unknown
+from .slot import Slot, Unknown
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)

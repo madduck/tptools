@@ -41,7 +41,7 @@ try:
     from uvloop import new_event_loop
 
 except ImportError:
-    from asyncio import new_event_loop  # type: ignore[assignment]
+    from asyncio import new_event_loop  # type: ignore[assignment,unused-ignore]
 
 for name, level in (
     ("asyncio", logging.WARNING),
@@ -178,7 +178,7 @@ def runit(
         for e in exc.exceptions:
             raise e from exc
 
-    except* Exception as err:
+    except* Exception:
         import ipdb
 
         logger.exception("Something went really wrong")

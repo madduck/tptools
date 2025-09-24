@@ -1,25 +1,22 @@
 # needed < 3.14 so that annotations aren't evaluated
 from __future__ import annotations
 
-import json
 import logging
 import sys
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, cast
+from typing import cast
 
 import click
 from click_async_plugins import PluginLifespan, plugin
 
 from tptools.export import Tournament
 from tptools.export.tournament import MatchStatusSelectionParams
-from tptools.ext.squore import Config, CourtSelectionParams, MatchesFeed
-from tptools.namepolicy import CourtNamePolicy, PairCombinePolicy, PlayerNamePolicy
+from tptools.ext.squore import Config, MatchesFeed
 from tptools.tpsrv.util import react_to_data_update
 from tptools.util import nonblocking_write
 
-from .squoresrv import get_matches_feed_dict
 from .util import TpsrvContext
 
 logger = logging.getLogger(__name__)

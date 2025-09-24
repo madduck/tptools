@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import partial
 from typing import cast
