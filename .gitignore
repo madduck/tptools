@@ -8,3 +8,4 @@ _version.py
 /.envrc
 .coverage
 Squore.dev_court_map.toml
+/dist

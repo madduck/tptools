@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build.targets.sdist]
+exclude = [".direnv"]
+
 [tool.setuptools_scm]
 write_to = "_version.py"
 
@@ -43,6 +46,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "hatchling",
   "pytest",
   "pytest-mock",
   "pytest-asyncio",
