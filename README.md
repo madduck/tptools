@@ -33,7 +33,7 @@ To use `tptools`, you must prepare your Windows machine running TournamentSoftwa
 
 ### Installing Python for Windows
 
-`tptools` is written in Python, and thus you need to get Python running on Windows first. We need Python 3.12 or higher. The official installer can be downloaded from [Python.org](https://www.python.org/downloads/windows/) or installed via the Microsoft Store.
+`tptools` is written in Python, and thus you need to get Python running on Windows first. We need Python 3.13 or higher. The official installer can be downloaded from [Python.org](https://www.python.org/downloads/windows/) or installed via the Microsoft Store.
 
 If installing from Python.org, please ensure to add `Python.exe` to the `PATH`:
 
