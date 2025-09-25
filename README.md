@@ -22,7 +22,18 @@ That said, as `tptools` stands on top of the shoulders of giants, and a lot of b
 > [!IMPORTANT]
 > The TP database is password-protected, and it is up to you to decide whether you want to obtain this password to be able to read the data, and where to get it. **`tptools` does not include this password, nor will we disclose it**, and none of the tools here will work without it.
 
-In addition to simple Python classes, `tptools` provides a command-line utility designed to provide data to other tools, such as [Squore](https://squore.double-yellow.be/) and [tcboard](https://github.com/madduck/tcboard): `tpsrv`. See below for details.
+In addition to simple Python classes, `tptools` provides a command-line utility designed to provide data to other tools, such as [Squore](https://squore.double-yellow.be/) and [tcboard](https://github.com/madduck/tcboard): `tpsrv`, which does a couple of things:
+
+1. it will monitor the tournament file for changes, and reload automatically;
+
+1. it provides HTTP endpoints, currently only for
+   [Squore](https://squore.double-yellow.be/) via the `squoresrv` subcommand;
+
+3. it pushes information about the tournament on every change to all URLs provided to the `post` plugin, as well as the console, if the `stdout` plugin is invoked.
+
+See below for details.
+
+[Squore](https://squore.double-yellow.be/) is an amazing app for Android that can be used to score matches. To facilitate its use, Squore can subscribe to a feed of matches for referees to pick from, such that the player data do not have to be entered manually. In fact, Squore, and its awesome upstream, are the main reasons that `tptools` exist.
 
 > [!WARNING]
 > Microsoft Access is not a database, and certainly not capable of handling concurrent access. `tpsrv` relies on TournamentSoftware writing out every change to the tournament data to the corresponding database file. This is probably not guaranteed to work, but it seems to be the case. It's entirely possible that on odd-numbered Tuesdays, with a crescent moon and only when it's not raining in the summer months, then changes won't be available to the tools within due time, and there is nothing that can be done given the design choices by TournamentSoftare. You've been warned.
@@ -90,22 +101,14 @@ Usage: tpsrv [OPTIONS]
 
 ### Configuring the Windows firewall
 
-When `tpsrv` is invoked the first time, Windows is expected to raise a hand and ask about how to handle a new program trying to bind a port. This is impressive!
 
 ![Screenshot of Windows Firewall](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-firewall.png?raw=true)
 
 Please ensure to allow access for `Python.exe`. Unfortunately, doing so via this dialogue means that all Python scripts can use any port, but it's better than nothing. If you care about security, please make sure that only the actual listening port is open.
 
-Once running, the server does a couple of things:
 
-1. it will monitor the tournament file for changes, and reload automatically;
 
-1. it provides HTTP endpoints, currently only for
-   [Squore](https://squore.double-yellow.be/) via the `squoresrv` subcommand;
 
-2. it pushes information about the tournament on every change to all URLs provided to the `post` plugin, as well as the console, if the `stdout` plugin is invoked.
-
-[Squore](https://squore.double-yellow.be/) is an amazing app for Android that can be used to score matches. To facilitate its use, Squore can subscribe to a feed of matches for referees to pick from, such that the player data do not have to be entered manually.
 
 ## Configuration
 
