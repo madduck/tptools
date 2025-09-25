@@ -4,7 +4,7 @@ from typing import Any, ContextManager
 import click
 import pytest
 
-from tptools.tpsrv.util import validate_urls
+from tpsrv.util import validate_urls
 
 
 @pytest.fixture

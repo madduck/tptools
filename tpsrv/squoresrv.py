@@ -54,12 +54,14 @@ from tptools.util import dict_value_replace_bool_with_int
 
 from .util import TpsrvContext, react_to_data_update
 
-SETTINGS_JSON_PATH = (
-    pathlib.Path(__file__).parent.parent.parent / "ext" / "Squore.settings.json"
-).relative_to(pathlib.Path.cwd(), walk_up=True)
-CONFIG_TOML_PATH = (
-    pathlib.Path(__file__).parent.parent.parent / "ext" / "Squore.config.toml"
-).relative_to(pathlib.Path.cwd(), walk_up=True)
+PROJECT_ROOT = pathlib.Path(__file__).parent.parent
+
+SETTINGS_JSON_PATH = (PROJECT_ROOT / "ext" / "Squore.settings.json").relative_to(
+    pathlib.Path.cwd(), walk_up=True
+)
+CONFIG_TOML_PATH = (PROJECT_ROOT / "ext" / "Squore.config.toml").relative_to(
+    pathlib.Path.cwd(), walk_up=True
+)
 DEVMAP_TOML_PATH = pathlib.Path("Squore.dev_court_map.toml")
 SQUORE_PATH_VERSION = "v1"
 API_MOUNTPOINT = "/squore"
@@ -389,7 +391,7 @@ squoreapp = FastAPI()
 
 squoreapp.mount(
     "/flags",
-    StaticFiles(directory=pathlib.Path(__file__).parent.parent.parent / "flags"),
+    StaticFiles(directory=PROJECT_ROOT / "flags"),
     name="flags",
 )
 

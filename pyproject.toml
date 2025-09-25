@@ -64,12 +64,12 @@ dev = [
 build = ["hatchling"]
 
 [project.scripts]
-tpsrv = "tptools.tpsrv.cli:tpsrv"
+tpsrv = "tpsrv.cli:tpsrv"
 tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "integration"]
-addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb --ruff --ruff-format"
+addopts = "-ra --cov=tptools --cov=tpsrv --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb --ruff --ruff-format"
 asyncio_default_fixture_loop_scope = "function"
 log_level = "DEBUG"
 log_format = "%(name)s %(levelname)s %(message)s"

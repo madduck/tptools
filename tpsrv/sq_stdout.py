@@ -13,22 +13,22 @@ from click_async_plugins import PluginLifespan, plugin
 
 from tptools.export import Tournament
 from tptools.export.tournament import MatchStatusSelectionParams
-from tptools.tpsrv.util import react_to_data_update
+from tptools.ext.squore import Config, MatchesFeed
 from tptools.util import nonblocking_write
 
-from .util import TpsrvContext
+from .util import TpsrvContext, react_to_data_update
 
 logger = logging.getLogger(__name__)
 
 
-async def tournament_model_dump_json(
+async def matches_feed_json(
     tournament: Tournament,
     *,
     indent: int | None = None,
 ) -> None:
-    logger.info("Tournament changed, printing JSON to stdout")
+    logger.info("Tournament changed, printing Squore data to stdout")
 
-    data = tournament.model_dump_json(
+    data = MatchesFeed(tournament=tournament, config=Config()).model_dump_json(
         indent=indent,
         context={
             "matchstatusselectionparams": MatchStatusSelectionParams(
@@ -40,12 +40,9 @@ async def tournament_model_dump_json(
 
 
 @asynccontextmanager
-async def print_tournament(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
-    callback = partial(tournament_model_dump_json, indent=indent)
-    updates_gen = cast(
-        AsyncGenerator[Tournament],
-        tpsrv.itc.updates("tournament", yield_immediately=False),
-    )
+async def print_sqdata(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
+    callback = partial(matches_feed_json, indent=indent)
+    updates_gen = cast(AsyncGenerator[Tournament], tpsrv.itc.updates("tournament"))
     yield react_to_data_update(updates_gen, callback=callback)
 
 
@@ -56,8 +53,8 @@ async def print_tournament(tpsrv: TpsrvContext, indent: int | None) -> PluginLif
     type=click.IntRange(min=1),
     help="Indent JSON output this many characters",
 )
-async def stdout(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
-    """Output tournament data as JSON to stdout whenever it changes"""
+async def sq_stdout(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
+    """Output data as sent to Squore to stdout whenever the tournament changes"""
 
-    async with print_tournament(tpsrv, indent) as task:
+    async with print_sqdata(tpsrv, indent) as task:
         yield task

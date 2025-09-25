@@ -12,10 +12,9 @@ import click
 from click_async_plugins import PluginLifespan, plugin
 
 from tptools.tpdata import TPData
-from tptools.tpsrv.util import react_to_data_update
 from tptools.util import nonblocking_write
 
-from .util import TpsrvContext
+from .util import TpsrvContext, react_to_data_update
 
 logger = logging.getLogger(__name__)
 

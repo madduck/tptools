@@ -13,16 +13,16 @@ from fastapi import FastAPI
 from httpx import URL
 from sqlmodel import Session
 
-from tptools.tpsrv.cli import (
+from tpsrv.cli import (
     make_app,
 )
-from tptools.tpsrv.post import post_tournament
-from tptools.tpsrv.sq_stdout import print_sqdata
-from tptools.tpsrv.squoresrv import setup_for_squore
-from tptools.tpsrv.stdout import print_tournament
-from tptools.tpsrv.tp import make_sqlite_url, tp_source, try_make_engine_for_url
-from tptools.tpsrv.tp_proc import tp_proc
-from tptools.tpsrv.util import TpsrvContext
+from tpsrv.post import post_tournament
+from tpsrv.sq_stdout import print_sqdata
+from tpsrv.squoresrv import setup_for_squore
+from tpsrv.stdout import print_tournament
+from tpsrv.tp import make_sqlite_url, tp_source, try_make_engine_for_url
+from tpsrv.tp_proc import tp_proc
+from tpsrv.util import TpsrvContext
 from tptools.util import silence_logger
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -61,7 +61,7 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         ]
 
         try:
-            from tptools.tpsrv.debug import monitor_stdin_for_debug_commands
+            from tpsrv.debug import monitor_stdin_for_debug_commands
 
             factories.append(monitor_stdin_for_debug_commands)
 
