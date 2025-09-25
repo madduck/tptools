@@ -360,7 +360,7 @@ server {
   server_name squore;
 
   location /settings {
-    return 308 http://tc/squore/v1/settings$is_args$args;
+    return 307 http://tc/squore/v1/settings$is_args$args;
   }
 }
 ```
