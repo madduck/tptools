@@ -130,7 +130,7 @@ def tpsrv(
 
     # the options will be used in the result_callback function down below
     _ = host, port
-    ctx.obj = TpsrvContext(api=FastAPI(), itc=ITC())
+    ctx.obj = TpsrvContext(api=make_app(), itc=ITC())
 
 
 for plugin in PLUGINS:
