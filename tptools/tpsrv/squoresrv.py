@@ -223,7 +223,7 @@ def get_dev_courtid_map(
             devmap |= tomllib.load(f)
 
     except FileNotFoundError:
-        logger.warning(f"Squore config file not found at {path}, ignoring…")
+        logger.warning(f"Squore device to court map not found at {path}, ignoring…")
 
     return devmap
 
