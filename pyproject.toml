@@ -40,8 +40,8 @@ dependencies = [
   "uvicorn",
   "httpx",
   "asyncinotify; sys_platform == 'linux'",
-  "pywin32; sys_platform == 'windows'",
-  "sqlalchemy-access; sys_platform == 'windows'",
+  "pywin32; sys_platform == 'win32'",
+  "sqlalchemy-access; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]

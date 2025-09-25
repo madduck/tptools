@@ -203,7 +203,7 @@ On Linux, `tpsrv tp` uses `inotify` to react to changes (via `watchdog`); On Win
 In an ideal world, access to the TP file would be done asynchronously. However, due to [a bug in aioodbc](https://github.com/aio-libs/aioodbc/issues/463), this does not work reliably. Thus, `tpsrv tp` loads the TP file synchronously on change, which shouldn't be a problem in practice. This may change in the future.
 
 > [!NOTE]
-> In the `winscripts` directory, you may find a batch file that starts `tpsrv tp` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut tpsrv tp`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above for all the other settings).
+> In the `winscripts` directory, you may find a batch file that starts `tpsrv tp` with a TP file, when you drag-drop the file onto the script. A little tool exists to create a shortcut to this file on the desktop, which you can run from the command prompt: `tpshortcut tpsrv-tp`. Now you just need to drag the TP file onto this new shortcut, and the web server will be started (using the configuration file mentioned above for all the other settings).
 
 ### Debugging
 

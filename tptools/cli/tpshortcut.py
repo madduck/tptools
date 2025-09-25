@@ -28,7 +28,7 @@ def main(template: str, script: list[pathlib.Path]) -> None | Never:
         )
 
     except ImportError as err:
-        raise click.Abort(
+        raise click.ClickException(
             "pywin32 is missing. This script only works on Windows."
         ) from err
 
