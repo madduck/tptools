@@ -101,14 +101,22 @@ Usage: tpsrv [OPTIONS]
 
 ### Configuring the Windows firewall
 
+When `tpsrv` is invoked the first time, Windows may raise a hand and ask about how to handle a new program trying to bind a port. This is impressive security from Microsoft!
 
 ![Screenshot of Windows Firewall](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-firewall.png?raw=true)
 
 Please ensure to allow access for `Python.exe`. Unfortunately, doing so via this dialogue means that all Python scripts can use any port, but it's better than nothing. If you care about security, please make sure that only the actual listening port is open.
 
+If you don't get a pop-up, check out the "Windows Defender Firewall" inbound rules under "Advanced Settings". There, you may find that `python.exe` is already allowed for everything. This is impressive security from Microsoft!
 
+And if this is not the case, here is how to poke a hole through the firewall:
 
+```
+netsh advfirewall firewall add rule name="Allow tpsrv access" protocol=TCP dir=in localport=8000 action=allow
+```
 
+Make sure to amend the port accordingly, if you choose to run `tpsrv` on a
+different port.
 
 ## Configuration
 
