@@ -46,7 +46,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "hatchling",
   "pytest",
   "pytest-mock",
   "pytest-asyncio",
@@ -62,6 +61,7 @@ dev = [
   "types-python-dateutil",
   "fastapi[standard]",
 ]
+build = ["hatchling"]
 
 [project.scripts]
 tpsrv = "tptools.tpsrv.cli:tpsrv"
