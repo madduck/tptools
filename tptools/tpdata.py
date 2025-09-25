@@ -13,8 +13,10 @@ from .mixins import ComparableMixin, ReprMixin, StrMixin
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     name: str | None = None
-    matches: set[Match] = set()
     entries: set[Entry] = set()
+    draws: set[Draw] = set()
+    courts: set[Court] = set()
+    matches: set[Match] = set()
 
     def add_entry(self, entry: Entry) -> None:
         if entry in self.entries:
@@ -31,6 +33,30 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
 
     def add_matches(self, matches: Iterable[Match]) -> None:
         self.matches |= set(matches)
+
+    def add_draw(self, draw: Draw) -> None:
+        if draw in self.draws:
+            raise ValueError(f"{draw!r} already added")
+        self.draws.add(draw)
+
+    def add_draws(self, draws: Iterable[Draw]) -> None:
+        self.draws |= set(draws)
+
+    def add_court(self, court: Court) -> None:
+        if court in self.courts:
+            raise ValueError(f"{court!r} already added")
+        self.courts.add(court)
+
+    def add_courts(self, courts: Iterable[Court]) -> None:
+        self.courts |= set(courts)
+
+    @property
+    def ndraws(self) -> int:
+        return len(self.draws)
+
+    @property
+    def ncourts(self) -> int:
+        return len(self.courts)
 
     @property
     def nmatches(self) -> int:
@@ -55,10 +81,10 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
         return {m for m in self.matches if m.draw == draw}  # pyright: ignore[reportUnhashable]
 
     def get_draws(self) -> set[Draw]:
-        return {m.draw for m in self.matches}  # pyright: ignore[reportUnhashable]
+        return self.draws
 
     def get_courts(self) -> set[Court]:
-        return {m.court for m in self.matches if m.court}  # pyright: ignore[reportUnhashable]
+        return self.courts
 
     @property
     def nentries(self) -> int:
@@ -70,10 +96,15 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     __eq_fields__ = (
         "name",
         "entries",
+        "draws",
+        "courts",
         "matches",
     )
-    __str_template__ = "{self.name} ({self.nentries} entries, {self.nmatches} matches)"
-    __repr_fields__ = ("name?", "nentries", "nmatches")
+    __str_template__ = (
+        "{self.name} ({self.nentries} entries, {self.ndraws} draws, "
+        "{self.ncourts} courts, {self.nmatches} matches)"
+    )
+    __repr_fields__ = ("name?", "nentries", "ndraws", "ncourts", "nmatches")
 
     @model_serializer
     def serialise_with_lists(self) -> dict[str, list[Entry] | list[Match]]:
@@ -88,6 +119,8 @@ async def load_tournament(db_session: Session) -> TPData:
         select(Setting).where(Setting.name == "Tournament")
     ).one_or_none()
     entries = db_session.exec(select(Entry))
+    draws = db_session.exec(select(Draw))
+    courts = db_session.exec(select(Court))
     mm = MatchMaker()
     for pm in db_session.exec(select(PlayerMatch)):
         mm.add_playermatch(pm)
@@ -98,5 +131,7 @@ async def load_tournament(db_session: Session) -> TPData:
     return TPData(
         name=tset.value if tset is not None else None,
         entries=set(entries),
+        draws=set(draws),
+        courts=set(courts),
         matches=set(mm.matches),
     )

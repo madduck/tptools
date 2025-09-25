@@ -2,19 +2,19 @@ from tptools.export import Court, Draw, Entry, Tournament
 
 
 def test_repr(exptournament1: Tournament) -> None:
-    assert (
-        repr(exptournament1)
-        == "Tournament(tpdata=TPData(name='Test 1', nentries=2, nmatches=2))"
+    assert repr(exptournament1) == (
+        "Tournament(tpdata=TPData(name='Test 1', nentries=4, "
+        "ndraws=2, ncourts=2, nmatches=2))"
     )
 
 
 def test_str(exptournament1: Tournament) -> None:
-    assert str(exptournament1) == "Test 1 (2 entries, 2 matches)"
+    assert str(exptournament1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
 
 
 def test_get_entries(exptournament1: Tournament, expentry1: Entry) -> None:
     entries: dict[int, Entry] = exptournament1.get_entries()
-    assert len(entries) == 2
+    assert len(entries) == 4
     assert expentry1 == entries[expentry1.id]
 
 
@@ -29,7 +29,7 @@ def test_resolve_entry(exptournament1: Tournament, expentry1: Entry) -> None:
 
 def test_get_courts(exptournament1: Tournament, expcourt1: Court) -> None:
     courts: dict[int, Court] = exptournament1.get_courts()
-    assert len(courts) == 1
+    assert len(courts) == 2
     assert expcourt1 == courts[expcourt1.id]
 
 
@@ -44,7 +44,7 @@ def test_resolve_court(exptournament1: Tournament, expcourt1: Court) -> None:
 
 def test_get_draws(exptournament1: Tournament, expdraw1: Draw) -> None:
     courts: dict[int, Draw] = exptournament1.get_draws()
-    assert len(courts) == 1
+    assert len(courts) == 2
     assert expdraw1 == courts[expdraw1.id]
 
 

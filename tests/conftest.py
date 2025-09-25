@@ -131,12 +131,12 @@ def EntryFactory() -> EntryFactoryType:
 
 @pytest.fixture
 def entry12(event1: Event, player1: Player, player2: Player) -> Entry:
-    return Entry(id=1, event=event1, player1=player1, player2=player2)
+    return Entry(id=12, event=event1, player1=player1, player2=player2)
 
 
 @pytest.fixture
 def entry21(event2: Event, player1: Player, player2: Player) -> Entry:
-    return Entry(id=2, event=event2, player1=player2, player2=player1)
+    return Entry(id=21, event=event2, player1=player2, player2=player1)
 
 
 @pytest.fixture
@@ -344,12 +344,31 @@ def match2(
 
 
 @pytest.fixture
-def tpdata1(match1: Match, match2: Match, entry1: Entry, entry2: Entry) -> TPData:
-    t = TPData(name="Test 1")
+def tpdata1(
+    match1: Match,
+    match2: Match,
+    entry1: Entry,
+    entry2: Entry,
+    entry12: Entry,
+    entry21: Entry,
+    court1: Court,
+    court2: Court,
+    draw1: Draw,
+    draw2: Draw,
+) -> TPData:
+    t = TPData(
+        name="Test 1",
+    )
     t.add_match(match1)
     t.add_match(match2)
     t.add_entry(entry1)
     t.add_entry(entry2)
+    t.add_entry(entry21)
+    t.add_entry(entry12)
+    t.add_court(court1)
+    t.add_court(court2)
+    t.add_draw(draw1)
+    t.add_draw(draw2)
     return t
 
 

@@ -6,22 +6,25 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.models import Draw, Entry, Player, PlayerMatch, Setting
+from tptools.models import Court, Draw, Entry, Player, PlayerMatch, Setting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
 
 
 def test_repr_empty_noname() -> None:
-    assert repr(TPData()) == "TPData(nentries=0, nmatches=0)"
+    assert repr(TPData()) == "TPData(nentries=0, ndraws=0, ncourts=0, nmatches=0)"
 
 
 def test_repr(tpdata1: TPData) -> None:
-    assert repr(tpdata1) == "TPData(name='Test 1', nentries=2, nmatches=2)"
+    assert (
+        repr(tpdata1)
+        == "TPData(name='Test 1', nentries=4, ndraws=2, ncourts=2, nmatches=2)"
+    )
 
 
 def test_str(tpdata1: TPData) -> None:
-    assert str(tpdata1) == "Test 1 (2 entries, 2 matches)"
+    assert str(tpdata1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
 
 
 def test_eq(tpdata1: TPData, tpdata1copy: TPData) -> None:
@@ -61,6 +64,16 @@ def test_add_duplicate_match(tpdata1: TPData, match1: Match) -> None:
 def test_add_duplicate_entry(tpdata1: TPData, entry1: Entry) -> None:
     with pytest.raises(ValueError, match="already added"):
         tpdata1.add_entry(entry1)
+
+
+def test_add_duplicate_draw(tpdata1: TPData, draw1: Draw) -> None:
+    with pytest.raises(ValueError, match="already added"):
+        tpdata1.add_draw(draw1)
+
+
+def test_add_duplicate_court(tpdata1: TPData, court1: Court) -> None:
+    with pytest.raises(ValueError, match="already added"):
+        tpdata1.add_court(court1)
 
 
 def test_get_matches(tpdata2: TPData, match1: Match) -> None:
@@ -115,9 +128,10 @@ def test_get_draws(tpdata1: TPData, match1: Match, match2: Match) -> None:
     assert match2.draw in draws
 
 
-def test_get_courts(tpdata1: TPData, match1: Match, match2: Match) -> None:
+def test_get_courts(tpdata1: TPData, court1: Court, court2: Court) -> None:
     courts = tpdata1.get_courts()
-    assert courts == {match1.court}  # pyright: ignore[reportUnhashable]
+    assert court1 in courts
+    assert court2 in courts
 
 
 def test_model_dump(tpdata1: TPData) -> None:
@@ -133,12 +147,18 @@ type AsyncMockSessionFactoryType = Callable[..., AsyncMockType]
 @pytest.fixture
 def MockSessionFactory(
     mocker: MockerFixture,
+    court1: Court,
+    court2: Court,
+    draw1: Draw,
+    draw2: Draw,
 ) -> MockSessionFactoryType:
     def make_mock_session(
         *,
         tournament_name: str | None = None,
         entries: list[Entry] | None = None,
         playermatches: list[PlayerMatch] | None = None,
+        courts: list[Court] | None = None,
+        draws: list[Draw] | None = None,
     ) -> MockType:
         mock_session = mocker.Mock()
         tname_setting = mocker.Mock()
@@ -150,6 +170,8 @@ def MockSessionFactory(
         mock_session.exec.side_effect = [
             tname_setting,
             entries or [],
+            draws or [draw1, draw2],
+            courts or [court1, court2],
             playermatches or [],
         ]
 

@@ -22,7 +22,7 @@ def test_repr(entry1: Entry) -> None:
 
 def test_repr_double(entry12: Entry) -> None:
     assert repr(entry12) == (
-        "Entry(id=1, event.name='Herren 1', "
+        "Entry(id=12, event.name='Herren 1', "
         "player1.name='Martin Krafft', "
         "player2.name='Iddo Hoeve')"
     )

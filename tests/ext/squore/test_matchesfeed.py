@@ -30,13 +30,14 @@ def test_matches_feed_empty(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
 def test_repr(mf1: MatchesFeed) -> None:
     assert repr(mf1) == (
         "MatchesFeed("
-        "tournament=Tournament(tpdata=TPData(name='Test 1', nentries=2, nmatches=2))"
+        "tournament=Tournament(tpdata=TPData(name='Test 1', "
+        "nentries=4, ndraws=2, ncourts=2, nmatches=2))"
         ", nconfig=0)"
     )
 
 
 def test_str(mf1: MatchesFeed) -> None:
-    assert str(mf1) == "Test 1 (2 entries, 2 matches)"
+    assert str(mf1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
 
 
 def test_matches_feed(MatchesFeedFactory: MatchesFeedFactoryType) -> None:

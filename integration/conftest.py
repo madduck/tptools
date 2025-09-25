@@ -9,7 +9,7 @@ from sqlmodel import Session, create_engine, select
 
 from tptools.match import Match
 from tptools.matchmaker import MatchMaker
-from tptools.models import Entry, PlayerMatch
+from tptools.models import Court, Draw, Entry, PlayerMatch
 from tptools.playermatchstatus import PlayerMatchStatus
 from tptools.util import make_mdb_odbc_connstring
 
@@ -62,6 +62,16 @@ def db_session() -> Generator[Session, Any]:
 @pytest.fixture
 def all_entries(db_session: Session) -> Generator[list[Entry], Any]:
     yield list(db_session.exec(select(Entry)))
+
+
+@pytest.fixture
+def all_draws(db_session: Session) -> Generator[list[Draw], Any]:
+    yield list(db_session.exec(select(Draw)))
+
+
+@pytest.fixture
+def all_courts(db_session: Session) -> Generator[list[Court], Any]:
+    yield list(db_session.exec(select(Court)))
 
 
 @pytest.fixture

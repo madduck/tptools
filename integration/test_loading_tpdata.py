@@ -2,7 +2,7 @@ import pytest
 from sqlmodel import Session
 
 from tptools.match import Match
-from tptools.models import Entry
+from tptools.models import Court, Draw, Entry
 from tptools.tpdata import TPData, load_tournament
 
 
@@ -12,12 +12,20 @@ def tpdata() -> TPData:
 
 
 def test_loading_tournament(
-    tpdata: TPData, all_matches: list[Match], all_entries: list[Entry]
+    tpdata: TPData,
+    all_matches: list[Match],
+    all_entries: list[Entry],
+    all_draws: list[Draw],
+    all_courts: list[Court],
 ) -> None:
     tpdata.add_matches(all_matches)
-    tpdata.add_entries(all_entries)
     assert tpdata.nmatches == 68
+    tpdata.add_entries(all_entries)
     assert tpdata.nentries == 36
+    tpdata.add_draws(all_draws)
+    assert tpdata.ndraws == 9
+    tpdata.add_courts(all_courts)
+    assert tpdata.ncourts == 10
 
 
 @pytest.mark.asyncio
