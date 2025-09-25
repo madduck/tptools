@@ -345,7 +345,7 @@ def get_court_feeds_list(
             playerpolicyparams
             | {
                 "lnamefirst": True,
-                "playerjoinstr": ", ",
+                "namejoinstr": ", ",
                 "include_club": True,
                 "include_country": True,
             }
