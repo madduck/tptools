@@ -27,6 +27,8 @@ from yarl import URL
 
 from tptools.export import (
     Court,
+    Draw,
+    DrawStruct,
     Entry,
     EntryStruct,
     MatchStatusSelectionParams,
@@ -256,6 +258,12 @@ def get_courts(
     return list(tournament.get_courts().values())
 
 
+def get_draws(
+    tournament: Annotated[Tournament, Depends(get_tournament)],
+) -> list[Draw]:
+    return list(tournament.get_draws().values())
+
+
 def get_entries(
     tournament: Annotated[Tournament, Depends(get_tournament)],
 ) -> list[Entry]:
@@ -436,6 +444,19 @@ async def courts(
 ) -> list[CourtInfo]:
     logger.info(f"Returning {len(courts)} courts in response to request from {remote}")
     return [CourtInfo(id=c.id, name=c.name, location=c.location.name) for c in courts]
+
+
+class DrawInfo(DrawStruct):
+    id: int
+
+
+@squoreapp.get("/draws")
+async def draws(
+    remote: Annotated[str, Depends(get_remote)],
+    draws: Annotated[list[Draw], Depends(get_draws)],
+) -> list[DrawInfo]:
+    logger.info(f"Returning {len(draws)} draws in response to request from {remote}")
+    return [DrawInfo(id=d.id, **d.model_dump()) for d in draws]
 
 
 @squoreapp.get("/feeds")
