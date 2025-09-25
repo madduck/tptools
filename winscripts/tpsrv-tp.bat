@@ -14,6 +14,6 @@ if not exist "%tpfile%" (
   exit /b 1
 )
 
-tpsrv -v squoresrv post --url http://tc/tp/tournament tp "%tpfile%
+tpsrv -v squoresrv post --url http://tc/tptools/v1/tournament tp "%tpfile%
 
 pause

@@ -48,7 +48,7 @@ for name, level in (
 logger = logging.getLogger(__name__)
 
 TP_FILE = pathlib.Path(__file__).parent / "integration" / "anon_tournament.sqlite"
-POSTURL = URL("http://localhost:8001")
+POSTURL = URL("http://localhost:8001/tptools/v1/tournament")
 
 
 @asynccontextmanager
