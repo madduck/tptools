@@ -414,6 +414,15 @@ async def players(
     return PlainTextResponse("\n".join([p["name"] for p in players]))
 
 
+@squoreapp.get("/tournament")
+async def tournament(
+    remote: Annotated[str, Depends(get_remote)],
+    tournament: Annotated[Tournament, Depends(get_tournament)],
+) -> Tournament:
+    logger.info(f"Returning tournament name in response to request from {remote}")
+    return tournament
+
+
 class CourtInfo(BaseModel):
     id: int
     name: str
