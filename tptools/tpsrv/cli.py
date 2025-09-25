@@ -16,7 +16,7 @@ from click_async_plugins import (
 )
 from click_async_plugins.util import create_plugin_task
 from click_extra.config import Formats
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, PlainTextResponse
 from starlette.types import StatefulLifespan, StatelessLifespan
 
@@ -77,11 +77,20 @@ def make_app(
             media_type="image/png",
         )
 
+    app.get("/favicon.ico")(favicon)
+
     def robotstxt() -> str:
         return "User-agent: *\nDisallow: /\n"
 
-    app.get("/favicon.ico", response_class=FileResponse)(favicon)
     app.get("/robots.txt", response_class=PlainTextResponse)(robotstxt)
+
+    def pong(request: Request) -> str:
+        client = request.headers.get(
+            "X-Forwarded-For", request.client.host if request.client else None
+        )
+        return f"Hello {client}, tpsrv is running!\n"
+
+    app.get("/", response_class=PlainTextResponse)(pong)
 
     return app
 
