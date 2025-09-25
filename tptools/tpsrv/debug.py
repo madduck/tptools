@@ -3,16 +3,23 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import fcntl
 import logging
 import os
 import sys
-import termios
-import tty
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from functools import partial
+
+try:
+    import fcntl
+    import termios
+    import tty
+
+except ImportError as err:
+    raise NotImplementedError(
+        "Terminal control not supported on this platform"
+    ) from err
 
 from click_async_plugins import ITC, PluginLifespan, plugin
 

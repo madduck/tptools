@@ -209,6 +209,10 @@ Keys I know about for debugging:
   ?     Print this message
 ```
 
+Note that this plugin currently only works on Linux, since I cannot be bothered
+to figure out how Windows terminal works. Please feel free to submit a pull
+request if you can make it slurp single characters from the terminal.
+
 ### Printing to `stdout` and `POST`ing data
 
 Five commands exist to export data whenever the tournament updates. The commands

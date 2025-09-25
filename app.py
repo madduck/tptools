@@ -16,7 +16,6 @@ from sqlmodel import Session
 from tptools.tpsrv.cli import (
     make_app,
 )
-from tptools.tpsrv.debug import monitor_stdin_for_debug_commands
 from tptools.tpsrv.post import post_tournament
 from tptools.tpsrv.sq_stdout import print_sqdata
 from tptools.tpsrv.squoresrv import setup_for_squore
@@ -56,11 +55,18 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
 
         factories: list[PluginFactory] = [
-            monitor_stdin_for_debug_commands,
             tp_lifespan,
             tp_proc,
             setup_for_squore,
         ]
+
+        try:
+            from tptools.tpsrv.debug import monitor_stdin_for_debug_commands
+
+            factories.append(monitor_stdin_for_debug_commands)
+
+        except NotImplementedError:
+            logger.warning("Not setting up debug plugin on this platform")
 
         if not os.getenv("NOTPSTDOUT"):
             tpstdout_lifespan = partial(print_tournament, indent=1)

@@ -128,8 +128,8 @@ for plugin in PLUGINS:
     try:
         mod = importlib.import_module(f".{plugin}", __package__)
 
-    except ImportError as exc:
-        logger.warning(f"Plugin '{plugin}' cannot be loaded: ({exc})")
+    except (ImportError, NotImplementedError) as exc:
+        logger.warning(f"Plugin '{plugin}' cannot be loaded: {exc}")
 
     else:
         subcmd = getattr(mod, plugin)
