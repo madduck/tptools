@@ -11,10 +11,10 @@ import uvicorn
 from click_async_plugins import (
     ITC,
     PluginFactory,
+    create_plugin_task,
     plugin_group,
     setup_plugins,
 )
-from click_async_plugins.util import create_plugin_task
 from click_extra.config import Formats
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, PlainTextResponse
@@ -23,7 +23,7 @@ from starlette.types import StatefulLifespan, StatelessLifespan
 from tptools.util import silence_logger
 
 from .tp_proc import tp_proc
-from .util import TpsrvContext, pass_tpsrv
+from .util import CliContext, pass_clictx
 
 PLUGINS = [
     "debug",
@@ -130,7 +130,7 @@ def tpsrv(
 
     # the options will be used in the result_callback function down below
     _ = host, port
-    ctx.obj = TpsrvContext(api=make_app(), itc=ITC())
+    ctx.obj = CliContext(api=make_app(), itc=ITC())
 
 
 for plugin in PLUGINS:
@@ -147,9 +147,9 @@ for plugin in PLUGINS:
 
 
 @tpsrv.result_callback()
-@pass_tpsrv
+@pass_clictx
 def runit(
-    tpsrv: TpsrvContext,
+    clictx: CliContext,
     plugin_factories: list[PluginFactory],
     host: str,
     port: int,
@@ -157,7 +157,7 @@ def runit(
     loop = new_event_loop()
     asyncio.set_event_loop(loop)
 
-    config = uvicorn.Config(tpsrv.api, host=host, port=port)
+    config = uvicorn.Config(clictx.api, host=host, port=port)
     server = uvicorn.Server(config)
 
     # We do not use FastAPI's/Starlette's lifespan because of
@@ -165,8 +165,8 @@ def runit(
     # but handle the lifespan ourselves outside of the server process:
     async def lifespan(plugin_factories: list[PluginFactory]) -> None:
         async with AsyncExitStack() as stack:
-            tasks = await setup_plugins(plugin_factories, tpsrv, stack=stack)
-            tpproc = await stack.enter_async_context(tp_proc(tpsrv))
+            tasks = await setup_plugins(plugin_factories, stack=stack)
+            tpproc = await stack.enter_async_context(tp_proc(clictx))
             if tpproc is not None:
                 tpproc.__name__ = "tp_proc"
             tasks.append(tpproc)

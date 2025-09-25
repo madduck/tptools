@@ -18,7 +18,7 @@ from tptools.models import Setting
 from tptools.tpdata import load_tournament
 from tptools.util import make_mdb_odbc_connstring
 
-from .util import TpsrvContext
+from .util import CliContext, pass_clictx
 
 TP_DEFAULT_USER = "Admin"
 
@@ -54,20 +54,20 @@ def try_make_engine_for_url(url: URL, *, verify: bool = True) -> Engine | Never:
 
 @asynccontextmanager
 async def tp_source(
-    tpsrv: TpsrvContext,
+    clictx: CliContext,
     tp_file: pathlib.Path,
     session: Session,
     *,
     no_fire_on_startup: bool = False,
 ) -> PluginLifespan:
-    if tpsrv.itc.knows_about("tpdata"):
+    if clictx.itc.knows_about("tpdata"):
         raise click.ClickException("Another TP source is already registered")
 
     async def callback() -> StateType:
         logger.info("Loading TPData…")
         session.expire_all()
         tpdata = await load_tournament(session)
-        tpsrv.itc.set("tpdata", tpdata)
+        clictx.itc.set("tpdata", tpdata)
         return MappingProxyType({})
 
     watcher = FileWatcher(tp_file, fire_once_asap=not no_fire_on_startup)
@@ -115,8 +115,9 @@ async def tp_source(
 #     default=30,
 #     show_default=True,
 # )
+@pass_clictx
 async def tp(
-    tpsrv: TpsrvContext,
+    clictx: CliContext,
     tp_file: pathlib.Path,
     user: str,
     password: str,
@@ -147,6 +148,6 @@ async def tp(
 
     with Session(engine) as session:
         async with tp_source(
-            tpsrv, tp_file, session, no_fire_on_startup=no_fire_on_startup
+            clictx, tp_file, session, no_fire_on_startup=no_fire_on_startup
         ) as task:
             yield task

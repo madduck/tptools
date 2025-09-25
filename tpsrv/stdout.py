@@ -9,13 +9,13 @@ from functools import partial
 from typing import cast
 
 import click
-from click_async_plugins import PluginLifespan, plugin
+from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 
 from tptools.export import Tournament
 from tptools.export.tournament import MatchStatusSelectionParams
 from tptools.util import nonblocking_write
 
-from .util import TpsrvContext, react_to_data_update
+from .util import CliContext, pass_clictx
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +39,11 @@ async def tournament_model_dump_json(
 
 
 @asynccontextmanager
-async def print_tournament(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
+async def print_tournament(clictx: CliContext, indent: int | None) -> PluginLifespan:
     callback = partial(tournament_model_dump_json, indent=indent)
     updates_gen = cast(
         AsyncGenerator[Tournament],
-        tpsrv.itc.updates("tournament", yield_immediately=False),
+        clictx.itc.updates("tournament", yield_immediately=False),
     )
     yield react_to_data_update(updates_gen, callback=callback)
 
@@ -55,8 +55,9 @@ async def print_tournament(tpsrv: TpsrvContext, indent: int | None) -> PluginLif
     type=click.IntRange(min=1),
     help="Indent JSON output this many characters",
 )
-async def stdout(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
+@pass_clictx
+async def stdout(clictx: CliContext, indent: int | None) -> PluginLifespan:
     """Output tournament data as JSON to stdout whenever it changes"""
 
-    async with print_tournament(tpsrv, indent) as task:
+    async with print_tournament(clictx, indent) as task:
         yield task

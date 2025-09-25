@@ -8,7 +8,12 @@ from collections.abc import AsyncGenerator
 from contextlib import AsyncExitStack, asynccontextmanager
 from functools import partial
 
-from click_async_plugins import ITC, PluginFactory, create_plugin_task, setup_plugins
+from click_async_plugins import (
+    ITC,
+    PluginFactory,
+    create_plugin_task,
+    setup_plugins,
+)
 from fastapi import FastAPI
 from httpx import URL
 from sqlmodel import Session
@@ -16,13 +21,14 @@ from sqlmodel import Session
 from tpsrv.cli import (
     make_app,
 )
+from tpsrv.debug import debug_key_press_handler
 from tpsrv.post import post_tournament
 from tpsrv.sq_stdout import print_sqdata
 from tpsrv.squoresrv import setup_for_squore
 from tpsrv.stdout import print_tournament
 from tpsrv.tp import make_sqlite_url, tp_source, try_make_engine_for_url
 from tpsrv.tp_proc import tp_proc
-from tpsrv.util import TpsrvContext
+from tpsrv.util import CliContext
 from tptools.util import silence_logger
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -47,7 +53,7 @@ POSTURL = URL("http://localhost:8001")
 
 @asynccontextmanager
 async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
-    tpsrv = TpsrvContext(api=api, itc=ITC())
+    clictx = CliContext(api=api, itc=ITC())
 
     engine = try_make_engine_for_url(make_sqlite_url(TP_FILE))
 
@@ -55,18 +61,11 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
 
         factories: list[PluginFactory] = [
+            debug_key_press_handler,
             tp_lifespan,
             tp_proc,
             setup_for_squore,
         ]
-
-        try:
-            from tpsrv.debug import monitor_stdin_for_debug_commands
-
-            factories.append(monitor_stdin_for_debug_commands)
-
-        except NotImplementedError:
-            logger.warning("Not setting up debug plugin on this platform")
 
         if not os.getenv("NOTPSTDOUT"):
             tpstdout_lifespan = partial(print_tournament, indent=1)
@@ -86,7 +85,7 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
 
         try:
             async with AsyncExitStack() as stack:
-                tasks = await setup_plugins(factories, stack=stack, tpsrv=tpsrv)
+                tasks = await setup_plugins(factories, stack=stack, clictx=clictx)
 
                 async with asyncio.TaskGroup() as tg:
                     plugin_task = partial(

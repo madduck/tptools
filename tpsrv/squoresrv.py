@@ -12,7 +12,7 @@ from typing import Annotated, Any, Never, cast
 from warnings import warn
 
 import click
-from click_async_plugins import PluginLifespan, plugin
+from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -52,7 +52,7 @@ from tptools.namepolicy import (
 )
 from tptools.util import dict_value_replace_bool_with_int
 
-from .util import TpsrvContext, react_to_data_update
+from .util import CliContext, pass_clictx
 
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent
 
@@ -539,7 +539,7 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
 
 @asynccontextmanager
 async def setup_for_squore(
-    tpsrv: TpsrvContext,
+    clictx: CliContext,
     api_mount_point: str = API_MOUNTPOINT,
     settings_json: pathlib.Path = SETTINGS_JSON_PATH,
     config_toml: pathlib.Path = CONFIG_TOML_PATH,
@@ -559,15 +559,15 @@ async def setup_for_squore(
         "config": config_toml,
         "devmap": devmap_toml,
     }
-    tpsrv.api.mount(path=api_path, app=squoreapp, name="squore")
-    tpsrv.api.include_router(deprecated_routes, prefix=api_mount_point)
+    clictx.api.mount(path=api_path, app=squoreapp, name="squore")
+    clictx.api.include_router(deprecated_routes, prefix=api_mount_point)
     logger.info(f"Configured the app to serve to Squore from {api_path}")
 
     async def callback(tournament: Tournament) -> None:
         logger.info("Received new tournament data")
         squoreapp.state.tournament = tournament
 
-    updates_gen = cast(AsyncGenerator[Tournament], tpsrv.itc.updates("tournament"))
+    updates_gen = cast(AsyncGenerator[Tournament], clictx.itc.updates("tournament"))
     yield react_to_data_update(updates_gen, callback=callback)
 
 
@@ -603,8 +603,9 @@ async def setup_for_squore(
     show_default=True,
     help="Path of file to use for device to court mapping",
 )
+@pass_clictx
 async def squoresrv(
-    tpsrv: TpsrvContext,
+    clictx: CliContext,
     api_mount_point: str,
     settings_json: pathlib.Path,
     config_toml: pathlib.Path,
@@ -613,6 +614,6 @@ async def squoresrv(
     """Mount endpoints to serve data for Squore"""
 
     async with setup_for_squore(
-        tpsrv, api_mount_point, settings_json, config_toml, devmap_toml
+        clictx, api_mount_point, settings_json, config_toml, devmap_toml
     ) as task:
         yield task

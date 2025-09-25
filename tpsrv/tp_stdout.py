@@ -9,12 +9,12 @@ from functools import partial
 from typing import cast
 
 import click
-from click_async_plugins import PluginLifespan, plugin
+from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 
 from tptools.tpdata import TPData
 from tptools.util import nonblocking_write
 
-from .util import TpsrvContext, react_to_data_update
+from .util import CliContext, pass_clictx
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +38,10 @@ async def tpdata_model_dump_json(
 
 @asynccontextmanager
 async def print_tpdata_to_stdout(
-    tpsrv: TpsrvContext, indent: int | None
+    clictx: CliContext, indent: int | None
 ) -> PluginLifespan:
     callback = partial(tpdata_model_dump_json, indent=indent)
-    updates_gen = cast(AsyncGenerator[TPData], tpsrv.itc.updates("tpdata"))
+    updates_gen = cast(AsyncGenerator[TPData], clictx.itc.updates("tpdata"))
     yield react_to_data_update(updates_gen, callback=callback)
 
 
@@ -52,8 +52,9 @@ async def print_tpdata_to_stdout(
     type=click.IntRange(min=1),
     help="Indent JSON output this many characters",
 )
-async def tp_stdout(tpsrv: TpsrvContext, indent: int | None) -> PluginLifespan:
+@pass_clictx
+async def tp_stdout(clictx: CliContext, indent: int | None) -> PluginLifespan:
     """Output raw (TP) data as JSON to stdout whenever it changes"""
 
-    async with print_tpdata_to_stdout(tpsrv, indent) as task:
+    async with print_tpdata_to_stdout(clictx, indent) as task:
         yield task

@@ -9,12 +9,17 @@ from functools import partial
 from typing import cast
 
 import click
-from click_async_plugins import PluginLifespan, plugin
+from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 from httpx import URL
 
 from tptools.tpdata import TPData
 
-from .util import TpsrvContext, post_data, react_to_data_update, validate_urls
+from .util import (
+    CliContext,
+    pass_clictx,
+    post_data,
+    validate_urls,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +44,10 @@ async def _post_to_urls(tpdata: TPData, urls: list[URL], *, retries: int = 1) ->
 
 @asynccontextmanager
 async def post_tpdata(
-    tpsrv: TpsrvContext, urls: list[URL], retries: int
+    clictx: CliContext, urls: list[URL], retries: int
 ) -> PluginLifespan:
     callback = partial(_post_to_urls, urls=urls, retries=retries)
-    updates_gen = cast(AsyncGenerator[TPData], tpsrv.itc.updates("tpdata"))
+    updates_gen = cast(AsyncGenerator[TPData], clictx.itc.updates("tpdata"))
     yield react_to_data_update(updates_gen, callback=callback)
 
 
@@ -67,8 +72,9 @@ async def post_tpdata(
     show_default=True,
     help="Number of times to retry POSTing to URLs",
 )
-async def tp_post(tpsrv: TpsrvContext, urls: list[URL], retries: int) -> PluginLifespan:
+@pass_clictx
+async def tp_post(clictx: CliContext, urls: list[URL], retries: int) -> PluginLifespan:
     """Post raw (TP) JSON data to URLs on change"""
 
-    async with post_tpdata(tpsrv, urls, retries) as task:
+    async with post_tpdata(clictx, urls, retries) as task:
         yield task

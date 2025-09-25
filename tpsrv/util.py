@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Coroutine
 from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import AsyncGenerator, Callable
+from typing import Callable
 
 import click
-from click_async_plugins import ITC
+from click_async_plugins import CliContext as _CliContext
 from fastapi import FastAPI
 from httpx import URL, AsyncClient, HTTPError, InvalidURL
 from httpx import codes as status_codes
@@ -19,12 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass()
-class TpsrvContext:
+class CliContext(_CliContext):
     api: FastAPI
-    itc: ITC
 
 
-pass_tpsrv = click.make_pass_decorator(TpsrvContext)
+pass_clictx = click.make_pass_decorator(CliContext)
 
 
 def validate_urls(
@@ -105,17 +103,3 @@ async def post_data(
             else:
                 logger.error(f"Giving up posting to {url}: {err}")
                 break
-
-
-async def react_to_data_update[T](
-    updates_gen: AsyncGenerator[T],
-    *,
-    callback: Callable[[T], Coroutine[None, None, None]],
-) -> None:
-    try:
-        async for update in updates_gen:
-            if update is not None:
-                await callback(update)
-
-    except asyncio.CancelledError:
-        pass
