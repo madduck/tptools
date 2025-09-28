@@ -25,6 +25,7 @@ class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
 class Setting(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Settings"
+
     id: int = Field(primary_key=True)
     name: str
     value: str | None
@@ -35,6 +36,9 @@ class Setting(Model, table=True):
 
 
 class Event(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Event"
+
     id: int = Field(primary_key=True)
     name: str
     abbreviation: str | None = None
@@ -51,10 +55,13 @@ class Event(Model, table=True):
 
 
 class Stage(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Stage"
+
     id: int = Field(primary_key=True)
     name: str
     eventid_: int | None = Field(
-        default=None, sa_column=Column("event", ForeignKey("event.id"))
+        default=None, sa_column=Column("event", ForeignKey("Event.id"))
     )
     event: Event = Relationship(back_populates="stages")
     draws: list["Draw"] = Relationship(back_populates="stage")
@@ -72,12 +79,15 @@ class Stage(Model, table=True):
 
 
 class Draw(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Draw"
+
     id: int = Field(primary_key=True)
     name: str
     type: DrawType = Field(sa_column=Column("drawtype", EnumAsInteger(DrawType)))
     size: int = Field(sa_column=Column("drawsize"))
     stageid_: int | None = Field(
-        default=None, sa_column=Column("stage", ForeignKey("stage.id"))
+        default=None, sa_column=Column("stage", ForeignKey("Stage.id"))
     )
     stage: Stage = Relationship(back_populates="draws")
     playermatches: list["PlayerMatch"] = Relationship(back_populates="draw")
@@ -98,6 +108,9 @@ class Draw(Model, table=True):
 
 
 class Club(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Club"
+
     id: int = Field(primary_key=True)
     name: str
     players: list["Player"] = Relationship(back_populates="club")
@@ -109,6 +122,9 @@ class Club(Model, table=True):
 
 
 class Country(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Country"
+
     id: int = Field(primary_key=True)
     name: str
     code: str | None = None
@@ -121,6 +137,9 @@ class Country(Model, table=True):
 
 
 class Player(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Player"
+
     id: int = Field(primary_key=True)
     lastname: str = Field(sa_column=Column("name", String))
     firstname: str
@@ -130,11 +149,11 @@ class Player(Model, table=True):
         return f"{self.firstname} {self.lastname}".strip()
 
     clubid_: int | None = Field(
-        default=None, sa_column=Column("club", Integer, ForeignKey("club.id"))
+        default=None, sa_column=Column("club", Integer, ForeignKey("Club.id"))
     )
     club: Club = Relationship(back_populates="players")
     countryid_: int | None = Field(
-        default=None, sa_column=Column("country", Integer, ForeignKey("country.id"))
+        default=None, sa_column=Column("country", Integer, ForeignKey("Country.id"))
     )
     country: Country = Relationship(back_populates="players")
     entries: list["Entry"] = Relationship(
@@ -166,11 +185,14 @@ class Player(Model, table=True):
 
 
 class Entry(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Entry"
+
     id: int = Field(primary_key=True)
-    eventid_: int = Field(sa_column=Column("event", ForeignKey("event.id")))
+    eventid_: int = Field(sa_column=Column("event", ForeignKey("Event.id")))
     event: Event = Relationship(back_populates="entries")
     player1id_: int | None = Field(
-        default=None, sa_column=Column("player1", ForeignKey("player.id"))
+        default=None, sa_column=Column("player1", ForeignKey("Player.id"))
     )
     player1: Player = Relationship(
         sa_relationship_kwargs={
@@ -179,7 +201,7 @@ class Entry(Model, table=True):
         }
     )
     player2id_: int | None = Field(
-        default=None, sa_column=Column("player2", ForeignKey("player.id"))
+        default=None, sa_column=Column("player2", ForeignKey("Player.id"))
     )
     player2: Player | None = Relationship(
         sa_relationship_kwargs={
@@ -227,6 +249,9 @@ class Entry(Model, table=True):
 
 
 class Location(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Location"
+
     id: int = Field(primary_key=True)
     name: str
     courts: list["Court"] = Relationship(back_populates="location")
@@ -241,10 +266,13 @@ class Location(Model, table=True):
 
 
 class Court(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "Court"
+
     id: int = Field(primary_key=True)
     name: str
     locationid_: int | None = Field(
-        default=None, sa_column=Column("location", ForeignKey("location.id"))
+        default=None, sa_column=Column("location", ForeignKey("Location.id"))
     )
     location: Location = Relationship(back_populates="courts")
     sortorder: int | None = None
@@ -263,17 +291,20 @@ class Court(Model, table=True):
 
 
 class PlayerMatch(Model, table=True):
+    # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
+    __tablename__: ClassVar[Any] = "PlayerMatch"
+
     id: int = Field(primary_key=True)
-    drawid_: int = Field(sa_column=Column("draw", ForeignKey("draw.id")))
+    drawid_: int = Field(sa_column=Column("draw", ForeignKey("Draw.id")))
     draw: Draw = Relationship(back_populates="playermatches")
     matchnr: int
     entryid_: int | None = Field(
-        default=None, sa_column=Column("entry", ForeignKey("entry.id"))
+        default=None, sa_column=Column("entry", ForeignKey("Entry.id"))
     )
     entry: Entry | None = Relationship(back_populates="playermatches")
     time: datetime | None = Field(default=None, sa_column=Column("plandate", DateTime))
     courtid_: int | None = Field(
-        default=None, sa_column=Column("court", ForeignKey("court.id"))
+        default=None, sa_column=Column("court", ForeignKey("Court.id"))
     )
     court: Court | None = Relationship(back_populates="playermatches")
     winner: int | None = None
