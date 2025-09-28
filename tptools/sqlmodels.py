@@ -113,7 +113,7 @@ class TPClub(Model, table=True):
 
     id: int = Field(primary_key=True)
     name: str
-    players: list["Player"] = Relationship(back_populates="club")
+    players: list["TPPlayer"] = Relationship(back_populates="club")
 
     __str_template__ = "{self.name}"
     __repr_fields__ = ("id", "name")
@@ -128,7 +128,7 @@ class TPCountry(Model, table=True):
     id: int = Field(primary_key=True)
     name: str
     code: str | None = None
-    players: list["Player"] = Relationship(back_populates="country")
+    players: list["TPPlayer"] = Relationship(back_populates="country")
 
     __str_template__ = "{self.name}"
     __repr_fields__ = ("id", "name", "code?")
@@ -136,7 +136,7 @@ class TPCountry(Model, table=True):
     __none_sorts_last__ = True
 
 
-class Player(Model, table=True):
+class TPPlayer(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Player"
 
@@ -159,7 +159,7 @@ class Player(Model, table=True):
     entries: list["Entry"] = Relationship(
         sa_relationship_kwargs={
             "primaryjoin": (
-                "or_(Player.id==Entry.player1id_,Player.id==Entry.player2id_)"
+                "or_(TPPlayer.id==Entry.player1id_,TPPlayer.id==Entry.player2id_)"
             ),
             "viewonly": True,
         }
@@ -194,19 +194,19 @@ class Entry(Model, table=True):
     player1id_: int | None = Field(
         default=None, sa_column=Column("player1", ForeignKey("Player.id"))
     )
-    player1: Player = Relationship(
+    player1: TPPlayer = Relationship(
         sa_relationship_kwargs={
             "foreign_keys": "Entry.player1id_",
-            "primaryjoin": "Entry.player1id_ == Player.id",
+            "primaryjoin": "Entry.player1id_ == TPPlayer.id",
         }
     )
     player2id_: int | None = Field(
         default=None, sa_column=Column("player2", ForeignKey("Player.id"))
     )
-    player2: Player | None = Relationship(
+    player2: TPPlayer | None = Relationship(
         sa_relationship_kwargs={
             "foreign_keys": "Entry.player2id_",
-            "primaryjoin": "Entry.player2id_ == Player.id",
+            "primaryjoin": "Entry.player2id_ == TPPlayer.id",
         }
     )
     playermatches: list["PlayerMatch"] = Relationship(back_populates="entry")
@@ -220,7 +220,7 @@ class Entry(Model, table=True):
         return ret
 
     @property
-    def players(self) -> tuple[Player, Player | None]:
+    def players(self) -> tuple[TPPlayer, TPPlayer | None]:
         return self.player1, self.player2
 
     @property
@@ -229,8 +229,8 @@ class Entry(Model, table=True):
 
     def __init__(
         self,
-        player1: Player,
-        player2: Player | None = None,
+        player1: TPPlayer,
+        player2: TPPlayer | None = None,
         **kwargs: Any,
     ) -> None:
         if player1 == player2:

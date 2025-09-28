@@ -11,12 +11,12 @@ from tptools.sqlmodels import (
     Court,
     Entry,
     Location,
-    Player,
     PlayerMatch,
     TPClub,
     TPCountry,
     TPDraw,
     TPEvent,
+    TPPlayer,
     TPStage,
 )
 from tptools.tpdata import TPData
@@ -88,15 +88,15 @@ country1copy = country1
 
 
 @pytest.fixture
-def player1(club1: TPClub, country2: TPCountry) -> Player:
-    return Player(
+def player1(club1: TPClub, country2: TPCountry) -> TPPlayer:
+    return TPPlayer(
         id=1, firstname="Martin", lastname="Krafft", club=club1, country=country2
     )
 
 
 @pytest.fixture
-def player2(club2: TPClub, country1: TPCountry) -> Player:
-    return Player(
+def player2(club2: TPClub, country1: TPCountry) -> TPPlayer:
+    return TPPlayer(
         id=2, firstname="Iddo", lastname="Hoeve", club=club2, country=country1
     )
 
@@ -105,12 +105,12 @@ player1copy = player1
 
 
 @pytest.fixture
-def entry1(event1: TPEvent, player1: Player) -> Entry:
+def entry1(event1: TPEvent, player1: TPPlayer) -> Entry:
     return Entry(id=1, event=event1, player1=player1)
 
 
 @pytest.fixture
-def entry2(event2: TPEvent, player2: Player) -> Entry:
+def entry2(event2: TPEvent, player2: TPPlayer) -> Entry:
     return Entry(id=2, event=event2, player1=player2)
 
 
@@ -123,19 +123,19 @@ type EntryFactoryType = Callable[[int, TPEvent, str], Entry]
 @pytest.fixture
 def EntryFactory() -> EntryFactoryType:
     def entry_maker(id: int, event: TPEvent, name: str) -> Entry:
-        p = Player(id=id, lastname="", firstname=name)
+        p = TPPlayer(id=id, lastname="", firstname=name)
         return Entry(p, event=event)
 
     return entry_maker
 
 
 @pytest.fixture
-def entry12(event1: TPEvent, player1: Player, player2: Player) -> Entry:
+def entry12(event1: TPEvent, player1: TPPlayer, player2: TPPlayer) -> Entry:
     return Entry(id=12, event=event1, player1=player1, player2=player2)
 
 
 @pytest.fixture
-def entry21(event2: TPEvent, player1: Player, player2: Player) -> Entry:
+def entry21(event2: TPEvent, player1: TPPlayer, player2: TPPlayer) -> Entry:
     return Entry(id=21, event=event2, player1=player2, player2=player1)
 
 

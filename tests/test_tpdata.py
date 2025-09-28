@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Court, Entry, Player, PlayerMatch, TPDraw, TPSetting
+from tptools.sqlmodels import Court, Entry, PlayerMatch, TPDraw, TPPlayer, TPSetting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -195,7 +195,7 @@ async def test_load_tournament_elim4(
         (3, "three", 2),
         (4, "four", 2),
     ):
-        entry = Entry(player1=Player(id=id, lastname=name, firstname="test"))
+        entry = Entry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
             PlayerFactory(
@@ -248,7 +248,7 @@ async def test_load_tournament_group3(
         (2, "two"),
         (3, "three"),
     ):
-        entry = Entry(player1=Player(id=id, lastname=name, firstname="test"))
+        entry = Entry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
             PlayerFactory(planning=id * 1000, wn=0, vn=0, entry=entry, draw=draw2)

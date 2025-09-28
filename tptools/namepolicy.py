@@ -5,7 +5,7 @@ from typing import Any, Literal, overload
 
 from pydantic import BaseModel, ConfigDict
 
-from .sqlmodels import Court, Player, TPClub, TPCountry
+from .sqlmodels import Court, TPClub, TPCountry, TPPlayer
 
 
 class ParamsModel(BaseModel):
@@ -113,7 +113,7 @@ class PlayerNamePolicy(PolicyBase):
 
     def __call__(
         self,
-        player: Player | None,
+        player: TPPlayer | None,
         *,
         clubnamepolicy: ClubNamePolicy | None = None,
         countrynamepolicy: CountryNamePolicy | None = None,

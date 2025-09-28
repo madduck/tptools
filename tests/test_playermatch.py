@@ -15,7 +15,7 @@ def test_draw_has_id(pmplayer1: PlayerMatch) -> None:
 def test_repr(pm1: PlayerMatch) -> None:
     assert repr(pm1) == (
         "PlayerMatch(id=141, draw.name='Baum', matchnr=14, "
-        "entry.players=(Player(id=1, lastname='Krafft', firstname='Martin', "
+        "entry.players=(TPPlayer(id=1, lastname='Krafft', firstname='Martin', "
         "country.name='Deutschland', club.name='RSC'), None), "
         "time=datetime(2025, 6, 1, 11, 30), court.name='C01', winner=None, "
         "planning=3001, van=4001/2, wnvn=2001/3, status=pending)"
