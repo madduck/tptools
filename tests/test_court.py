@@ -5,47 +5,47 @@ import pytest
 from tptools.sqlmodels import TPCourt
 
 
-def test_repr(court1: TPCourt) -> None:
-    assert repr(court1) == "TPCourt(id=1, name='C01', location.name='Sports4You')"
+def test_repr(tpcourt1: TPCourt) -> None:
+    assert repr(tpcourt1) == "TPCourt(id=1, name='C01', location.name='Sports4You')"
 
 
-def test_eq(court1: TPCourt, court1copy: TPCourt) -> None:
-    assert court1 == court1copy
+def test_eq(tpcourt1: TPCourt, tpcourt1copy: TPCourt) -> None:
+    assert tpcourt1 == tpcourt1copy
 
 
-def test_ne(court1: TPCourt, court2: TPCourt) -> None:
-    assert court1 != court2
+def test_ne(tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
+    assert tpcourt1 != tpcourt2
 
 
-def test_lt(court1: TPCourt, court2: TPCourt) -> None:
-    assert court1 < court2
+def test_lt(tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
+    assert tpcourt1 < tpcourt2
 
 
-def test_le(court1: TPCourt, court2: TPCourt, court1copy: TPCourt) -> None:
-    assert court1 <= court2 and court1 <= court1copy
+def test_le(tpcourt1: TPCourt, tpcourt2: TPCourt, tpcourt1copy: TPCourt) -> None:
+    assert tpcourt1 <= tpcourt2 and tpcourt1 <= tpcourt1copy
 
 
-def test_gt(court1: TPCourt, court2: TPCourt) -> None:
-    assert court2 > court1
+def test_gt(tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
+    assert tpcourt2 > tpcourt1
 
 
-def test_ge(court1: TPCourt, court2: TPCourt, court1copy: TPCourt) -> None:
-    assert court2 >= court1 and court1 >= court1copy
+def test_ge(tpcourt1: TPCourt, tpcourt2: TPCourt, tpcourt1copy: TPCourt) -> None:
+    assert tpcourt2 >= tpcourt1 and tpcourt1 >= tpcourt1copy
 
 
-def test_no_cmp(court1: TPCourt) -> None:
+def test_no_cmp(tpcourt1: TPCourt) -> None:
     with pytest.raises(NotImplementedError):
-        assert court1 == object()
+        assert tpcourt1 == object()
 
 
-def test_lt_sortorder(court1: TPCourt, court2: TPCourt) -> None:
-    court1.sortorder = 3
-    court2.sortorder = 2
-    court2.location = court1.location
-    assert court2 < court1
+def test_lt_sortorder(tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
+    tpcourt1.sortorder = 3
+    tpcourt2.sortorder = 2
+    tpcourt2.location = tpcourt1.location
+    assert tpcourt2 < tpcourt1
 
 
-def test_model_dump_has_location(court1: TPCourt) -> None:
-    md = court1.model_dump()
+def test_model_dump_has_location(tpcourt1: TPCourt) -> None:
+    md = tpcourt1.model_dump()
     assert "locationid_" not in md
     assert isinstance(md.get("location"), Mapping)

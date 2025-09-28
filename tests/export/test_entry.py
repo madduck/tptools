@@ -16,12 +16,12 @@ def test_str(expentry1: Entry) -> None:
     assert str(expentry1) == "Martin Krafft"
 
 
-def test_entry_id_passthrough(entry1: TPEntry) -> None:
-    assert Entry(tpentry=entry1).id == entry1.id
+def test_entry_id_passthrough(tpentry1: TPEntry) -> None:
+    assert Entry(tpentry=tpentry1).id == tpentry1.id
 
 
-def test_entry_name_passthrough(entry1: TPEntry) -> None:
-    assert Entry(tpentry=entry1).name == entry1.name
+def test_entry_name_passthrough(tpentry1: TPEntry) -> None:
+    assert Entry(tpentry=tpentry1).name == tpentry1.name
 
 
 def test_cmp_eq(expentry1: Entry, expentry1copy: Entry) -> None:

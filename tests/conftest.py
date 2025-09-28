@@ -23,98 +23,98 @@ from tptools.tpdata import TPData
 
 
 @pytest.fixture
-def event1() -> TPEvent:
+def tpevent1() -> TPEvent:
     return TPEvent(id=1, name="Herren 1", abbreviation="H1", gender=2)
 
 
 @pytest.fixture
-def event2() -> TPEvent:
+def tpevent2() -> TPEvent:
     return TPEvent(id=2, name="Damen 1", abbreviation="D1", gender=1)
 
 
-event1copy = event1
+tpevent1copy = tpevent1
 
 
 @pytest.fixture
-def stage1(event1: TPEvent) -> TPStage:
-    return TPStage(id=1, name="Qual", event=event1)
+def tpstage1(tpevent1: TPEvent) -> TPStage:
+    return TPStage(id=1, name="Qual", event=tpevent1)
 
 
 @pytest.fixture
-def stage2(event2: TPEvent) -> TPStage:
-    return TPStage(id=2, name="Main", event=event2)
+def tpstage2(tpevent2: TPEvent) -> TPStage:
+    return TPStage(id=2, name="Main", event=tpevent2)
 
 
-stage1copy = stage1
-
-
-@pytest.fixture
-def draw1(stage1: TPStage) -> TPDraw:
-    return TPDraw(id=1, name="Baum", type=DrawType.MONRAD, size=8, stage=stage1)
+tpstage1copy = tpstage1
 
 
 @pytest.fixture
-def draw2(stage2: TPStage) -> TPDraw:
-    return TPDraw(id=2, name="Gruppe", type=DrawType.GROUP, size=3, stage=stage2)
-
-
-draw1copy = draw1
+def tpdraw1(tpstage1: TPStage) -> TPDraw:
+    return TPDraw(id=1, name="Baum", type=DrawType.MONRAD, size=8, stage=tpstage1)
 
 
 @pytest.fixture
-def club1() -> TPClub:
+def tpdraw2(tpstage2: TPStage) -> TPDraw:
+    return TPDraw(id=2, name="Gruppe", type=DrawType.GROUP, size=3, stage=tpstage2)
+
+
+tpdraw1copy = tpdraw1
+
+
+@pytest.fixture
+def tpclub1() -> TPClub:
     return TPClub(id=1, name="RSC")
 
 
 @pytest.fixture
-def club2() -> TPClub:
+def tpclub2() -> TPClub:
     return TPClub(id=2, name="SomeClub")
 
 
-club1copy = club1
+tpclub1copy = tpclub1
 
 
 @pytest.fixture
-def country1() -> TPCountry:
+def tpcountry1() -> TPCountry:
     return TPCountry(id=1, name="Holland", code="NL")
 
 
 @pytest.fixture
-def country2() -> TPCountry:
+def tpcountry2() -> TPCountry:
     return TPCountry(id=2, name="Deutschland")
 
 
-country1copy = country1
+tpcountry1copy = tpcountry1
 
 
 @pytest.fixture
-def player1(club1: TPClub, country2: TPCountry) -> TPPlayer:
+def tpplayer1(tpclub1: TPClub, tpcountry2: TPCountry) -> TPPlayer:
     return TPPlayer(
-        id=1, firstname="Martin", lastname="Krafft", club=club1, country=country2
+        id=1, firstname="Martin", lastname="Krafft", club=tpclub1, country=tpcountry2
     )
 
 
 @pytest.fixture
-def player2(club2: TPClub, country1: TPCountry) -> TPPlayer:
+def tpplayer2(tpclub2: TPClub, tpcountry1: TPCountry) -> TPPlayer:
     return TPPlayer(
-        id=2, firstname="Iddo", lastname="Hoeve", club=club2, country=country1
+        id=2, firstname="Iddo", lastname="Hoeve", club=tpclub2, country=tpcountry1
     )
 
 
-player1copy = player1
+tpplayer1copy = tpplayer1
 
 
 @pytest.fixture
-def entry1(event1: TPEvent, player1: TPPlayer) -> TPEntry:
-    return TPEntry(id=1, event=event1, player1=player1)
+def tpentry1(tpevent1: TPEvent, tpplayer1: TPPlayer) -> TPEntry:
+    return TPEntry(id=1, event=tpevent1, player1=tpplayer1)
 
 
 @pytest.fixture
-def entry2(event2: TPEvent, player2: TPPlayer) -> TPEntry:
-    return TPEntry(id=2, event=event2, player1=player2)
+def tpentry2(tpevent2: TPEvent, tpplayer2: TPPlayer) -> TPEntry:
+    return TPEntry(id=2, event=tpevent2, player1=tpplayer2)
 
 
-entry1copy = entry1
+tpentry1copy = tpentry1
 
 
 type EntryFactoryType = Callable[[int, TPEvent, str], TPEntry]
@@ -130,13 +130,13 @@ def EntryFactory() -> EntryFactoryType:
 
 
 @pytest.fixture
-def entry12(event1: TPEvent, player1: TPPlayer, player2: TPPlayer) -> TPEntry:
-    return TPEntry(id=12, event=event1, player1=player1, player2=player2)
+def tpentry12(tpevent1: TPEvent, tpplayer1: TPPlayer, tpplayer2: TPPlayer) -> TPEntry:
+    return TPEntry(id=12, event=tpevent1, player1=tpplayer1, player2=tpplayer2)
 
 
 @pytest.fixture
-def entry21(event2: TPEvent, player1: TPPlayer, player2: TPPlayer) -> TPEntry:
-    return TPEntry(id=21, event=event2, player1=player2, player2=player1)
+def tpentry21(tpevent2: TPEvent, tpplayer1: TPPlayer, tpplayer2: TPPlayer) -> TPEntry:
+    return TPEntry(id=21, event=tpevent2, player1=tpplayer2, player2=tpplayer1)
 
 
 @pytest.fixture
@@ -160,126 +160,126 @@ def loser() -> Playceholder:
 
 
 @pytest.fixture
-def slot1(entry1: TPEntry) -> Slot:
-    return Slot(content=entry1)
+def slot1(tpentry1: TPEntry) -> Slot:
+    return Slot(content=tpentry1)
 
 
 @pytest.fixture
-def slot2(entry2: TPEntry) -> Slot:
-    return Slot(content=entry2)
+def slot2(tpentry2: TPEntry) -> Slot:
+    return Slot(content=tpentry2)
 
 
 @pytest.fixture
-def slot21(entry21: TPEntry) -> Slot:
-    return Slot(content=entry21)
+def slot21(tpentry21: TPEntry) -> Slot:
+    return Slot(content=tpentry21)
 
 
 @pytest.fixture
-def slot12(entry12: TPEntry) -> Slot:
-    return Slot(content=entry12)
+def slot12(tpentry12: TPEntry) -> Slot:
+    return Slot(content=tpentry12)
 
 
 @pytest.fixture
-def location1() -> TPLocation:
+def tplocation1() -> TPLocation:
     return TPLocation(id=1, name="Sports4You")
 
 
 @pytest.fixture
-def location2() -> TPLocation:
+def tplocation2() -> TPLocation:
     return TPLocation(id=2, name="WeCare Germering")
 
 
-location1copy = location1
+tplocation1copy = tplocation1
 
 
 @pytest.fixture
-def court1(location1: TPLocation) -> TPCourt:
-    return TPCourt(id=1, name="C01", location=location1)
+def tpcourt1(tplocation1: TPLocation) -> TPCourt:
+    return TPCourt(id=1, name="C01", location=tplocation1)
 
 
 @pytest.fixture
-def court2(location2: TPLocation) -> TPCourt:
-    return TPCourt(id=2, name="C07", location=location2)
+def tpcourt2(tplocation2: TPLocation) -> TPCourt:
+    return TPCourt(id=2, name="C07", location=tplocation2)
 
 
-court1copy = court1
+tpcourt1copy = tpcourt1
 
 
-type PlayerMatchFactoryType = Callable[..., TPPlayerMatch]
+type TPPlayerMatchFactoryType = Callable[..., TPPlayerMatch]
 
 
 @pytest.fixture
-def PlayerMatchFactory(draw1: TPDraw) -> PlayerMatchFactoryType:
+def TPPlayerMatchFactory(tpdraw1: TPDraw) -> TPPlayerMatchFactoryType:
     def playermatch_maker(**kwargs: Any) -> TPPlayerMatch:
         defaults = {
             "id": kwargs.get("planning", 1),
-            "draw": draw1,
+            "draw": tpdraw1,
         }
         return TPPlayerMatch(**defaults | kwargs)
 
     return playermatch_maker
 
 
-type PlayerFactoryType = Callable[..., TPPlayerMatch]
+type TPPlayerFactoryType = Callable[..., TPPlayerMatch]
 
 
 @pytest.fixture
-def PlayerFactory(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry
-) -> PlayerFactoryType:
+def TPPlayerFactory(
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType, tpentry1: TPEntry
+) -> TPPlayerFactoryType:
     def player_maker(**kwargs: Any) -> TPPlayerMatch:
-        defaults = {"id": kwargs.get("planning", 1), "entry": entry1}
+        defaults = {"id": kwargs.get("planning", 1), "entry": tpentry1}
         enforced = {"van1": None, "van2": None, "matchnr": None}
-        return PlayerMatchFactory(**defaults | kwargs | enforced)
+        return TPPlayerMatchFactory(**defaults | kwargs | enforced)
 
     return player_maker
 
 
 @pytest.fixture
-def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: TPEntry) -> TPPlayerMatch:
-    return PlayerFactory(id=1, planning=4001, wn=3001, vn=3005, entry=entry1)
+def pmplayer1(TPPlayerFactory: TPPlayerFactoryType, tpentry1: TPEntry) -> TPPlayerMatch:
+    return TPPlayerFactory(id=1, planning=4001, wn=3001, vn=3005, entry=tpentry1)
 
 
 @pytest.fixture
-def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: TPEntry) -> TPPlayerMatch:
-    return PlayerFactory(id=2, planning=4002, wn=3001, vn=3005, entry=entry2)
+def pmplayer2(TPPlayerFactory: TPPlayerFactoryType, tpentry2: TPEntry) -> TPPlayerMatch:
+    return TPPlayerFactory(id=2, planning=4002, wn=3001, vn=3005, entry=tpentry2)
 
 
 pmplayer1copy = pmplayer1
 
 
 @pytest.fixture
-def pmbye(PlayerFactory: PlayerFactoryType) -> TPPlayerMatch:
-    return PlayerFactory(planning=4008, entry=None)
+def pmbye(TPPlayerFactory: TPPlayerFactoryType) -> TPPlayerMatch:
+    return TPPlayerFactory(planning=4008, entry=None)
 
 
 @pytest.fixture
 def pm1(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry, court1: TPCourt
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType, tpentry1: TPEntry, tpcourt1: TPCourt
 ) -> TPPlayerMatch:
-    return PlayerMatchFactory(
+    return TPPlayerMatchFactory(
         id=141,
         matchnr=14,
-        entry=entry1,
+        entry=tpentry1,
         planning=3001,
         van1=4001,
         van2=4002,
         wn=2001,
         vn=2003,
-        court=court1,
+        court=tpcourt1,
         time=datetime(2025, 6, 1, 11, 30),
     )
 
 
 @pytest.fixture
 def pm2(
-    PlayerMatchFactory: PlayerMatchFactoryType,
-    entry1: TPEntry,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
+    tpentry1: TPEntry,
 ) -> TPPlayerMatch:
-    return PlayerMatchFactory(
+    return TPPlayerMatchFactory(
         id=421,
         matchnr=42,
-        entry=entry1,
+        entry=tpentry1,
         planning=2001,
         van1=3001,
         van2=3002,
@@ -291,20 +291,20 @@ def pm2(
 pm1copy = pm1
 
 
-type MatchFactoryType = Callable[..., Match]
+type TPMatchFactoryType = Callable[..., Match]
 
 
 @pytest.fixture
-def MatchFactory() -> MatchFactoryType:
+def TPMatchFactory() -> TPMatchFactoryType:
     def match_maker(
         pm: TPPlayerMatch,
-        entry2: TPEntry | None,
+        tpentry2: TPEntry | None,
         lldiff: int,
         pldiff: int | None = None,
         iddiff: int = 1,
     ) -> Match:
-        if pm.entry is not None and entry2 is not None:
-            entry = entry2.model_copy(update={"event": pm.entry.event})
+        if pm.entry is not None and tpentry2 is not None:
+            entry = tpentry2.model_copy(update={"event": pm.entry.event})
         else:
             entry = None
         pm2 = pm.model_copy(
@@ -323,61 +323,61 @@ def MatchFactory() -> MatchFactoryType:
 
 
 @pytest.fixture
-def match1(
-    MatchFactory: MatchFactoryType,
+def tpmatch1(
+    TPMatchFactory: TPMatchFactoryType,
     pm1: TPPlayerMatch,
-    entry2: TPEntry,
+    tpentry2: TPEntry,
 ) -> Match:
-    return MatchFactory(pm1, entry2, lldiff=4)
+    return TPMatchFactory(pm1, tpentry2, lldiff=4)
 
 
-match1copy = match1
+tpmatch1copy = tpmatch1
 
 
 @pytest.fixture
-def match2(
-    MatchFactory: MatchFactoryType,
+def tpmatch2(
+    TPMatchFactory: TPMatchFactoryType,
     pm2: TPPlayerMatch,
-    entry2: TPEntry,
+    tpentry2: TPEntry,
 ) -> Match:
-    return MatchFactory(pm2, entry2, lldiff=2)
+    return TPMatchFactory(pm2, tpentry2, lldiff=2)
 
 
 @pytest.fixture
 def tpdata1(
-    match1: Match,
-    match2: Match,
-    entry1: TPEntry,
-    entry2: TPEntry,
-    entry12: TPEntry,
-    entry21: TPEntry,
-    court1: TPCourt,
-    court2: TPCourt,
-    draw1: TPDraw,
-    draw2: TPDraw,
+    tpmatch1: Match,
+    tpmatch2: Match,
+    tpentry1: TPEntry,
+    tpentry2: TPEntry,
+    tpentry12: TPEntry,
+    tpentry21: TPEntry,
+    tpcourt1: TPCourt,
+    tpcourt2: TPCourt,
+    tpdraw1: TPDraw,
+    tpdraw2: TPDraw,
 ) -> TPData:
     t = TPData(
         name="Test 1",
     )
-    t.add_match(match1)
-    t.add_match(match2)
-    t.add_entry(entry1)
-    t.add_entry(entry2)
-    t.add_entry(entry21)
-    t.add_entry(entry12)
-    t.add_court(court1)
-    t.add_court(court2)
-    t.add_draw(draw1)
-    t.add_draw(draw2)
+    t.add_match(tpmatch1)
+    t.add_match(tpmatch2)
+    t.add_entry(tpentry1)
+    t.add_entry(tpentry2)
+    t.add_entry(tpentry21)
+    t.add_entry(tpentry12)
+    t.add_court(tpcourt1)
+    t.add_court(tpcourt2)
+    t.add_draw(tpdraw1)
+    t.add_draw(tpdraw2)
     return t
 
 
 @pytest.fixture
-def tpdata2(match1: Match, entry1: TPEntry, entry2: TPEntry) -> TPData:
+def tpdata2(tpmatch1: Match, tpentry1: TPEntry, tpentry2: TPEntry) -> TPData:
     t = TPData(name="Test 2")
-    t.add_match(match1)
-    t.add_entry(entry1)
-    t.add_entry(entry2)
+    t.add_match(tpmatch1)
+    t.add_entry(tpentry1)
+    t.add_entry(tpentry2)
     return t
 
 

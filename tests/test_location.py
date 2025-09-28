@@ -3,42 +3,42 @@ import pytest
 from tptools.sqlmodels import TPLocation
 
 
-def test_repr(location1: TPLocation) -> None:
-    assert repr(location1) == "TPLocation(id=1, name='Sports4You', numcourts=0)"
+def test_repr(tplocation1: TPLocation) -> None:
+    assert repr(tplocation1) == "TPLocation(id=1, name='Sports4You', numcourts=0)"
 
 
-def test_str(location1: TPLocation) -> None:
-    assert str(location1) == "Sports4You"
+def test_str(tplocation1: TPLocation) -> None:
+    assert str(tplocation1) == "Sports4You"
 
 
-def test_eq(location1: TPLocation, location1copy: TPLocation) -> None:
-    assert location1 == location1copy
+def test_eq(tplocation1: TPLocation, tplocation1copy: TPLocation) -> None:
+    assert tplocation1 == tplocation1copy
 
 
-def test_ne(location1: TPLocation, location2: TPLocation) -> None:
-    assert location1 != location2
+def test_ne(tplocation1: TPLocation, tplocation2: TPLocation) -> None:
+    assert tplocation1 != tplocation2
 
 
-def test_lt(location1: TPLocation, location2: TPLocation) -> None:
-    assert location1 < location2
+def test_lt(tplocation1: TPLocation, tplocation2: TPLocation) -> None:
+    assert tplocation1 < tplocation2
 
 
 def test_le(
-    location1: TPLocation, location2: TPLocation, location1copy: TPLocation
+    tplocation1: TPLocation, tplocation2: TPLocation, tplocation1copy: TPLocation
 ) -> None:
-    assert location1 <= location2 and location1 <= location1copy
+    assert tplocation1 <= tplocation2 and tplocation1 <= tplocation1copy
 
 
-def test_gt(location1: TPLocation, location2: TPLocation) -> None:
-    assert location2 > location1
+def test_gt(tplocation1: TPLocation, tplocation2: TPLocation) -> None:
+    assert tplocation2 > tplocation1
 
 
 def test_ge(
-    location1: TPLocation, location2: TPLocation, location1copy: TPLocation
+    tplocation1: TPLocation, tplocation2: TPLocation, tplocation1copy: TPLocation
 ) -> None:
-    assert location2 >= location1 and location1 >= location1copy
+    assert tplocation2 >= tplocation1 and tplocation1 >= tplocation1copy
 
 
-def test_no_cmp(location1: TPLocation) -> None:
+def test_no_cmp(tplocation1: TPLocation) -> None:
     with pytest.raises(NotImplementedError):
-        assert location1 == object()
+        assert tplocation1 == object()

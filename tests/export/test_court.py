@@ -27,16 +27,16 @@ def test_courtnamepolicy_invocation(expcourt1: Court, mocker: MockerFixture) -> 
     policy.assert_called_once_with(expcourt1.tpcourt)
 
 
-def test_court_id_passthrough(court1: TPCourt) -> None:
-    assert Court(tpcourt=court1).id == court1.id
+def test_court_id_passthrough(tpcourt1: TPCourt) -> None:
+    assert Court(tpcourt=tpcourt1).id == tpcourt1.id
 
 
-def test_court_name_passthrough(court1: TPCourt) -> None:
-    assert Court(tpcourt=court1).name == court1.name
+def test_court_name_passthrough(tpcourt1: TPCourt) -> None:
+    assert Court(tpcourt=tpcourt1).name == tpcourt1.name
 
 
-def test_court_location_passthrough(court1: TPCourt) -> None:
-    assert Court(tpcourt=court1).location == court1.location
+def test_court_location_passthrough(tpcourt1: TPCourt) -> None:
+    assert Court(tpcourt=tpcourt1).location == tpcourt1.location
 
 
 def test_cmp_eq(expcourt1: Court, expcourt1copy: Court) -> None:

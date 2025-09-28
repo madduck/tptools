@@ -9,11 +9,11 @@ from tptools.matchstatus import MatchStatus
 from tptools.slot import Bye, Slot, Unknown
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
 
-from .conftest import MatchFactoryType
+from .conftest import TPMatchFactoryType
 
 
-def test_repr(match1: Match) -> None:
-    assert repr(match1) == (
+def test_repr(tpmatch1: Match) -> None:
+    assert repr(tpmatch1) == (
         "Match(id='1-14', draw.name='Baum', matchnr=14, "
         "time=datetime(2025, 6, 1, 11, 30), court='Sports4You, C01', "
         "slot1.name='Martin Krafft', slot2.name='Iddo Hoeve', "
@@ -21,101 +21,101 @@ def test_repr(match1: Match) -> None:
     )
 
 
-def test_repr_explicit_entries(match1: Match, slot1: Slot, slot2: Slot) -> None:
-    match1.set_slots(slot1, slot2)
-    test_repr(match1)
+def test_repr_explicit_entries(tpmatch1: Match, slot1: Slot, slot2: Slot) -> None:
+    tpmatch1.set_slots(slot1, slot2)
+    test_repr(tpmatch1)
 
 
-def test_str(match1: Match) -> None:
-    assert str(match1) == ("1-14 [Baum] [4001/2 → 3001/5 → 2001/3,2005/7] (ready)")
+def test_str(tpmatch1: Match) -> None:
+    assert str(tpmatch1) == ("1-14 [Baum] [4001/2 → 3001/5 → 2001/3,2005/7] (ready)")
 
 
-def test_eq(match1: Match, match1copy: Match) -> None:
-    assert match1 == match1copy
+def test_eq(tpmatch1: Match, tpmatch1copy: Match) -> None:
+    assert tpmatch1 == tpmatch1copy
 
 
-def test_eq_reversed(match1: Match) -> None:
-    assert match1 == Match(pm1=match1.pm2, pm2=match1.pm1)
+def test_eq_reversed(tpmatch1: Match) -> None:
+    assert tpmatch1 == Match(pm1=tpmatch1.pm2, pm2=tpmatch1.pm1)
 
 
-def test_ne(match1: Match, match2: Match) -> None:
-    assert match1 != match2
+def test_ne(tpmatch1: Match, tpmatch2: Match) -> None:
+    assert tpmatch1 != tpmatch2
 
 
-def test_lt(match1: Match, match2: Match) -> None:
-    assert match1 < match2
+def test_lt(tpmatch1: Match, tpmatch2: Match) -> None:
+    assert tpmatch1 < tpmatch2
 
 
-def test_le(match1: Match, match2: Match, match1copy: Match) -> None:
-    assert match1 <= match2 and match1 <= match1copy
+def test_le(tpmatch1: Match, tpmatch2: Match, tpmatch1copy: Match) -> None:
+    assert tpmatch1 <= tpmatch2 and tpmatch1 <= tpmatch1copy
 
 
-def test_gt(match1: Match, match2: Match) -> None:
-    assert match2 > match1
+def test_gt(tpmatch1: Match, tpmatch2: Match) -> None:
+    assert tpmatch2 > tpmatch1
 
 
-def test_ge(match1: Match, match2: Match, match1copy: Match) -> None:
-    assert match2 >= match1 and match1 >= match1copy
+def test_ge(tpmatch1: Match, tpmatch2: Match, tpmatch1copy: Match) -> None:
+    assert tpmatch2 >= tpmatch1 and tpmatch1 >= tpmatch1copy
 
 
-def test_no_cmp(match1: Match) -> None:
+def test_no_cmp(tpmatch1: Match) -> None:
     with pytest.raises(NotImplementedError):
-        assert match1 == object()
+        assert tpmatch1 == object()
 
 
-def test_hash_equality(match1: Match, match1copy: Match) -> None:
-    assert hash(match1) == hash(match1copy)
+def test_hash_equality(tpmatch1: Match, tpmatch1copy: Match) -> None:
+    assert hash(tpmatch1) == hash(tpmatch1copy)
 
 
-def test_hash_inequality(match1: Match, match2: Match) -> None:
-    assert hash(match1) != hash(match2)
+def test_hash_inequality(tpmatch1: Match, tpmatch2: Match) -> None:
+    assert hash(tpmatch1) != hash(tpmatch2)
 
 
-def test_van_properties(match1: Match) -> None:
+def test_van_properties(tpmatch1: Match) -> None:
     """Test property access since __repr__ is actually
     going at the PlayerMatch directly
     """
-    assert len(match1.van) == 2
+    assert len(tpmatch1.van) == 2
 
 
-def test_assert_nonempty_van(match1: Match) -> None:
-    pm1 = match1.pm1.model_copy(update={"van1": None, "van2": None})
+def test_assert_nonempty_van(tpmatch1: Match) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"van1": None, "van2": None})
     with pytest.raises(ValidationError, match="that are not players or byes"):
-        _ = Match(pm1=pm1, pm2=match1.pm2)
+        _ = Match(pm1=pm1, pm2=tpmatch1.pm2)
 
 
 @pytest.mark.parametrize("field", ("id", "entry", "wn", "vn"))
-def test_differing_fields(match1: Match, field: str) -> None:
-    pm1 = match1.pm1
-    pm2 = match1.pm2.model_copy(update={field: getattr(pm1, field)})
+def test_differing_fields(tpmatch1: Match, field: str) -> None:
+    pm1 = tpmatch1.pm1
+    pm2 = tpmatch1.pm2.model_copy(update={field: getattr(pm1, field)})
     with pytest.raises(ValidationError, match=f"same value for '{field}'"):
         _ = Match(pm1=pm1, pm2=pm2)
 
 
 @pytest.mark.parametrize("field", ("id", "entry", "wn", "vn"))
-def test_differing_field_but_none(match1: Match, field: str) -> None:
-    pm1 = match1.pm1
-    pm2 = match1.pm2.model_copy(update={field: None})
+def test_differing_field_but_none(tpmatch1: Match, field: str) -> None:
+    pm1 = tpmatch1.pm1
+    pm2 = tpmatch1.pm2.model_copy(update={field: None})
     _ = Match(pm1=pm1, pm2=pm2)
 
 
-def test_winner_consistent(match1: Match) -> None:
-    pm1 = match1.pm1.model_copy(update={"winner": 1})
-    pm2 = match1.pm2.model_copy(update={"winner": 1})
+def test_winner_consistent(tpmatch1: Match) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": 1})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 1})
     with pytest.raises(ValidationError, match=r"winner fields: \d\+\d != 3"):
         _ = Match(pm1=pm1, pm2=pm2)
 
 
-def test_winner_consistent_none(match1: Match) -> None:
-    pm1 = match1.pm1.model_copy(update={"winner": None})
-    pm2 = match1.pm2.model_copy(update={"winner": 1})
+def test_winner_consistent_none(tpmatch1: Match) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": None})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 1})
     with pytest.raises(ValidationError, match=r"winner fields inconsistent: .+ vs. .+"):
         _ = Match(pm1=pm1, pm2=pm2)
 
 
-def test_status_finished(match1: Match) -> None:
-    first = match1.pm1.model_copy(update={"winner": 1})
-    second = match1.pm2.model_copy(update={"winner": 2})
+def test_status_finished(tpmatch1: Match) -> None:
+    first = tpmatch1.pm1.model_copy(update={"winner": 1})
+    second = tpmatch1.pm2.model_copy(update={"winner": 2})
     m = Match(pm1=first, pm2=second)
     assert m.status == MatchStatus.PLAYED
 
@@ -152,48 +152,50 @@ def test_status_finished(match1: Match) -> None:
     ],
 )
 def test_other_statuses(
-    match1: Match,
+    tpmatch1: Match,
     updict_1: dict[str, Any],
     updict_2: dict[str, Any] | None,
     expected: ContextManager[None],
 ) -> None:
-    first = match1.pm1.model_copy(update=updict_1)
-    second = match1.pm2.model_copy(update=updict_1 if updict_2 is None else updict_2)
+    first = tpmatch1.pm1.model_copy(update=updict_1)
+    second = tpmatch1.pm2.model_copy(update=updict_1 if updict_2 is None else updict_2)
 
     with expected as e:
         m = Match(pm1=first, pm2=second)
         assert m.status == e
 
 
-def test_set_entry_bye_status_override(match1: Match) -> None:
-    match1.set_slots(Slot(content=Bye()), Slot(content=cast(TPEntry, match1.pm2.entry)))
-    assert match1.status == MatchStatus.READY
-
-
-def test_set_entry_knonwn_status_override(match1: Match) -> None:
-    match1.set_slots(
-        Slot(content=Unknown()), Slot(content=cast(TPEntry, match1.pm2.entry))
+def test_set_entry_bye_status_override(tpmatch1: Match) -> None:
+    tpmatch1.set_slots(
+        Slot(content=Bye()), Slot(content=cast(TPEntry, tpmatch1.pm2.entry))
     )
-    assert match1.status == MatchStatus.PENDING
+    assert tpmatch1.status == MatchStatus.READY
+
+
+def test_set_entry_knonwn_status_override(tpmatch1: Match) -> None:
+    tpmatch1.set_slots(
+        Slot(content=Unknown()), Slot(content=cast(TPEntry, tpmatch1.pm2.entry))
+    )
+    assert tpmatch1.status == MatchStatus.PENDING
 
 
 def test_lower_planning_playermatch_first(
-    pm1: TPPlayerMatch, MatchFactory: MatchFactoryType, entry2: TPEntry
+    pm1: TPPlayerMatch, TPMatchFactory: TPMatchFactoryType, tpentry2: TPEntry
 ) -> None:
-    m = MatchFactory(pm1, entry2, lldiff=4)
+    m = TPMatchFactory(pm1, tpentry2, lldiff=4)
     m = Match(pm1=m.pm2, pm2=m.pm1)  # reversed on purpose
     assert m.pm1 == pm1
 
 
-def test_winner(match1: Match) -> None:
-    pm1 = match1.pm1.model_copy(update={"winner": 1})
-    pm2 = match1.pm2.model_copy(update={"winner": 2})
+def test_winner(tpmatch1: Match) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": 1})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 2})
     m = Match(pm1=pm1, pm2=pm2)
     assert m.winner == pm1.entry
 
 
-def test_winner_pms_reversed(match1: Match) -> None:
-    pm1 = match1.pm1.model_copy(update={"winner": 1})
-    pm2 = match1.pm2.model_copy(update={"winner": 2})
+def test_winner_pms_reversed(tpmatch1: Match) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": 1})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 2})
     m = Match(pm1=pm2, pm2=pm1)
     assert m.winner == pm1.entry

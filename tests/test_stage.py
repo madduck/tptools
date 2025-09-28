@@ -5,48 +5,48 @@ import pytest
 from tptools.sqlmodels import TPStage
 
 
-def test_event_has_id(stage1: TPStage) -> None:
-    assert stage1.eventid_
+def test_event_has_id(tpstage1: TPStage) -> None:
+    assert tpstage1.eventid_
 
 
-def test_repr(stage1: TPStage) -> None:
-    assert repr(stage1) == "TPStage(id=1, name='Qual', event.name='Herren 1')"
+def test_repr(tpstage1: TPStage) -> None:
+    assert repr(tpstage1) == "TPStage(id=1, name='Qual', event.name='Herren 1')"
 
 
-def test_str(stage1: TPStage) -> None:
-    assert str(stage1) == "Qual, Herren 1"
+def test_str(tpstage1: TPStage) -> None:
+    assert str(tpstage1) == "Qual, Herren 1"
 
 
-def test_eq(stage1: TPStage, stage1copy: TPStage) -> None:
-    assert stage1 == stage1copy
+def test_eq(tpstage1: TPStage, tpstage1copy: TPStage) -> None:
+    assert tpstage1 == tpstage1copy
 
 
-def test_ne(stage1: TPStage, stage2: TPStage) -> None:
-    assert stage1 != stage2
+def test_ne(tpstage1: TPStage, tpstage2: TPStage) -> None:
+    assert tpstage1 != tpstage2
 
 
-def test_lt(stage1: TPStage, stage2: TPStage) -> None:
-    assert stage2 < stage1
+def test_lt(tpstage1: TPStage, tpstage2: TPStage) -> None:
+    assert tpstage2 < tpstage1
 
 
-def test_le(stage1: TPStage, stage2: TPStage, stage1copy: TPStage) -> None:
-    assert stage2 <= stage1 and stage1 <= stage1copy
+def test_le(tpstage1: TPStage, tpstage2: TPStage, tpstage1copy: TPStage) -> None:
+    assert tpstage2 <= tpstage1 and tpstage1 <= tpstage1copy
 
 
-def test_gt(stage1: TPStage, stage2: TPStage) -> None:
-    assert stage1 > stage2
+def test_gt(tpstage1: TPStage, tpstage2: TPStage) -> None:
+    assert tpstage1 > tpstage2
 
 
-def test_ge(stage1: TPStage, stage2: TPStage, stage1copy: TPStage) -> None:
-    assert stage1 >= stage2 and stage1 >= stage1copy
+def test_ge(tpstage1: TPStage, tpstage2: TPStage, tpstage1copy: TPStage) -> None:
+    assert tpstage1 >= tpstage2 and tpstage1 >= tpstage1copy
 
 
-def test_no_cmp(stage1: TPStage) -> None:
+def test_no_cmp(tpstage1: TPStage) -> None:
     with pytest.raises(NotImplementedError):
-        assert stage1 == object()
+        assert tpstage1 == object()
 
 
-def test_stage_model_dump_has_event(stage1: TPStage) -> None:
-    md = stage1.model_dump()
+def test_stage_model_dump_has_event(tpstage1: TPStage) -> None:
+    md = tpstage1.model_dump()
     assert "eventid_" not in md
     assert isinstance(md.get("event"), Mapping)

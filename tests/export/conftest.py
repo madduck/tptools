@@ -7,39 +7,39 @@ from tptools.tpdata import TPData
 
 
 @pytest.fixture
-def expentry1(entry1: TPEntry) -> Entry:
-    return Entry(tpentry=entry1)
+def expentry1(tpentry1: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry1)
 
 
 expentry1copy = expentry1
 
 
 @pytest.fixture
-def expentry2(entry2: TPEntry) -> Entry:
-    return Entry(tpentry=entry2)
+def expentry2(tpentry2: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry2)
 
 
 @pytest.fixture
-def expentry12(entry12: TPEntry) -> Entry:
-    return Entry(tpentry=entry12)
+def expentry12(tpentry12: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry12)
 
 
 @pytest.fixture
-def expcourt1(court1: TPCourt) -> Court:
-    return Court(tpcourt=court1)
+def expcourt1(tpcourt1: TPCourt) -> Court:
+    return Court(tpcourt=tpcourt1)
 
 
 @pytest.fixture
-def expcourt2(court2: TPCourt) -> Court:
-    return Court(tpcourt=court2)
+def expcourt2(tpcourt2: TPCourt) -> Court:
+    return Court(tpcourt=tpcourt2)
 
 
 expcourt1copy = expcourt1
 
 
 @pytest.fixture
-def expdraw1(draw1: TPDraw) -> Draw:
-    return Draw(tpdraw=draw1)
+def expdraw1(tpdraw1: TPDraw) -> Draw:
+    return Draw(tpdraw=tpdraw1)
 
 
 @pytest.fixture

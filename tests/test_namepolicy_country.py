@@ -13,8 +13,8 @@ def test_constructor(policy: CountryNamePolicy) -> None:
     _ = policy
 
 
-def test_passthrough(policy: CountryNamePolicy, country1: TPCountry) -> None:
-    assert policy(country1) == "Holland"
+def test_passthrough(policy: CountryNamePolicy, tpcountry1: TPCountry) -> None:
+    assert policy(tpcountry1) == "Holland"
 
 
 def test_no_country(policy: CountryNamePolicy) -> None:

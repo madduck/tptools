@@ -16,7 +16,7 @@ from tptools.sqlmodels import (
 )
 from tptools.tpdata import TPData, load_tournament
 
-from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
+from .conftest import TPMatchFactoryType, TPPlayerFactoryType, TPPlayerMatchFactoryType
 
 
 def test_repr_empty_noname() -> None:
@@ -63,28 +63,28 @@ def test_no_cmp(tpdata1: TPData) -> None:
         assert tpdata1 == object()
 
 
-def test_add_duplicate_match(tpdata1: TPData, match1: Match) -> None:
+def test_add_duplicate_match(tpdata1: TPData, tpmatch1: Match) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_match(match1)
+        tpdata1.add_match(tpmatch1)
 
 
-def test_add_duplicate_entry(tpdata1: TPData, entry1: TPEntry) -> None:
+def test_add_duplicate_entry(tpdata1: TPData, tpentry1: TPEntry) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_entry(entry1)
+        tpdata1.add_entry(tpentry1)
 
 
-def test_add_duplicate_draw(tpdata1: TPData, draw1: TPDraw) -> None:
+def test_add_duplicate_draw(tpdata1: TPData, tpdraw1: TPDraw) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_draw(draw1)
+        tpdata1.add_draw(tpdraw1)
 
 
-def test_add_duplicate_court(tpdata1: TPData, court1: TPCourt) -> None:
+def test_add_duplicate_court(tpdata1: TPData, tpcourt1: TPCourt) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_court(court1)
+        tpdata1.add_court(tpcourt1)
 
 
-def test_get_matches(tpdata2: TPData, match1: Match) -> None:
-    assert match1 in tpdata2.get_matches()
+def test_get_matches(tpdata2: TPData, tpmatch1: Match) -> None:
+    assert tpmatch1 in tpdata2.get_matches()
 
 
 @pytest.mark.parametrize(
@@ -120,25 +120,25 @@ def test_get_matches_with_played(
         assert matches[e] in ret
 
 
-def test_get_entries(tpdata2: TPData, entry1: TPEntry) -> None:
-    assert entry1 in tpdata2.get_entries()
+def test_get_entries(tpdata2: TPData, tpentry1: TPEntry) -> None:
+    assert tpentry1 in tpdata2.get_entries()
 
 
-def test_get_matches_by_draw(tpdata2: TPData, match1: Match, match2: Match) -> None:
-    assert match1 in tpdata2.get_matches_by_draw(match1.draw)
-    assert match2 not in tpdata2.get_matches_by_draw(match1.draw)
+def test_get_matches_by_draw(tpdata2: TPData, tpmatch1: Match, tpmatch2: Match) -> None:
+    assert tpmatch1 in tpdata2.get_matches_by_draw(tpmatch1.draw)
+    assert tpmatch2 not in tpdata2.get_matches_by_draw(tpmatch1.draw)
 
 
-def test_get_draws(tpdata1: TPData, match1: Match, match2: Match) -> None:
+def test_get_draws(tpdata1: TPData, tpmatch1: Match, tpmatch2: Match) -> None:
     draws = tpdata1.get_draws()
-    assert match1.draw in draws
-    assert match2.draw in draws
+    assert tpmatch1.draw in draws
+    assert tpmatch2.draw in draws
 
 
-def test_get_courts(tpdata1: TPData, court1: TPCourt, court2: TPCourt) -> None:
+def test_get_courts(tpdata1: TPData, tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
     courts = tpdata1.get_courts()
-    assert court1 in courts
-    assert court2 in courts
+    assert tpcourt1 in courts
+    assert tpcourt2 in courts
 
 
 def test_model_dump(tpdata1: TPData) -> None:
@@ -154,10 +154,10 @@ type AsyncMockSessionFactoryType = Callable[..., AsyncMockType]
 @pytest.fixture
 def MockSessionFactory(
     mocker: MockerFixture,
-    court1: TPCourt,
-    court2: TPCourt,
-    draw1: TPDraw,
-    draw2: TPDraw,
+    tpcourt1: TPCourt,
+    tpcourt2: TPCourt,
+    tpdraw1: TPDraw,
+    tpdraw2: TPDraw,
 ) -> MockSessionFactoryType:
     def make_mock_session(
         *,
@@ -177,8 +177,8 @@ def MockSessionFactory(
         mock_session.exec.side_effect = [
             tname_setting,
             entries or [],
-            draws or [draw1, draw2],
-            courts or [court1, court2],
+            draws or [tpdraw1, tpdraw2],
+            courts or [tpcourt1, tpcourt2],
             playermatches or [],
         ]
 
@@ -190,9 +190,9 @@ def MockSessionFactory(
 @pytest.mark.asyncio
 async def test_load_tournament_elim4(
     MockSessionFactory: MockSessionFactoryType,
-    PlayerFactory: PlayerFactoryType,
-    PlayerMatchFactory: PlayerMatchFactoryType,
-    MatchFactory: MatchFactoryType,
+    TPPlayerFactory: TPPlayerFactoryType,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
+    TPMatchFactory: TPMatchFactoryType,
 ) -> None:
     entries: list[TPEntry] = []
     pms: list[TPPlayerMatch] = []
@@ -205,7 +205,7 @@ async def test_load_tournament_elim4(
         entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
-            PlayerFactory(
+            TPPlayerFactory(
                 planning=3000 + id, wn=2000 + wnvn, vn=2002 + wnvn, entry=entry
             )
         )
@@ -216,7 +216,7 @@ async def test_load_tournament_elim4(
         (1000, 1, 3, 2001, None),
         (1000, 3, 4, 2003, None),
     ):
-        pm = PlayerMatchFactory(
+        pm = TPPlayerMatchFactory(
             planning=base + id,
             matchnr=matchnr,
             van1=van1,
@@ -224,7 +224,7 @@ async def test_load_tournament_elim4(
             wn=wn,
             vn=wn + 1 if wn else None,
         )
-        m = MatchFactory(pm, entry2=None, pldiff=1, lldiff=2)
+        m = TPMatchFactory(pm, tpentry2=None, pldiff=1, lldiff=2)
         pms.append(m.pm1)
         pms.append(m.pm2)
 
@@ -244,9 +244,9 @@ async def test_load_tournament_elim4(
 @pytest.mark.asyncio
 async def test_load_tournament_group3(
     MockSessionFactory: MockSessionFactoryType,
-    PlayerFactory: PlayerFactoryType,
-    PlayerMatchFactory: PlayerMatchFactoryType,
-    draw2: TPDraw,
+    TPPlayerFactory: TPPlayerFactoryType,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
+    tpdraw2: TPDraw,
 ) -> None:
     entries: list[TPEntry] = []
     pms: list[TPPlayerMatch] = []
@@ -258,13 +258,13 @@ async def test_load_tournament_group3(
         entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
-            PlayerFactory(planning=id * 1000, wn=0, vn=0, entry=entry, draw=draw2)
+            TPPlayerFactory(planning=id * 1000, wn=0, vn=0, entry=entry, draw=tpdraw2)
         )
 
     for matchnr, a, b in ((1, 3, 2), (2, 2, 1), (3, 3, 1)):
         pms.append(
-            PlayerMatchFactory(
-                draw=draw2,
+            TPPlayerMatchFactory(
+                draw=tpdraw2,
                 planning=1000 * a + b,
                 matchnr=matchnr,
                 van1=a * 1000,
@@ -273,8 +273,8 @@ async def test_load_tournament_group3(
             )
         )
         pms.append(
-            PlayerMatchFactory(
-                draw=draw2,
+            TPPlayerMatchFactory(
+                draw=tpdraw2,
                 planning=1000 * b + a,
                 matchnr=matchnr,
                 van1=b * 1000,

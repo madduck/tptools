@@ -7,69 +7,69 @@ from tptools.drawtype import DrawType
 from tptools.sqlmodels import TPDraw, TPStage
 
 
-def test_stage_has_id(draw1: TPDraw) -> None:
-    assert draw1.stageid_
+def test_stage_has_id(tpdraw1: TPDraw) -> None:
+    assert tpdraw1.stageid_
 
 
-def test_repr(draw1: TPDraw) -> None:
+def test_repr(tpdraw1: TPDraw) -> None:
     assert (
-        repr(draw1)
+        repr(tpdraw1)
         == "TPDraw(id=1, name='Baum', stage.name='Qual', type=MONRAD, size=8)"
     )
 
 
-def test_str(draw1: TPDraw) -> None:
-    assert str(draw1) == "Baum, Qual, Herren 1"
+def test_str(tpdraw1: TPDraw) -> None:
+    assert str(tpdraw1) == "Baum, Qual, Herren 1"
 
 
-def test_eq(draw1: TPDraw, draw1copy: TPDraw) -> None:
-    assert draw1 == draw1copy
+def test_eq(tpdraw1: TPDraw, tpdraw1copy: TPDraw) -> None:
+    assert tpdraw1 == tpdraw1copy
 
 
-def test_ne(draw1: TPDraw, draw2: TPDraw) -> None:
-    assert draw1 != draw2
+def test_ne(tpdraw1: TPDraw, tpdraw2: TPDraw) -> None:
+    assert tpdraw1 != tpdraw2
 
 
-def test_lt(draw1: TPDraw, draw2: TPDraw) -> None:
-    assert draw2 < draw1
+def test_lt(tpdraw1: TPDraw, tpdraw2: TPDraw) -> None:
+    assert tpdraw2 < tpdraw1
 
 
-def test_le(draw1: TPDraw, draw2: TPDraw, draw1copy: TPDraw) -> None:
-    assert draw2 <= draw1 and draw1 <= draw1copy
+def test_le(tpdraw1: TPDraw, tpdraw2: TPDraw, tpdraw1copy: TPDraw) -> None:
+    assert tpdraw2 <= tpdraw1 and tpdraw1 <= tpdraw1copy
 
 
-def test_gt(draw1: TPDraw, draw2: TPDraw) -> None:
-    assert draw1 > draw2
+def test_gt(tpdraw1: TPDraw, tpdraw2: TPDraw) -> None:
+    assert tpdraw1 > tpdraw2
 
 
-def test_ge(draw1: TPDraw, draw2: TPDraw, draw1copy: TPDraw) -> None:
-    assert draw1 >= draw2 and draw1 >= draw1copy
+def test_ge(tpdraw1: TPDraw, tpdraw2: TPDraw, tpdraw1copy: TPDraw) -> None:
+    assert tpdraw1 >= tpdraw2 and tpdraw1 >= tpdraw1copy
 
 
-def test_no_cmp(draw1: TPDraw) -> None:
+def test_no_cmp(tpdraw1: TPDraw) -> None:
     with pytest.raises(NotImplementedError):
-        assert draw1 == object()
+        assert tpdraw1 == object()
 
 
-def test_drawtype_enum(draw1: TPDraw) -> None:
-    assert draw1.type == DrawType.MONRAD
-    assert type(draw1.type) is type(DrawType.MONRAD)
+def test_drawtype_enum(tpdraw1: TPDraw) -> None:
+    assert tpdraw1.type == DrawType.MONRAD
+    assert type(tpdraw1.type) is type(DrawType.MONRAD)
 
 
-def test_drawtype_from_int(stage1: TPStage) -> None:
+def test_drawtype_from_int(tpstage1: TPStage) -> None:
     draw = TPDraw.model_validate(
         {
             "id": 1,
             "name": "name",
             "type": cast(DrawType, int(DrawType.MONRAD)),
             "size": 8,
-            "stage": stage1,
+            "stage": tpstage1,
         }
     )
     assert draw.type == DrawType.MONRAD
 
 
-def test_draw_model_dump_has_stage(draw1: TPDraw) -> None:
-    md = draw1.model_dump()
+def test_draw_model_dump_has_stage(tpdraw1: TPDraw) -> None:
+    md = tpdraw1.model_dump()
     assert "stageid_" not in md
     assert isinstance(md.get("stage"), Mapping)

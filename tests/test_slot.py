@@ -71,8 +71,8 @@ def test_unknown_str(unknown: Unknown) -> None:
     assert str(unknown) == "Unknown"
 
 
-def test_entry_slottype(entry1: TPEntry) -> None:
-    s = SlotType.from_instance(entry1)
+def test_entry_slottype(tpentry1: TPEntry) -> None:
+    s = SlotType.from_instance(tpentry1)
     assert s == SlotType.ENTRY
 
 
@@ -104,9 +104,9 @@ def test_slot_playceholder_id(winner: Playceholder) -> None:
     assert Slot(content=winner).id is None
 
 
-def test_slot_entry(entry1: TPEntry) -> None:
-    assert Slot(content=entry1).model_dump() == entry1.model_dump()
+def test_slot_entry(tpentry1: TPEntry) -> None:
+    assert Slot(content=tpentry1).model_dump() == tpentry1.model_dump()
 
 
-def test_slot_entry_id(entry1: TPEntry) -> None:
-    assert Slot(content=entry1).id == entry1.id
+def test_slot_entry_id(tpentry1: TPEntry) -> None:
+    assert Slot(content=tpentry1).id == tpentry1.id

@@ -17,28 +17,28 @@ _ = exptournament1
 
 
 @pytest.fixture
-def sqplayer1(entry1: TPEntry) -> Entry:
-    return Entry(tpentry=entry1)
+def sqplayer1(tpentry1: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry1)
 
 
 @pytest.fixture
-def sqplayer2(entry2: TPEntry) -> Entry:
-    return Entry(tpentry=entry2)
+def sqplayer2(tpentry2: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry2)
 
 
 @pytest.fixture
-def sqplayer12(entry12: TPEntry) -> Entry:
-    return Entry(tpentry=entry12)
+def sqplayer12(tpentry12: TPEntry) -> Entry:
+    return Entry(tpentry=tpentry12)
 
 
 @pytest.fixture
-def sqcourt1(court1: TPCourt) -> Court:
-    return Court(tpcourt=court1)
+def sqcourt1(tpcourt1: TPCourt) -> Court:
+    return Court(tpcourt=tpcourt1)
 
 
 @pytest.fixture
-def sqdraw1(draw1: TPDraw) -> Draw:
-    return Draw(tpdraw=draw1)
+def sqdraw1(tpdraw1: TPDraw) -> Draw:
+    return Draw(tpdraw=tpdraw1)
 
 
 @pytest.fixture

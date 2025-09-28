@@ -9,7 +9,7 @@ from tptools.matchmaker import MatchMaker
 from tptools.matchstatus import MatchStatus
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
 
-from .conftest import MatchFactoryType, PlayerMatchFactoryType
+from .conftest import TPMatchFactoryType, TPPlayerMatchFactoryType
 
 
 def test_construction() -> None:
@@ -33,40 +33,40 @@ def test_no_singles_at_start(matchmaker: MatchMaker) -> None:
     assert len(matchmaker.unmatched) == 0
 
 
-def test_make_match_incomplete(matchmaker: MatchMaker, match1: Match) -> None:
-    matchmaker.add_playermatch(match1.pm1)
+def test_make_match_incomplete(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+    matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 1
     assert len(matchmaker.matches) == 0
 
 
-def test_make_match(matchmaker: MatchMaker, match1: Match) -> None:
-    matchmaker.add_playermatch(match1.pm2)
-    matchmaker.add_playermatch(match1.pm1)
+def test_make_match(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+    matchmaker.add_playermatch(tpmatch1.pm2)
+    matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 0
     assert len(matchmaker.matches) == 1
-    assert matchmaker.matches.pop() == match1
+    assert matchmaker.matches.pop() == tpmatch1
 
 
-def test_make_match_duplicate(matchmaker: MatchMaker, match1: Match) -> None:
-    matchmaker.add_playermatch(match1.pm1)
+def test_make_match_duplicate(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+    matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="is already registered"):
-        matchmaker.add_playermatch(match1.pm1)
+        matchmaker.add_playermatch(tpmatch1.pm1)
 
 
-def test_resolve_with_unmatched(matchmaker: MatchMaker, match1: Match) -> None:
-    matchmaker.add_playermatch(match1.pm1)
+def test_resolve_with_unmatched(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+    matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(AssertionError, match="Cannot resolve entries with unmatched"):
         matchmaker.resolve_match_entries()
 
 
 def test_resolve_1st_round(
     matchmaker: MatchMaker,
-    match1: Match,
+    tpmatch1: Match,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
 ) -> None:
-    pm1 = match1.pm1.model_copy(update={"entry": None})
-    pm2 = match1.pm2.model_copy(update={"entry": None})
+    pm1 = tpmatch1.pm1.model_copy(update={"entry": None})
+    pm2 = tpmatch1.pm2.model_copy(update={"entry": None})
     # TODO: should really mock out the Match stuff
     for pm in (pmplayer1, pmplayer2, pm1, pm2):
         matchmaker.add_playermatch(pm)
@@ -79,12 +79,12 @@ def test_resolve_1st_round(
 
 def test_resolve_1st_round_with_bye(
     matchmaker: MatchMaker,
-    match1: Match,
+    tpmatch1: Match,
     pmplayer1: TPPlayerMatch,
     pmbye: TPPlayerMatch,
 ) -> None:
-    pm1 = match1.pm1.model_copy(update={"entry": None})
-    pm2 = match1.pm2.model_copy(update={"entry": None})
+    pm1 = tpmatch1.pm1.model_copy(update={"entry": None})
+    pm2 = tpmatch1.pm2.model_copy(update={"entry": None})
     # TODO: should really mock out the Match stuff
     for pm in (pmplayer1, pmbye.model_copy(update={"planning": 4002}), pm1, pm2):
         matchmaker.add_playermatch(pm)
@@ -93,8 +93,8 @@ def test_resolve_1st_round_with_bye(
     assert match.status == MatchStatus.READY
 
 
-def test_resolve_unmatched_incomplete(matchmaker: MatchMaker, match1: Match) -> None:
-    matchmaker.add_playermatch(match1.pm1)
+def test_resolve_unmatched_incomplete(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+    matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="Cannot resolve unmatched TPPlayerMatch"):
         matchmaker.resolve_unmatched()
 
@@ -112,12 +112,12 @@ class MatchMakerTripletFactory(Protocol):
 @pytest.fixture
 def matchmaker_with_triplet(
     matchmaker: MatchMaker,
-    entry1: TPEntry,
-    entry2: TPEntry,
+    tpentry1: TPEntry,
+    tpentry2: TPEntry,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
-    PlayerMatchFactory: PlayerMatchFactoryType,
-    MatchFactory: MatchFactoryType,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
+    TPMatchFactory: TPMatchFactoryType,
 ) -> MatchMakerTripletFactory:
     matchmaker.add_playermatch(pmplayer1)
     matchmaker.add_playermatch(pmplayer1.model_copy(update={"planning": 4003}))
@@ -129,7 +129,7 @@ def matchmaker_with_triplet(
         updict2: dict[str, Any] | None = None,
         updict3: dict[str, Any] | None = None,
     ) -> MatchMaker:
-        srcpm1 = PlayerMatchFactory(
+        srcpm1 = TPPlayerMatchFactory(
             **{
                 "matchnr": 1,
                 "planning": 3001,
@@ -141,9 +141,9 @@ def matchmaker_with_triplet(
             }
             | (updict1 or {})
         )
-        srcm1 = MatchFactory(srcpm1, entry2=None, lldiff=4)
+        srcm1 = TPMatchFactory(srcpm1, tpentry2=None, lldiff=4)
 
-        srcpm2 = PlayerMatchFactory(
+        srcpm2 = TPPlayerMatchFactory(
             **{
                 "matchnr": 2,
                 "planning": 3002,
@@ -151,13 +151,13 @@ def matchmaker_with_triplet(
                 "van2": 4004,
                 "wn": 2001,
                 "vn": 2003,
-                "entry": entry1,
+                "entry": tpentry1,
                 "winner": 1,
             }
             | (updict2 or {})
         )
-        srcm2 = MatchFactory(srcpm2, entry2=entry2, lldiff=4)
-        srcpm3 = PlayerMatchFactory(
+        srcm2 = TPMatchFactory(srcpm2, tpentry2=tpentry2, lldiff=4)
+        srcpm3 = TPPlayerMatchFactory(
             **{
                 "matchnr": 3,
                 "planning": 2001,
@@ -168,7 +168,7 @@ def matchmaker_with_triplet(
             }
             | (updict3 or {})
         )
-        srcm3 = MatchFactory(srcpm3, entry2=None, lldiff=2)
+        srcm3 = TPMatchFactory(srcpm3, tpentry2=None, lldiff=2)
 
         for m in (srcm1, srcm2, srcm3):
             matchmaker.add_playermatch(m.pm1)
@@ -242,15 +242,15 @@ def test_resolve_2nd_round_players_unknown(
 
 def test_resolve_unmatched_fabricate(
     matchmaker: MatchMaker,
-    PlayerMatchFactory: PlayerMatchFactoryType,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
 ) -> None:
     common = {
         "matchnr": 1,
         "van1": 3001,
         "van2": 3002,
     }
-    srcpm1 = PlayerMatchFactory(**common | {"planning": 2001, "wn": 1001, "vn": None})
-    srcpm2 = PlayerMatchFactory(
+    srcpm1 = TPPlayerMatchFactory(**common | {"planning": 2001, "wn": 1001, "vn": None})
+    srcpm2 = TPPlayerMatchFactory(
         **common
         | {
             "planning": 2002,
@@ -258,7 +258,7 @@ def test_resolve_unmatched_fabricate(
             "vn": 1004,
         }
     )
-    pm = PlayerMatchFactory(matchnr=2, planning=1001, van1=2001, van2=2002)
+    pm = TPPlayerMatchFactory(matchnr=2, planning=1001, van1=2001, van2=2002)
 
     matchmaker.add_playermatch(srcpm1)
     matchmaker.add_playermatch(srcpm2)
@@ -274,12 +274,12 @@ def test_resolve_unmatched_fabricate_1st_round(
     matchmaker: MatchMaker,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
-    PlayerMatchFactory: PlayerMatchFactoryType,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
 ) -> None:
     pmplayer1 = pmplayer1.model_copy(update={"vn": None})
     pmplayer2 = pmplayer2.model_copy(update={"vn": None})
 
-    pm = PlayerMatchFactory(
+    pm = TPPlayerMatchFactory(
         matchnr=1, planning=3001, van1=pmplayer1.planning, van2=pmplayer2.planning
     )
 
