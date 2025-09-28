@@ -8,7 +8,7 @@ from pydantic import BaseModel, model_validator
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Slot, Unknown
-from .sqlmodels import Court, Draw, Entry, PlayerMatch
+from .sqlmodels import Court, Entry, PlayerMatch, TPDraw
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class Match(ReprMixin, StrMixin, ComparableMixin, BaseModel):
         return self.pm1.matchnr
 
     @property
-    def draw(self) -> Draw:
+    def draw(self) -> TPDraw:
         return self.pm1.draw
 
     @property

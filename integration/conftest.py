@@ -10,7 +10,7 @@ from sqlmodel import Session, create_engine, select
 from tptools.match import Match
 from tptools.matchmaker import MatchMaker
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import Court, Draw, Entry, PlayerMatch
+from tptools.sqlmodels import Court, Entry, PlayerMatch, TPDraw
 from tptools.util import make_mdb_odbc_connstring
 
 DB_PATH_BASE = pathlib.Path(__file__).parent / "anon_tournament"
@@ -65,8 +65,8 @@ def all_entries(db_session: Session) -> Generator[list[Entry], Any]:
 
 
 @pytest.fixture
-def all_draws(db_session: Session) -> Generator[list[Draw], Any]:
-    yield list(db_session.exec(select(Draw)))
+def all_draws(db_session: Session) -> Generator[list[TPDraw], Any]:
+    yield list(db_session.exec(select(TPDraw)))
 
 
 @pytest.fixture

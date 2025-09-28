@@ -64,7 +64,7 @@ class TPStage(Model, table=True):
         default=None, sa_column=Column("event", ForeignKey("Event.id"))
     )
     event: TPEvent = Relationship(back_populates="stages")
-    draws: list["Draw"] = Relationship(back_populates="stage")
+    draws: list["TPDraw"] = Relationship(back_populates="stage")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -78,7 +78,7 @@ class TPStage(Model, table=True):
     __eq_fields__ = ("event", "name")
 
 
-class Draw(Model, table=True):
+class TPDraw(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Draw"
 
@@ -296,7 +296,7 @@ class PlayerMatch(Model, table=True):
 
     id: int = Field(primary_key=True)
     drawid_: int = Field(sa_column=Column("draw", ForeignKey("Draw.id")))
-    draw: Draw = Relationship(back_populates="playermatches")
+    draw: TPDraw = Relationship(back_populates="playermatches")
     matchnr: int
     entryid_: int | None = Field(
         default=None, sa_column=Column("entry", ForeignKey("Entry.id"))

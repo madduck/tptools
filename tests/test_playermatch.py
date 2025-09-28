@@ -3,7 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import Court, Draw, Entry, PlayerMatch
+from tptools.sqlmodels import Court, Entry, PlayerMatch, TPDraw
 
 type PlayerMatchFactoryType = Callable[..., PlayerMatch]
 
@@ -140,7 +140,7 @@ def test_status_not_group(
 def test_status_group(
     pm1: PlayerMatch,
     entry1: Entry,
-    draw2: Draw,
+    draw2: TPDraw,
     useentry: bool,
     wn: int | None,
     vn: int | None,

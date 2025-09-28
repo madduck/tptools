@@ -3,7 +3,7 @@ from tptools.export import Draw, DrawStruct
 
 def test_repr(sqdraw1: Draw) -> None:
     assert repr(sqdraw1) == (
-        "Draw(tpdraw=Draw(id=1, name='Baum', stage.name='Qual', type=MONRAD, size=8))"
+        "Draw(tpdraw=TPDraw(id=1, name='Baum', stage.name='Qual', type=MONRAD, size=8))"
     )
 
 

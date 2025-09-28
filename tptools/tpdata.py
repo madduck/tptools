@@ -7,13 +7,13 @@ from .match import Match
 from .matchmaker import MatchMaker
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .sqlmodels import Court, Draw, Entry, PlayerMatch, TPSetting
+from .sqlmodels import Court, Entry, PlayerMatch, TPDraw, TPSetting
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     name: str | None = None
     entries: set[Entry] = set()
-    draws: set[Draw] = set()
+    draws: set[TPDraw] = set()
     courts: set[Court] = set()
     matches: set[Match] = set()
 
@@ -33,12 +33,12 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     def add_matches(self, matches: Iterable[Match]) -> None:
         self.matches |= set(matches)
 
-    def add_draw(self, draw: Draw) -> None:
+    def add_draw(self, draw: TPDraw) -> None:
         if draw in self.draws:
             raise ValueError(f"{draw!r} already added")
         self.draws.add(draw)
 
-    def add_draws(self, draws: Iterable[Draw]) -> None:
+    def add_draws(self, draws: Iterable[TPDraw]) -> None:
         self.draws |= set(draws)
 
     def add_court(self, court: Court) -> None:
@@ -76,10 +76,10 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
 
         return {m for m in self.matches if m.status in accepted_statuses}  # pyright: ignore[reportUnhashable]
 
-    def get_matches_by_draw(self, draw: Draw) -> set[Match]:
+    def get_matches_by_draw(self, draw: TPDraw) -> set[Match]:
         return {m for m in self.matches if m.draw == draw}  # pyright: ignore[reportUnhashable]
 
-    def get_draws(self) -> set[Draw]:
+    def get_draws(self) -> set[TPDraw]:
         return self.draws
 
     def get_courts(self) -> set[Court]:
@@ -118,7 +118,7 @@ async def load_tournament(db_session: Session) -> TPData:
         select(TPSetting).where(TPSetting.name == "Tournament")
     ).one_or_none()
     entries = db_session.exec(select(Entry))
-    draws = db_session.exec(select(Draw))
+    draws = db_session.exec(select(TPDraw))
     courts = db_session.exec(select(Court))
     mm = MatchMaker()
     for pm in db_session.exec(select(PlayerMatch)):

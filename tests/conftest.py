@@ -11,11 +11,11 @@ from tptools.sqlmodels import (
     Club,
     Country,
     Court,
-    Draw,
     Entry,
     Location,
     Player,
     PlayerMatch,
+    TPDraw,
     TPEvent,
     TPStage,
 )
@@ -49,13 +49,13 @@ stage1copy = stage1
 
 
 @pytest.fixture
-def draw1(stage1: TPStage) -> Draw:
-    return Draw(id=1, name="Baum", type=DrawType.MONRAD, size=8, stage=stage1)
+def draw1(stage1: TPStage) -> TPDraw:
+    return TPDraw(id=1, name="Baum", type=DrawType.MONRAD, size=8, stage=stage1)
 
 
 @pytest.fixture
-def draw2(stage2: TPStage) -> Draw:
-    return Draw(id=2, name="Gruppe", type=DrawType.GROUP, size=3, stage=stage2)
+def draw2(stage2: TPStage) -> TPDraw:
+    return TPDraw(id=2, name="Gruppe", type=DrawType.GROUP, size=3, stage=stage2)
 
 
 draw1copy = draw1
@@ -209,7 +209,7 @@ type PlayerMatchFactoryType = Callable[..., PlayerMatch]
 
 
 @pytest.fixture
-def PlayerMatchFactory(draw1: Draw) -> PlayerMatchFactoryType:
+def PlayerMatchFactory(draw1: TPDraw) -> PlayerMatchFactoryType:
     def playermatch_maker(**kwargs: Any) -> PlayerMatch:
         defaults = {
             "id": kwargs.get("planning", 1),
@@ -353,8 +353,8 @@ def tpdata1(
     entry21: Entry,
     court1: Court,
     court2: Court,
-    draw1: Draw,
-    draw2: Draw,
+    draw1: TPDraw,
+    draw2: TPDraw,
 ) -> TPData:
     t = TPData(
         name="Test 1",

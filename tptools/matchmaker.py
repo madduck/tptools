@@ -6,17 +6,17 @@ from .match import Match
 from .mixins.repr import ReprMixin
 from .playermatchstatus import PlayerMatchStatus
 from .slot import Bye, Playceholder, Slot
-from .sqlmodels import Draw, PlayerMatch
+from .sqlmodels import PlayerMatch, TPDraw
 
 logger = logging.getLogger(__name__)
 
 
 class MatchMaker(ReprMixin):
     def __init__(self) -> None:
-        self._unmatched: dict[tuple[Draw, int], PlayerMatch] = {}
-        self._matches: dict[tuple[Draw, int], Match] = {}
-        self._players: dict[tuple[Draw, int], PlayerMatch] = {}
-        self._planning_map: dict[tuple[Draw, int], Match] = {}
+        self._unmatched: dict[tuple[TPDraw, int], PlayerMatch] = {}
+        self._matches: dict[tuple[TPDraw, int], Match] = {}
+        self._players: dict[tuple[TPDraw, int], PlayerMatch] = {}
+        self._planning_map: dict[tuple[TPDraw, int], Match] = {}
 
     def _attr_len_repr(self, name: str) -> str:
         return str(len(getattr(self, name)))

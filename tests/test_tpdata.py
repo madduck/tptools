@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Court, Draw, Entry, Player, PlayerMatch, TPSetting
+from tptools.sqlmodels import Court, Entry, Player, PlayerMatch, TPDraw, TPSetting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -66,7 +66,7 @@ def test_add_duplicate_entry(tpdata1: TPData, entry1: Entry) -> None:
         tpdata1.add_entry(entry1)
 
 
-def test_add_duplicate_draw(tpdata1: TPData, draw1: Draw) -> None:
+def test_add_duplicate_draw(tpdata1: TPData, draw1: TPDraw) -> None:
     with pytest.raises(ValueError, match="already added"):
         tpdata1.add_draw(draw1)
 
@@ -149,8 +149,8 @@ def MockSessionFactory(
     mocker: MockerFixture,
     court1: Court,
     court2: Court,
-    draw1: Draw,
-    draw2: Draw,
+    draw1: TPDraw,
+    draw2: TPDraw,
 ) -> MockSessionFactoryType:
     def make_mock_session(
         *,
@@ -158,7 +158,7 @@ def MockSessionFactory(
         entries: list[Entry] | None = None,
         playermatches: list[PlayerMatch] | None = None,
         courts: list[Court] | None = None,
-        draws: list[Draw] | None = None,
+        draws: list[TPDraw] | None = None,
     ) -> MockType:
         mock_session = mocker.Mock()
         tname_setting = mocker.Mock()
@@ -239,7 +239,7 @@ async def test_load_tournament_group3(
     MockSessionFactory: MockSessionFactoryType,
     PlayerFactory: PlayerFactoryType,
     PlayerMatchFactory: PlayerMatchFactoryType,
-    draw2: Draw,
+    draw2: TPDraw,
 ) -> None:
     entries: list[Entry] = []
     pms: list[PlayerMatch] = []
