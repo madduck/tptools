@@ -6,16 +6,16 @@ from .match import Match
 from .mixins.repr import ReprMixin
 from .playermatchstatus import PlayerMatchStatus
 from .slot import Bye, Playceholder, Slot
-from .sqlmodels import PlayerMatch, TPDraw
+from .sqlmodels import TPDraw, TPPlayerMatch
 
 logger = logging.getLogger(__name__)
 
 
 class MatchMaker(ReprMixin):
     def __init__(self) -> None:
-        self._unmatched: dict[tuple[TPDraw, int], PlayerMatch] = {}
+        self._unmatched: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
         self._matches: dict[tuple[TPDraw, int], Match] = {}
-        self._players: dict[tuple[TPDraw, int], PlayerMatch] = {}
+        self._players: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
         self._planning_map: dict[tuple[TPDraw, int], Match] = {}
 
     def _attr_len_repr(self, name: str) -> str:
@@ -26,7 +26,7 @@ class MatchMaker(ReprMixin):
         ("nunmatched", partial(_attr_len_repr, name="unmatched"), False),
     )
 
-    def add_playermatch(self, playermatch: PlayerMatch) -> None:
+    def add_playermatch(self, playermatch: TPPlayerMatch) -> None:
         if playermatch.status in (PlayerMatchStatus.PLAYER, PlayerMatchStatus.BYE):
             self._players[playermatch.draw, playermatch.planning] = playermatch
             return
@@ -50,7 +50,7 @@ class MatchMaker(ReprMixin):
         return None
 
     @property
-    def unmatched(self) -> set[PlayerMatch]:
+    def unmatched(self) -> set[TPPlayerMatch]:
         return set(self._unmatched.values())
 
     @property
@@ -67,7 +67,7 @@ class MatchMaker(ReprMixin):
             # First, get any of the preceding player matches. It does not matter which
             # one as the vn pointers should be the same for both. The preceding
             # PlayerMatch is either a match, in which case we obtain pm1, or a player
-            srcpm: PlayerMatch | None
+            srcpm: TPPlayerMatch | None
             if (
                 srcmatch := self._planning_map.get((pm.draw, cast(int, pm.van1)))
             ) is not None:

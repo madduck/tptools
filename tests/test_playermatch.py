@@ -3,18 +3,18 @@ from collections.abc import Callable
 import pytest
 
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry
+from tptools.sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 
-type PlayerMatchFactoryType = Callable[..., PlayerMatch]
+type PlayerMatchFactoryType = Callable[..., TPPlayerMatch]
 
 
-def test_draw_has_id(pmplayer1: PlayerMatch) -> None:
+def test_draw_has_id(pmplayer1: TPPlayerMatch) -> None:
     assert pmplayer1.drawid_
 
 
-def test_repr(pm1: PlayerMatch) -> None:
+def test_repr(pm1: TPPlayerMatch) -> None:
     assert repr(pm1) == (
-        "PlayerMatch(id=141, draw.name='Baum', matchnr=14, "
+        "TPPlayerMatch(id=141, draw.name='Baum', matchnr=14, "
         "entry.players=(TPPlayer(id=1, lastname='Krafft', firstname='Martin', "
         "country.name='Deutschland', club.name='RSC'), None), "
         "time=datetime(2025, 6, 1, 11, 30), court.name='C01', winner=None, "
@@ -34,47 +34,47 @@ def test_repr_with_entry(
     assert repr(PlayerMatchFactory(matchnr=12, planning=2002, entry=entry1))
 
 
-def test_str(pm1: PlayerMatch) -> None:
+def test_str(pm1: TPPlayerMatch) -> None:
     assert str(pm1) == (
         "141: [Baum:14] [4001/2 → 3001 → 2001/3] 'Martin Krafft' (pending)"
     )
 
 
-def test_eq(pm1: PlayerMatch, pm1copy: PlayerMatch) -> None:
+def test_eq(pm1: TPPlayerMatch, pm1copy: TPPlayerMatch) -> None:
     assert pm1 == pm1copy
 
 
-def test_ne(pm1: PlayerMatch, pm2: PlayerMatch) -> None:
+def test_ne(pm1: TPPlayerMatch, pm2: TPPlayerMatch) -> None:
     assert pm1 != pm2
 
 
-def test_lt(pm1: PlayerMatch, pm2: PlayerMatch) -> None:
+def test_lt(pm1: TPPlayerMatch, pm2: TPPlayerMatch) -> None:
     assert pm1 < pm2
 
 
-def test_le(pm1: PlayerMatch, pm2: PlayerMatch, pm1copy: PlayerMatch) -> None:
+def test_le(pm1: TPPlayerMatch, pm2: TPPlayerMatch, pm1copy: TPPlayerMatch) -> None:
     assert pm1 <= pm2 and pm1 <= pm1copy
 
 
-def test_gt(pm1: PlayerMatch, pm2: PlayerMatch) -> None:
+def test_gt(pm1: TPPlayerMatch, pm2: TPPlayerMatch) -> None:
     assert pm2 > pm1
 
 
-def test_ge(pm1: PlayerMatch, pm2: PlayerMatch, pm1copy: PlayerMatch) -> None:
+def test_ge(pm1: TPPlayerMatch, pm2: TPPlayerMatch, pm1copy: TPPlayerMatch) -> None:
     assert pm2 >= pm1 and pm1 >= pm1copy
 
 
-def test_no_cmp(pm1: PlayerMatch) -> None:
+def test_no_cmp(pm1: TPPlayerMatch) -> None:
     with pytest.raises(NotImplementedError):
         assert pm1 == object()
 
 
-def test_cmp_time_against_none(pm1: PlayerMatch) -> None:
+def test_cmp_time_against_none(pm1: TPPlayerMatch) -> None:
     pm2 = pm1.model_copy(update={"time": None})
     assert pm1 < pm2
 
 
-def test_default_status_bye(pmbye: PlayerMatch) -> None:
+def test_default_status_bye(pmbye: TPPlayerMatch) -> None:
     assert pmbye.status == PlayerMatchStatus.BYE
 
 
@@ -85,23 +85,23 @@ def test_default_status_entry_means_player(
     assert pm.status == PlayerMatchStatus.PLAYER
 
 
-def test_inconsistent_van(pmplayer1: PlayerMatch) -> None:
+def test_inconsistent_van(pmplayer1: TPPlayerMatch) -> None:
     pmplayer1.van2 = 2001
     with pytest.raises(AssertionError):
         _ = pmplayer1.status
 
 
-def test_reversehomeaway(pm1: PlayerMatch) -> None:
+def test_reversehomeaway(pm1: TPPlayerMatch) -> None:
     van1, van2 = pm1.van
     pm1 = pm1.model_copy(update={"reversehomeaway": True})
     assert pm1.van == (van2, van1)
 
 
-def test_scheduled(pm1: PlayerMatch) -> None:
+def test_scheduled(pm1: TPPlayerMatch) -> None:
     assert pm1.scheduled
 
 
-def test_unscheduled(pm2: PlayerMatch) -> None:
+def test_unscheduled(pm2: TPPlayerMatch) -> None:
     assert not pm2.scheduled
 
 
@@ -115,7 +115,7 @@ def test_unscheduled(pm2: PlayerMatch) -> None:
     ],
 )
 def test_status_not_group(
-    pm1: PlayerMatch,
+    pm1: TPPlayerMatch,
     entry1: TPEntry,
     useentry: bool,
     winner: None | int,
@@ -138,7 +138,7 @@ def test_status_not_group(
     ],
 )
 def test_status_group(
-    pm1: PlayerMatch,
+    pm1: TPPlayerMatch,
     entry1: TPEntry,
     draw2: TPDraw,
     useentry: bool,
@@ -156,7 +156,7 @@ def test_status_group(
 
 
 @pytest.mark.xfail
-def test_winner0_is_not_played(pm: PlayerMatch) -> None:
+def test_winner0_is_not_played(pm: TPPlayerMatch) -> None:
     # This requires a custom type. There is no validation for model instances that are
     # read from the database, and there is no `__post_init__`. We could map the database
     # column to `winner_` and provide a property that does the `zero_to_none`

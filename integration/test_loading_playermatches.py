@@ -3,7 +3,7 @@ import pytest_subtests
 from sqlalchemy import ScalarResult
 
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import PlayerMatch
+from tptools.sqlmodels import TPPlayerMatch
 
 PLAYERMATCH_ID_BY_STATUS = {
     PlayerMatchStatus.PLAYER: [  # {{{
@@ -214,12 +214,12 @@ def status_by_id() -> dict[int, PlayerMatchStatus]:
     return status_by_id
 
 
-def test_loading_playermatches(all_playermatches: list[PlayerMatch]) -> None:
+def test_loading_playermatches(all_playermatches: list[TPPlayerMatch]) -> None:
     assert len(all_playermatches) == 184
 
 
 def test_status(
-    all_playermatches: ScalarResult[PlayerMatch],
+    all_playermatches: ScalarResult[TPPlayerMatch],
     status_by_id: dict[int, PlayerMatchStatus],
     subtests: pytest_subtests.SubTests,
 ) -> None:

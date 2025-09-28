@@ -8,7 +8,6 @@ from tptools.drawtype import DrawType
 from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
-    PlayerMatch,
     TPClub,
     TPCountry,
     TPCourt,
@@ -17,6 +16,7 @@ from tptools.sqlmodels import (
     TPEvent,
     TPLocation,
     TPPlayer,
+    TPPlayerMatch,
     TPStage,
 )
 from tptools.tpdata import TPData
@@ -205,29 +205,29 @@ def court2(location2: TPLocation) -> TPCourt:
 court1copy = court1
 
 
-type PlayerMatchFactoryType = Callable[..., PlayerMatch]
+type PlayerMatchFactoryType = Callable[..., TPPlayerMatch]
 
 
 @pytest.fixture
 def PlayerMatchFactory(draw1: TPDraw) -> PlayerMatchFactoryType:
-    def playermatch_maker(**kwargs: Any) -> PlayerMatch:
+    def playermatch_maker(**kwargs: Any) -> TPPlayerMatch:
         defaults = {
             "id": kwargs.get("planning", 1),
             "draw": draw1,
         }
-        return PlayerMatch(**defaults | kwargs)
+        return TPPlayerMatch(**defaults | kwargs)
 
     return playermatch_maker
 
 
-type PlayerFactoryType = Callable[..., PlayerMatch]
+type PlayerFactoryType = Callable[..., TPPlayerMatch]
 
 
 @pytest.fixture
 def PlayerFactory(
     PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry
 ) -> PlayerFactoryType:
-    def player_maker(**kwargs: Any) -> PlayerMatch:
+    def player_maker(**kwargs: Any) -> TPPlayerMatch:
         defaults = {"id": kwargs.get("planning", 1), "entry": entry1}
         enforced = {"van1": None, "van2": None, "matchnr": None}
         return PlayerMatchFactory(**defaults | kwargs | enforced)
@@ -236,12 +236,12 @@ def PlayerFactory(
 
 
 @pytest.fixture
-def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: TPEntry) -> PlayerMatch:
+def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: TPEntry) -> TPPlayerMatch:
     return PlayerFactory(id=1, planning=4001, wn=3001, vn=3005, entry=entry1)
 
 
 @pytest.fixture
-def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: TPEntry) -> PlayerMatch:
+def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: TPEntry) -> TPPlayerMatch:
     return PlayerFactory(id=2, planning=4002, wn=3001, vn=3005, entry=entry2)
 
 
@@ -249,14 +249,14 @@ pmplayer1copy = pmplayer1
 
 
 @pytest.fixture
-def pmbye(PlayerFactory: PlayerFactoryType) -> PlayerMatch:
+def pmbye(PlayerFactory: PlayerFactoryType) -> TPPlayerMatch:
     return PlayerFactory(planning=4008, entry=None)
 
 
 @pytest.fixture
 def pm1(
     PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry, court1: TPCourt
-) -> PlayerMatch:
+) -> TPPlayerMatch:
     return PlayerMatchFactory(
         id=141,
         matchnr=14,
@@ -275,7 +275,7 @@ def pm1(
 def pm2(
     PlayerMatchFactory: PlayerMatchFactoryType,
     entry1: TPEntry,
-) -> PlayerMatch:
+) -> TPPlayerMatch:
     return PlayerMatchFactory(
         id=421,
         matchnr=42,
@@ -297,7 +297,7 @@ type MatchFactoryType = Callable[..., Match]
 @pytest.fixture
 def MatchFactory() -> MatchFactoryType:
     def match_maker(
-        pm: PlayerMatch,
+        pm: TPPlayerMatch,
         entry2: TPEntry | None,
         lldiff: int,
         pldiff: int | None = None,
@@ -325,7 +325,7 @@ def MatchFactory() -> MatchFactoryType:
 @pytest.fixture
 def match1(
     MatchFactory: MatchFactoryType,
-    pm1: PlayerMatch,
+    pm1: TPPlayerMatch,
     entry2: TPEntry,
 ) -> Match:
     return MatchFactory(pm1, entry2, lldiff=4)
@@ -337,7 +337,7 @@ match1copy = match1
 @pytest.fixture
 def match2(
     MatchFactory: MatchFactoryType,
-    pm2: PlayerMatch,
+    pm2: TPPlayerMatch,
     entry2: TPEntry,
 ) -> Match:
     return MatchFactory(pm2, entry2, lldiff=2)

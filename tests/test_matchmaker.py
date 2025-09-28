@@ -7,7 +7,7 @@ import pytest
 from tptools.match import Match
 from tptools.matchmaker import MatchMaker
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import PlayerMatch, TPEntry
+from tptools.sqlmodels import TPEntry, TPPlayerMatch
 
 from .conftest import MatchFactoryType, PlayerMatchFactoryType
 
@@ -62,8 +62,8 @@ def test_resolve_with_unmatched(matchmaker: MatchMaker, match1: Match) -> None:
 def test_resolve_1st_round(
     matchmaker: MatchMaker,
     match1: Match,
-    pmplayer1: PlayerMatch,
-    pmplayer2: PlayerMatch,
+    pmplayer1: TPPlayerMatch,
+    pmplayer2: TPPlayerMatch,
 ) -> None:
     pm1 = match1.pm1.model_copy(update={"entry": None})
     pm2 = match1.pm2.model_copy(update={"entry": None})
@@ -80,8 +80,8 @@ def test_resolve_1st_round(
 def test_resolve_1st_round_with_bye(
     matchmaker: MatchMaker,
     match1: Match,
-    pmplayer1: PlayerMatch,
-    pmbye: PlayerMatch,
+    pmplayer1: TPPlayerMatch,
+    pmbye: TPPlayerMatch,
 ) -> None:
     pm1 = match1.pm1.model_copy(update={"entry": None})
     pm2 = match1.pm2.model_copy(update={"entry": None})
@@ -95,7 +95,7 @@ def test_resolve_1st_round_with_bye(
 
 def test_resolve_unmatched_incomplete(matchmaker: MatchMaker, match1: Match) -> None:
     matchmaker.add_playermatch(match1.pm1)
-    with pytest.raises(ValueError, match="Cannot resolve unmatched PlayerMatch"):
+    with pytest.raises(ValueError, match="Cannot resolve unmatched TPPlayerMatch"):
         matchmaker.resolve_unmatched()
 
 
@@ -114,8 +114,8 @@ def matchmaker_with_triplet(
     matchmaker: MatchMaker,
     entry1: TPEntry,
     entry2: TPEntry,
-    pmplayer1: PlayerMatch,
-    pmplayer2: PlayerMatch,
+    pmplayer1: TPPlayerMatch,
+    pmplayer2: TPPlayerMatch,
     PlayerMatchFactory: PlayerMatchFactoryType,
     MatchFactory: MatchFactoryType,
 ) -> MatchMakerTripletFactory:
@@ -182,7 +182,7 @@ def matchmaker_with_triplet(
 @pytest.mark.parametrize(
     "updict1, updict2, updict3, expctx",
     [
-        # the case when planning matches a wn/vn of the first preceding PlayerMatch,
+        # the case when planning matches a wn/vn of the first preceding TPPlayerMatch,
         # then we are dealing with the winner, but the match is obviously still pending.
         (
             None,
@@ -197,7 +197,7 @@ def matchmaker_with_triplet(
             ),
         ),
         # in this (fake) case, planning is made to match wn/vn of the second preceding
-        # PlayerMatch, then we are dealing with the loser, but the match is obviously
+        # TPPlayerMatch, then we are dealing with the loser, but the match is obviously
         # still pending.
         (
             None,
@@ -272,8 +272,8 @@ def test_resolve_unmatched_fabricate(
 
 def test_resolve_unmatched_fabricate_1st_round(
     matchmaker: MatchMaker,
-    pmplayer1: PlayerMatch,
-    pmplayer2: PlayerMatch,
+    pmplayer1: TPPlayerMatch,
+    pmplayer2: TPPlayerMatch,
     PlayerMatchFactory: PlayerMatchFactoryType,
 ) -> None:
     pmplayer1 = pmplayer1.model_copy(update={"vn": None})

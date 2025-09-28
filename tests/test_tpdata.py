@@ -6,7 +6,14 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry, TPPlayer, TPSetting
+from tptools.sqlmodels import (
+    TPCourt,
+    TPDraw,
+    TPEntry,
+    TPPlayer,
+    TPPlayerMatch,
+    TPSetting,
+)
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -156,7 +163,7 @@ def MockSessionFactory(
         *,
         tournament_name: str | None = None,
         entries: list[TPEntry] | None = None,
-        playermatches: list[PlayerMatch] | None = None,
+        playermatches: list[TPPlayerMatch] | None = None,
         courts: list[TPCourt] | None = None,
         draws: list[TPDraw] | None = None,
     ) -> MockType:
@@ -188,7 +195,7 @@ async def test_load_tournament_elim4(
     MatchFactory: MatchFactoryType,
 ) -> None:
     entries: list[TPEntry] = []
-    pms: list[PlayerMatch] = []
+    pms: list[TPPlayerMatch] = []
     for id, name, wnvn in (
         (1, "one", 1),
         (2, "two", 1),
@@ -242,7 +249,7 @@ async def test_load_tournament_group3(
     draw2: TPDraw,
 ) -> None:
     entries: list[TPEntry] = []
-    pms: list[PlayerMatch] = []
+    pms: list[TPPlayerMatch] = []
     for id, name in (
         (1, "one"),
         (2, "two"),
@@ -291,8 +298,8 @@ async def test_load_tournament_group3(
 @pytest.mark.asyncio
 async def test_load_tournament_with_player(
     MockSessionFactory: MockSessionFactoryType,
-    pmplayer1: PlayerMatch,
-    pmplayer2: PlayerMatch,
+    pmplayer1: TPPlayerMatch,
+    pmplayer2: TPPlayerMatch,
 ) -> None:
     mock_session = MockSessionFactory(
         playermatches=[pmplayer1, pmplayer2],

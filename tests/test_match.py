@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
 from tptools.slot import Bye, Slot, Unknown
-from tptools.sqlmodels import PlayerMatch, TPEntry
+from tptools.sqlmodels import TPEntry, TPPlayerMatch
 
 from .conftest import MatchFactoryType
 
@@ -178,7 +178,7 @@ def test_set_entry_knonwn_status_override(match1: Match) -> None:
 
 
 def test_lower_planning_playermatch_first(
-    pm1: PlayerMatch, MatchFactory: MatchFactoryType, entry2: TPEntry
+    pm1: TPPlayerMatch, MatchFactory: MatchFactoryType, entry2: TPEntry
 ) -> None:
     m = MatchFactory(pm1, entry2, lldiff=4)
     m = Match(pm1=m.pm2, pm2=m.pm1)  # reversed on purpose

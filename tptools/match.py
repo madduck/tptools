@@ -8,15 +8,15 @@ from pydantic import BaseModel, model_validator
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Slot, Unknown
-from .sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry
+from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)
 
 
 class Match(ReprMixin, StrMixin, ComparableMixin, BaseModel):
-    pm1: PlayerMatch
-    pm2: PlayerMatch
+    pm1: TPPlayerMatch
+    pm2: TPPlayerMatch
 
     _slots: tuple[Slot, Slot] | None = None
 
@@ -190,7 +190,7 @@ class Match(ReprMixin, StrMixin, ComparableMixin, BaseModel):
             str(self.pm2.planning) if self.pm2.planning is not None else None,
         )
 
-    def _pm_eq_sort(self) -> tuple[PlayerMatch, PlayerMatch]:
+    def _pm_eq_sort(self) -> tuple[TPPlayerMatch, TPPlayerMatch]:
         ret = sorted((self.pm1, self.pm2))
         return ret[0], ret[1]
 

@@ -90,7 +90,7 @@ class TPDraw(Model, table=True):
         default=None, sa_column=Column("stage", ForeignKey("Stage.id"))
     )
     stage: TPStage = Relationship(back_populates="draws")
-    playermatches: list["PlayerMatch"] = Relationship(back_populates="draw")
+    playermatches: list["TPPlayerMatch"] = Relationship(back_populates="draw")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -209,7 +209,7 @@ class TPEntry(Model, table=True):
             "primaryjoin": "TPEntry.player2id_ == TPPlayer.id",
         }
     )
-    playermatches: list["PlayerMatch"] = Relationship(back_populates="entry")
+    playermatches: list["TPPlayerMatch"] = Relationship(back_populates="entry")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -276,7 +276,7 @@ class TPCourt(Model, table=True):
     )
     location: TPLocation = Relationship(back_populates="courts")
     sortorder: int | None = None
-    playermatches: list["PlayerMatch"] = Relationship(back_populates="court")
+    playermatches: list["TPPlayerMatch"] = Relationship(back_populates="court")
 
     @model_serializer(mode="wrap")
     def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -290,7 +290,7 @@ class TPCourt(Model, table=True):
     __eq_fields__ = ("location", "sortorder", "name")
 
 
-class PlayerMatch(Model, table=True):
+class TPPlayerMatch(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "PlayerMatch"
 
