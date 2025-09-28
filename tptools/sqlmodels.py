@@ -4,12 +4,22 @@ from typing import Any, ClassVar
 
 from pydantic import SerializerFunctionWrapHandler, model_serializer
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from .basemodel import Model
 from .drawtype import DrawType
+from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .playermatchstatus import PlayerMatchStatus
 from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
+
+
+class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
+    def __setattr__(self, attr: str, value: Any) -> None:
+        if hasattr(self, f"{attr}id_") and hasattr(value, "id"):
+            object.__setattr__(self, f"{attr}id_", value.id)
+        super().__setattr__(attr, value)
+
+    # TODO: a model_serializer that adds Relationships which generate a model
+    # themselves, not a list.
 
 
 class Setting(Model, table=True):
