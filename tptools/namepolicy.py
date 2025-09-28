@@ -5,7 +5,7 @@ from typing import Any, Literal, overload
 
 from pydantic import BaseModel, ConfigDict
 
-from .sqlmodels import Country, Court, Player, TPClub
+from .sqlmodels import Court, Player, TPClub, TPCountry
 
 
 class ParamsModel(BaseModel):
@@ -85,7 +85,7 @@ class ClubNamePolicy(PolicyBase):
 class CountryNamePolicy(PolicyBase):
     def __init__(self) -> None: ...
 
-    def __call__(self, country: Country | None) -> str | None:
+    def __call__(self, country: TPCountry | None) -> str | None:
         return str(country) if country is not None else None
 
 

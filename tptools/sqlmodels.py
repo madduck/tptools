@@ -121,7 +121,7 @@ class TPClub(Model, table=True):
     __none_sorts_last__ = True
 
 
-class Country(Model, table=True):
+class TPCountry(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Country"
 
@@ -155,7 +155,7 @@ class Player(Model, table=True):
     countryid_: int | None = Field(
         default=None, sa_column=Column("country", Integer, ForeignKey("Country.id"))
     )
-    country: Country = Relationship(back_populates="players")
+    country: TPCountry = Relationship(back_populates="players")
     entries: list["Entry"] = Relationship(
         sa_relationship_kwargs={
             "primaryjoin": (

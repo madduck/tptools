@@ -1,7 +1,7 @@
 import pytest
 
 from tptools.namepolicy import CountryNamePolicy
-from tptools.sqlmodels import Country
+from tptools.sqlmodels import TPCountry
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ def test_constructor(policy: CountryNamePolicy) -> None:
     _ = policy
 
 
-def test_passthrough(policy: CountryNamePolicy, country1: Country) -> None:
+def test_passthrough(policy: CountryNamePolicy, country1: TPCountry) -> None:
     assert policy(country1) == "Holland"
 
 
