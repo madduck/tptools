@@ -16,7 +16,7 @@ from tptools.namepolicy import (
     CourtNamePolicy,
 )
 from tptools.sqlmodels import Court as TPCourt
-from tptools.sqlmodels import Location
+from tptools.sqlmodels import TPLocation
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class Court(ReprMixin, StrMixin, ComparableMixin, BaseModel):
         return self.tpcourt.name
 
     @property
-    def location(self) -> Location:
+    def location(self) -> TPLocation:
         return self.tpcourt.location
 
     @model_serializer(mode="plain")

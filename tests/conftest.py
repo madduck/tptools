@@ -9,13 +9,13 @@ from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
     Court,
-    Location,
     PlayerMatch,
     TPClub,
     TPCountry,
     TPDraw,
     TPEntry,
     TPEvent,
+    TPLocation,
     TPPlayer,
     TPStage,
 )
@@ -180,25 +180,25 @@ def slot12(entry12: TPEntry) -> Slot:
 
 
 @pytest.fixture
-def location1() -> Location:
-    return Location(id=1, name="Sports4You")
+def location1() -> TPLocation:
+    return TPLocation(id=1, name="Sports4You")
 
 
 @pytest.fixture
-def location2() -> Location:
-    return Location(id=2, name="WeCare Germering")
+def location2() -> TPLocation:
+    return TPLocation(id=2, name="WeCare Germering")
 
 
 location1copy = location1
 
 
 @pytest.fixture
-def court1(location1: Location) -> Court:
+def court1(location1: TPLocation) -> Court:
     return Court(id=1, name="C01", location=location1)
 
 
 @pytest.fixture
-def court2(location2: Location) -> Court:
+def court2(location2: TPLocation) -> Court:
     return Court(id=2, name="C07", location=location2)
 
 

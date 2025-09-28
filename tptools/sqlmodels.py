@@ -248,7 +248,7 @@ class TPEntry(Model, table=True):
     __eq_fields__ = ["event", "player1", "player2"]
 
 
-class Location(Model, table=True):
+class TPLocation(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Location"
 
@@ -274,7 +274,7 @@ class Court(Model, table=True):
     locationid_: int | None = Field(
         default=None, sa_column=Column("location", ForeignKey("Location.id"))
     )
-    location: Location = Relationship(back_populates="courts")
+    location: TPLocation = Relationship(back_populates="courts")
     sortorder: int | None = None
     playermatches: list["PlayerMatch"] = Relationship(back_populates="court")
 
