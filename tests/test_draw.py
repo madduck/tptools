@@ -4,7 +4,7 @@ from typing import cast
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.sqlmodels import Draw, Stage
+from tptools.sqlmodels import Draw, TPStage
 
 
 def test_stage_has_id(draw1: Draw) -> None:
@@ -55,7 +55,7 @@ def test_drawtype_enum(draw1: Draw) -> None:
     assert type(draw1.type) is type(DrawType.MONRAD)
 
 
-def test_drawtype_from_int(stage1: Stage) -> None:
+def test_drawtype_from_int(stage1: TPStage) -> None:
     draw = Draw.model_validate(
         {
             "id": 1,

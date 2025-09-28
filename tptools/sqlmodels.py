@@ -43,7 +43,7 @@ class TPEvent(Model, table=True):
     name: str
     abbreviation: str | None = None
     gender: int
-    stages: list["Stage"] = Relationship(back_populates="event")
+    stages: list["TPStage"] = Relationship(back_populates="event")
     entries: list["Entry"] = Relationship(back_populates="event")
 
     def _repr_name(self) -> str:
@@ -54,7 +54,7 @@ class TPEvent(Model, table=True):
     __eq_fields__ = ("gender", "name", "abbreviation")
 
 
-class Stage(Model, table=True):
+class TPStage(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Stage"
 
@@ -89,7 +89,7 @@ class Draw(Model, table=True):
     stageid_: int | None = Field(
         default=None, sa_column=Column("stage", ForeignKey("Stage.id"))
     )
-    stage: Stage = Relationship(back_populates="draws")
+    stage: TPStage = Relationship(back_populates="draws")
     playermatches: list["PlayerMatch"] = Relationship(back_populates="draw")
 
     @model_serializer(mode="wrap")

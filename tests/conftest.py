@@ -16,8 +16,8 @@ from tptools.sqlmodels import (
     Location,
     Player,
     PlayerMatch,
-    Stage,
     TPEvent,
+    TPStage,
 )
 from tptools.tpdata import TPData
 
@@ -36,25 +36,25 @@ event1copy = event1
 
 
 @pytest.fixture
-def stage1(event1: TPEvent) -> Stage:
-    return Stage(id=1, name="Qual", event=event1)
+def stage1(event1: TPEvent) -> TPStage:
+    return TPStage(id=1, name="Qual", event=event1)
 
 
 @pytest.fixture
-def stage2(event2: TPEvent) -> Stage:
-    return Stage(id=2, name="Main", event=event2)
+def stage2(event2: TPEvent) -> TPStage:
+    return TPStage(id=2, name="Main", event=event2)
 
 
 stage1copy = stage1
 
 
 @pytest.fixture
-def draw1(stage1: Stage) -> Draw:
+def draw1(stage1: TPStage) -> Draw:
     return Draw(id=1, name="Baum", type=DrawType.MONRAD, size=8, stage=stage1)
 
 
 @pytest.fixture
-def draw2(stage2: Stage) -> Draw:
+def draw2(stage2: TPStage) -> Draw:
     return Draw(id=2, name="Gruppe", type=DrawType.GROUP, size=3, stage=stage2)
 
 
