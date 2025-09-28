@@ -21,7 +21,7 @@ from tptools.namepolicy import (
     PairCombinePolicy,
     PlayerNamePolicy,
 )
-from tptools.sqlmodels import Entry as TPEntry
+from tptools.sqlmodels import TPEntry
 
 logger = logging.getLogger(__name__)
 

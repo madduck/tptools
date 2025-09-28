@@ -6,7 +6,7 @@ from tptools.export import Entry, EntryStruct
 def test_repr(sqplayer1: Entry) -> None:
     assert repr(sqplayer1) == (
         "Entry(tpentry="
-        "Entry(id=1, event.name='Herren 1', player1.name='Martin Krafft')"
+        "TPEntry(id=1, event.name='Herren 1', player1.name='Martin Krafft')"
         ")"
     )
 

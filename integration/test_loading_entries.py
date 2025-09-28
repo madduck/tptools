@@ -1,15 +1,15 @@
 import pytest_subtests
 from sqlalchemy import ScalarResult
 
-from tptools.sqlmodels import Entry
+from tptools.sqlmodels import TPEntry
 
 
-def test_loading_entries(all_entries: list[Entry]) -> None:
+def test_loading_entries(all_entries: list[TPEntry]) -> None:
     assert len(all_entries) == 36
 
 
 def test_all_entries_are_singles_and_unique(
-    all_entries: ScalarResult[Entry], subtests: pytest_subtests.SubTests
+    all_entries: ScalarResult[TPEntry], subtests: pytest_subtests.SubTests
 ) -> None:
     entries_seen = set()
     players_seen = set()

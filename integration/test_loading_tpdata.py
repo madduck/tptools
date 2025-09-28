@@ -2,7 +2,7 @@ import pytest
 from sqlmodel import Session
 
 from tptools.match import Match
-from tptools.sqlmodels import Court, Entry, TPDraw
+from tptools.sqlmodels import Court, TPDraw, TPEntry
 from tptools.tpdata import TPData, load_tournament
 
 
@@ -14,7 +14,7 @@ def tpdata() -> TPData:
 def test_loading_tournament(
     tpdata: TPData,
     all_matches: list[Match],
-    all_entries: list[Entry],
+    all_entries: list[TPEntry],
     all_draws: list[TPDraw],
     all_courts: list[Court],
 ) -> None:

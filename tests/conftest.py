@@ -9,12 +9,12 @@ from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
     Court,
-    Entry,
     Location,
     PlayerMatch,
     TPClub,
     TPCountry,
     TPDraw,
+    TPEntry,
     TPEvent,
     TPPlayer,
     TPStage,
@@ -105,38 +105,38 @@ player1copy = player1
 
 
 @pytest.fixture
-def entry1(event1: TPEvent, player1: TPPlayer) -> Entry:
-    return Entry(id=1, event=event1, player1=player1)
+def entry1(event1: TPEvent, player1: TPPlayer) -> TPEntry:
+    return TPEntry(id=1, event=event1, player1=player1)
 
 
 @pytest.fixture
-def entry2(event2: TPEvent, player2: TPPlayer) -> Entry:
-    return Entry(id=2, event=event2, player1=player2)
+def entry2(event2: TPEvent, player2: TPPlayer) -> TPEntry:
+    return TPEntry(id=2, event=event2, player1=player2)
 
 
 entry1copy = entry1
 
 
-type EntryFactoryType = Callable[[int, TPEvent, str], Entry]
+type EntryFactoryType = Callable[[int, TPEvent, str], TPEntry]
 
 
 @pytest.fixture
 def EntryFactory() -> EntryFactoryType:
-    def entry_maker(id: int, event: TPEvent, name: str) -> Entry:
+    def entry_maker(id: int, event: TPEvent, name: str) -> TPEntry:
         p = TPPlayer(id=id, lastname="", firstname=name)
-        return Entry(p, event=event)
+        return TPEntry(p, event=event)
 
     return entry_maker
 
 
 @pytest.fixture
-def entry12(event1: TPEvent, player1: TPPlayer, player2: TPPlayer) -> Entry:
-    return Entry(id=12, event=event1, player1=player1, player2=player2)
+def entry12(event1: TPEvent, player1: TPPlayer, player2: TPPlayer) -> TPEntry:
+    return TPEntry(id=12, event=event1, player1=player1, player2=player2)
 
 
 @pytest.fixture
-def entry21(event2: TPEvent, player1: TPPlayer, player2: TPPlayer) -> Entry:
-    return Entry(id=21, event=event2, player1=player2, player2=player1)
+def entry21(event2: TPEvent, player1: TPPlayer, player2: TPPlayer) -> TPEntry:
+    return TPEntry(id=21, event=event2, player1=player2, player2=player1)
 
 
 @pytest.fixture
@@ -160,22 +160,22 @@ def loser() -> Playceholder:
 
 
 @pytest.fixture
-def slot1(entry1: Entry) -> Slot:
+def slot1(entry1: TPEntry) -> Slot:
     return Slot(content=entry1)
 
 
 @pytest.fixture
-def slot2(entry2: Entry) -> Slot:
+def slot2(entry2: TPEntry) -> Slot:
     return Slot(content=entry2)
 
 
 @pytest.fixture
-def slot21(entry21: Entry) -> Slot:
+def slot21(entry21: TPEntry) -> Slot:
     return Slot(content=entry21)
 
 
 @pytest.fixture
-def slot12(entry12: Entry) -> Slot:
+def slot12(entry12: TPEntry) -> Slot:
     return Slot(content=entry12)
 
 
@@ -225,7 +225,7 @@ type PlayerFactoryType = Callable[..., PlayerMatch]
 
 @pytest.fixture
 def PlayerFactory(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry
 ) -> PlayerFactoryType:
     def player_maker(**kwargs: Any) -> PlayerMatch:
         defaults = {"id": kwargs.get("planning", 1), "entry": entry1}
@@ -236,12 +236,12 @@ def PlayerFactory(
 
 
 @pytest.fixture
-def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: Entry) -> PlayerMatch:
+def pmplayer1(PlayerFactory: PlayerFactoryType, entry1: TPEntry) -> PlayerMatch:
     return PlayerFactory(id=1, planning=4001, wn=3001, vn=3005, entry=entry1)
 
 
 @pytest.fixture
-def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: Entry) -> PlayerMatch:
+def pmplayer2(PlayerFactory: PlayerFactoryType, entry2: TPEntry) -> PlayerMatch:
     return PlayerFactory(id=2, planning=4002, wn=3001, vn=3005, entry=entry2)
 
 
@@ -255,7 +255,7 @@ def pmbye(PlayerFactory: PlayerFactoryType) -> PlayerMatch:
 
 @pytest.fixture
 def pm1(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry, court1: Court
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry, court1: Court
 ) -> PlayerMatch:
     return PlayerMatchFactory(
         id=141,
@@ -274,7 +274,7 @@ def pm1(
 @pytest.fixture
 def pm2(
     PlayerMatchFactory: PlayerMatchFactoryType,
-    entry1: Entry,
+    entry1: TPEntry,
 ) -> PlayerMatch:
     return PlayerMatchFactory(
         id=421,
@@ -298,7 +298,7 @@ type MatchFactoryType = Callable[..., Match]
 def MatchFactory() -> MatchFactoryType:
     def match_maker(
         pm: PlayerMatch,
-        entry2: Entry | None,
+        entry2: TPEntry | None,
         lldiff: int,
         pldiff: int | None = None,
         iddiff: int = 1,
@@ -326,7 +326,7 @@ def MatchFactory() -> MatchFactoryType:
 def match1(
     MatchFactory: MatchFactoryType,
     pm1: PlayerMatch,
-    entry2: Entry,
+    entry2: TPEntry,
 ) -> Match:
     return MatchFactory(pm1, entry2, lldiff=4)
 
@@ -338,7 +338,7 @@ match1copy = match1
 def match2(
     MatchFactory: MatchFactoryType,
     pm2: PlayerMatch,
-    entry2: Entry,
+    entry2: TPEntry,
 ) -> Match:
     return MatchFactory(pm2, entry2, lldiff=2)
 
@@ -347,10 +347,10 @@ def match2(
 def tpdata1(
     match1: Match,
     match2: Match,
-    entry1: Entry,
-    entry2: Entry,
-    entry12: Entry,
-    entry21: Entry,
+    entry1: TPEntry,
+    entry2: TPEntry,
+    entry12: TPEntry,
+    entry21: TPEntry,
     court1: Court,
     court2: Court,
     draw1: TPDraw,
@@ -373,7 +373,7 @@ def tpdata1(
 
 
 @pytest.fixture
-def tpdata2(match1: Match, entry1: Entry, entry2: Entry) -> TPData:
+def tpdata2(match1: Match, entry1: TPEntry, entry2: TPEntry) -> TPData:
     t = TPData(name="Test 2")
     t.add_match(match1)
     t.add_entry(entry1)

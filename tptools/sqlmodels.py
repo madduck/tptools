@@ -44,7 +44,7 @@ class TPEvent(Model, table=True):
     abbreviation: str | None = None
     gender: int
     stages: list["TPStage"] = Relationship(back_populates="event")
-    entries: list["Entry"] = Relationship(back_populates="event")
+    entries: list["TPEntry"] = Relationship(back_populates="event")
 
     def _repr_name(self) -> str:
         return self.abbreviation if self.abbreviation is not None else self.name
@@ -156,10 +156,10 @@ class TPPlayer(Model, table=True):
         default=None, sa_column=Column("country", Integer, ForeignKey("Country.id"))
     )
     country: TPCountry = Relationship(back_populates="players")
-    entries: list["Entry"] = Relationship(
+    entries: list["TPEntry"] = Relationship(
         sa_relationship_kwargs={
             "primaryjoin": (
-                "or_(TPPlayer.id==Entry.player1id_,TPPlayer.id==Entry.player2id_)"
+                "or_(TPPlayer.id==TPEntry.player1id_,TPPlayer.id==TPEntry.player2id_)"
             ),
             "viewonly": True,
         }
@@ -184,7 +184,7 @@ class TPPlayer(Model, table=True):
     __none_sorts_last__ = True
 
 
-class Entry(Model, table=True):
+class TPEntry(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Entry"
 
@@ -196,8 +196,8 @@ class Entry(Model, table=True):
     )
     player1: TPPlayer = Relationship(
         sa_relationship_kwargs={
-            "foreign_keys": "Entry.player1id_",
-            "primaryjoin": "Entry.player1id_ == TPPlayer.id",
+            "foreign_keys": "TPEntry.player1id_",
+            "primaryjoin": "TPEntry.player1id_ == TPPlayer.id",
         }
     )
     player2id_: int | None = Field(
@@ -205,8 +205,8 @@ class Entry(Model, table=True):
     )
     player2: TPPlayer | None = Relationship(
         sa_relationship_kwargs={
-            "foreign_keys": "Entry.player2id_",
-            "primaryjoin": "Entry.player2id_ == TPPlayer.id",
+            "foreign_keys": "TPEntry.player2id_",
+            "primaryjoin": "TPEntry.player2id_ == TPPlayer.id",
         }
     )
     playermatches: list["PlayerMatch"] = Relationship(back_populates="entry")
@@ -301,7 +301,7 @@ class PlayerMatch(Model, table=True):
     entryid_: int | None = Field(
         default=None, sa_column=Column("entry", ForeignKey("Entry.id"))
     )
-    entry: Entry | None = Relationship(back_populates="playermatches")
+    entry: TPEntry | None = Relationship(back_populates="playermatches")
     time: datetime | None = Field(default=None, sa_column=Column("plandate", DateTime))
     courtid_: int | None = Field(
         default=None, sa_column=Column("court", ForeignKey("Court.id"))

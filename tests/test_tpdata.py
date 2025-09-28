@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Court, Entry, PlayerMatch, TPDraw, TPPlayer, TPSetting
+from tptools.sqlmodels import Court, PlayerMatch, TPDraw, TPEntry, TPPlayer, TPSetting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -61,7 +61,7 @@ def test_add_duplicate_match(tpdata1: TPData, match1: Match) -> None:
         tpdata1.add_match(match1)
 
 
-def test_add_duplicate_entry(tpdata1: TPData, entry1: Entry) -> None:
+def test_add_duplicate_entry(tpdata1: TPData, entry1: TPEntry) -> None:
     with pytest.raises(ValueError, match="already added"):
         tpdata1.add_entry(entry1)
 
@@ -113,7 +113,7 @@ def test_get_matches_with_played(
         assert matches[e] in ret
 
 
-def test_get_entries(tpdata2: TPData, entry1: Entry) -> None:
+def test_get_entries(tpdata2: TPData, entry1: TPEntry) -> None:
     assert entry1 in tpdata2.get_entries()
 
 
@@ -155,7 +155,7 @@ def MockSessionFactory(
     def make_mock_session(
         *,
         tournament_name: str | None = None,
-        entries: list[Entry] | None = None,
+        entries: list[TPEntry] | None = None,
         playermatches: list[PlayerMatch] | None = None,
         courts: list[Court] | None = None,
         draws: list[TPDraw] | None = None,
@@ -187,7 +187,7 @@ async def test_load_tournament_elim4(
     PlayerMatchFactory: PlayerMatchFactoryType,
     MatchFactory: MatchFactoryType,
 ) -> None:
-    entries: list[Entry] = []
+    entries: list[TPEntry] = []
     pms: list[PlayerMatch] = []
     for id, name, wnvn in (
         (1, "one", 1),
@@ -195,7 +195,7 @@ async def test_load_tournament_elim4(
         (3, "three", 2),
         (4, "four", 2),
     ):
-        entry = Entry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
+        entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
             PlayerFactory(
@@ -241,14 +241,14 @@ async def test_load_tournament_group3(
     PlayerMatchFactory: PlayerMatchFactoryType,
     draw2: TPDraw,
 ) -> None:
-    entries: list[Entry] = []
+    entries: list[TPEntry] = []
     pms: list[PlayerMatch] = []
     for id, name in (
         (1, "one"),
         (2, "two"),
         (3, "three"),
     ):
-        entry = Entry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
+        entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
         entries.append(entry)
         pms.append(
             PlayerFactory(planning=id * 1000, wn=0, vn=0, entry=entry, draw=draw2)

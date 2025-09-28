@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
 from tptools.slot import Bye, Slot, Unknown
-from tptools.sqlmodels import Entry, PlayerMatch
+from tptools.sqlmodels import PlayerMatch, TPEntry
 
 from .conftest import MatchFactoryType
 
@@ -166,19 +166,19 @@ def test_other_statuses(
 
 
 def test_set_entry_bye_status_override(match1: Match) -> None:
-    match1.set_slots(Slot(content=Bye()), Slot(content=cast(Entry, match1.pm2.entry)))
+    match1.set_slots(Slot(content=Bye()), Slot(content=cast(TPEntry, match1.pm2.entry)))
     assert match1.status == MatchStatus.READY
 
 
 def test_set_entry_knonwn_status_override(match1: Match) -> None:
     match1.set_slots(
-        Slot(content=Unknown()), Slot(content=cast(Entry, match1.pm2.entry))
+        Slot(content=Unknown()), Slot(content=cast(TPEntry, match1.pm2.entry))
     )
     assert match1.status == MatchStatus.PENDING
 
 
 def test_lower_planning_playermatch_first(
-    pm1: PlayerMatch, MatchFactory: MatchFactoryType, entry2: Entry
+    pm1: PlayerMatch, MatchFactory: MatchFactoryType, entry2: TPEntry
 ) -> None:
     m = MatchFactory(pm1, entry2, lldiff=4)
     m = Match(pm1=m.pm2, pm2=m.pm1)  # reversed on purpose

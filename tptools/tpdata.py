@@ -7,22 +7,22 @@ from .match import Match
 from .matchmaker import MatchMaker
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .sqlmodels import Court, Entry, PlayerMatch, TPDraw, TPSetting
+from .sqlmodels import Court, PlayerMatch, TPDraw, TPEntry, TPSetting
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     name: str | None = None
-    entries: set[Entry] = set()
+    entries: set[TPEntry] = set()
     draws: set[TPDraw] = set()
     courts: set[Court] = set()
     matches: set[Match] = set()
 
-    def add_entry(self, entry: Entry) -> None:
+    def add_entry(self, entry: TPEntry) -> None:
         if entry in self.entries:
             raise ValueError(f"{entry!r} already added")
         self.entries.add(entry)
 
-    def add_entries(self, entries: Iterable[Entry]) -> None:
+    def add_entries(self, entries: Iterable[TPEntry]) -> None:
         self.entries |= set(entries)
 
     def add_match(self, match: Match) -> None:
@@ -89,7 +89,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     def nentries(self) -> int:
         return len(self.entries)
 
-    def get_entries(self) -> set[Entry]:
+    def get_entries(self) -> set[TPEntry]:
         return self.entries
 
     __eq_fields__ = (
@@ -106,7 +106,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     __repr_fields__ = ("name?", "nentries", "ndraws", "ncourts", "nmatches")
 
     @model_serializer
-    def serialise_with_lists(self) -> dict[str, list[Entry] | list[Match]]:
+    def serialise_with_lists(self) -> dict[str, list[TPEntry] | list[Match]]:
         return {
             "entries": list(self.entries),
             "matches": list(self.matches),
@@ -117,7 +117,7 @@ async def load_tournament(db_session: Session) -> TPData:
     tset = db_session.exec(
         select(TPSetting).where(TPSetting.name == "Tournament")
     ).one_or_none()
-    entries = db_session.exec(select(Entry))
+    entries = db_session.exec(select(TPEntry))
     draws = db_session.exec(select(TPDraw))
     courts = db_session.exec(select(Court))
     mm = MatchMaker()

@@ -3,7 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import Court, Entry, PlayerMatch, TPDraw
+from tptools.sqlmodels import Court, PlayerMatch, TPDraw, TPEntry
 
 type PlayerMatchFactoryType = Callable[..., PlayerMatch]
 
@@ -29,7 +29,7 @@ def test_repr_with_court(
 
 
 def test_repr_with_entry(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry
 ) -> None:
     assert repr(PlayerMatchFactory(matchnr=12, planning=2002, entry=entry1))
 
@@ -79,7 +79,7 @@ def test_default_status_bye(pmbye: PlayerMatch) -> None:
 
 
 def test_default_status_entry_means_player(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: Entry
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry
 ) -> None:
     pm = PlayerMatchFactory(entry=entry1)
     assert pm.status == PlayerMatchStatus.PLAYER
@@ -116,7 +116,7 @@ def test_unscheduled(pm2: PlayerMatch) -> None:
 )
 def test_status_not_group(
     pm1: PlayerMatch,
-    entry1: Entry,
+    entry1: TPEntry,
     useentry: bool,
     winner: None | int,
     status: PlayerMatchStatus,
@@ -139,7 +139,7 @@ def test_status_not_group(
 )
 def test_status_group(
     pm1: PlayerMatch,
-    entry1: Entry,
+    entry1: TPEntry,
     draw2: TPDraw,
     useentry: bool,
     wn: int | None,

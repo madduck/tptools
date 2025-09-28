@@ -1,13 +1,13 @@
 from pytest_mock import MockerFixture
 
 from tptools.export import Entry, EntryStruct
-from tptools.sqlmodels import Entry as TPEntry
+from tptools.sqlmodels import TPEntry
 
 
 def test_repr(expentry1: Entry) -> None:
     assert repr(expentry1) == (
         "Entry(tpentry="
-        "Entry(id=1, event.name='Herren 1', player1.name='Martin Krafft')"
+        "TPEntry(id=1, event.name='Herren 1', player1.name='Martin Krafft')"
         ")"
     )
 

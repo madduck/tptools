@@ -7,7 +7,7 @@ import pytest
 from tptools.match import Match
 from tptools.matchmaker import MatchMaker
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Entry, PlayerMatch
+from tptools.sqlmodels import PlayerMatch, TPEntry
 
 from .conftest import MatchFactoryType, PlayerMatchFactoryType
 
@@ -112,8 +112,8 @@ class MatchMakerTripletFactory(Protocol):
 @pytest.fixture
 def matchmaker_with_triplet(
     matchmaker: MatchMaker,
-    entry1: Entry,
-    entry2: Entry,
+    entry1: TPEntry,
+    entry2: TPEntry,
     pmplayer1: PlayerMatch,
     pmplayer2: PlayerMatch,
     PlayerMatchFactory: PlayerMatchFactoryType,

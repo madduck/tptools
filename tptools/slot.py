@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 from pydantic import BaseModel, Field, GetCoreSchemaHandler, model_serializer
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .sqlmodels import Entry
+from .sqlmodels import TPEntry
 
 
 class SlotContent(ABC, ReprMixin, StrMixin):
@@ -65,17 +65,17 @@ class SlotType(enum.Enum):
     UNKNOWN = Unknown
     BYE = Bye
     PLAYCEHOLDER = Playceholder
-    ENTRY = Entry
+    ENTRY = TPEntry
 
     @classmethod
-    def from_class(cls, typecls: type[SlotContent | Entry]) -> SlotType:
+    def from_class(cls, typecls: type[SlotContent | TPEntry]) -> SlotType:
         try:
             return cls(typecls)
         except ValueError as err:
             raise ValueError(f"Class {typecls.__name__} is not valid for Slot") from err
 
     @classmethod
-    def from_instance(cls, instance: SlotContent | Entry) -> SlotType:
+    def from_instance(cls, instance: SlotContent | TPEntry) -> SlotType:
         return cls.from_class(instance.__class__)
 
     @property
@@ -91,7 +91,7 @@ class Slot(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     # is because Entry is both an SQLModel and a SlotContent, and
     # if SlotContent was also a BaseModel, there wouldn't be a
     # consistent MRO on the base classes.
-    content: Entry | SlotContent = Field(default_factory=Unknown)
+    content: TPEntry | SlotContent = Field(default_factory=Unknown)
 
     @property
     def type(self) -> SlotType:
@@ -113,12 +113,12 @@ class Slot(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     __repr_fields__ = ("content",)
 
     @model_serializer(mode="plain")
-    def _model_serializer(self) -> Entry | str:
+    def _model_serializer(self) -> TPEntry | str:
         if self.type == SlotType.ENTRY:
-            return cast(Entry, self.content)
+            return cast(TPEntry, self.content)
         else:
             return self.name
 
     if TYPE_CHECKING:
         # Ensure type checkers see the correct return type
-        def model_dump(self, **_: Any) -> Entry | str: ...  # type: ignore[override]
+        def model_dump(self, **_: Any) -> TPEntry | str: ...  # type: ignore[override]

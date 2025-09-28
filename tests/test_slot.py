@@ -1,7 +1,7 @@
 import pytest
 
 from tptools.slot import Bye, Playceholder, Slot, SlotContent, SlotType, Unknown
-from tptools.sqlmodels import Entry
+from tptools.sqlmodels import TPEntry
 
 
 def test_slot_content_abstract() -> None:
@@ -14,13 +14,13 @@ def test_slot_type_invalid() -> None:
         _ = SlotType.from_instance(object())  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("kls", [Entry, Bye, Unknown, Playceholder])
-def test_slot_type_value(kls: type[Entry | SlotContent]) -> None:
+@pytest.mark.parametrize("kls", [TPEntry, Bye, Unknown, Playceholder])
+def test_slot_type_value(kls: type[TPEntry | SlotContent]) -> None:
     assert SlotType.from_class(kls).value == kls.__name__
 
 
-@pytest.mark.parametrize("kls", [Entry, Bye, Unknown, Playceholder])
-def test_slot_type_repr(kls: type[Entry | SlotContent]) -> None:
+@pytest.mark.parametrize("kls", [TPEntry, Bye, Unknown, Playceholder])
+def test_slot_type_repr(kls: type[TPEntry | SlotContent]) -> None:
     assert repr(SlotType.from_class(kls)) == f"SlotType({kls.__name__})"
 
 
@@ -71,7 +71,7 @@ def test_unknown_str(unknown: Unknown) -> None:
     assert str(unknown) == "Unknown"
 
 
-def test_entry_slottype(entry1: Entry) -> None:
+def test_entry_slottype(entry1: TPEntry) -> None:
     s = SlotType.from_instance(entry1)
     assert s == SlotType.ENTRY
 
@@ -104,9 +104,9 @@ def test_slot_playceholder_id(winner: Playceholder) -> None:
     assert Slot(content=winner).id is None
 
 
-def test_slot_entry(entry1: Entry) -> None:
+def test_slot_entry(entry1: TPEntry) -> None:
     assert Slot(content=entry1).model_dump() == entry1.model_dump()
 
 
-def test_slot_entry_id(entry1: Entry) -> None:
+def test_slot_entry_id(entry1: TPEntry) -> None:
     assert Slot(content=entry1).id == entry1.id
