@@ -107,7 +107,7 @@ class TPDraw(Model, table=True):
     __eq_fields__ = ("stage", "name", "type", "size")
 
 
-class Club(Model, table=True):
+class TPClub(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Club"
 
@@ -151,7 +151,7 @@ class Player(Model, table=True):
     clubid_: int | None = Field(
         default=None, sa_column=Column("club", Integer, ForeignKey("Club.id"))
     )
-    club: Club = Relationship(back_populates="players")
+    club: TPClub = Relationship(back_populates="players")
     countryid_: int | None = Field(
         default=None, sa_column=Column("country", Integer, ForeignKey("Country.id"))
     )

@@ -8,13 +8,13 @@ from tptools.drawtype import DrawType
 from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
-    Club,
     Country,
     Court,
     Entry,
     Location,
     Player,
     PlayerMatch,
+    TPClub,
     TPDraw,
     TPEvent,
     TPStage,
@@ -62,13 +62,13 @@ draw1copy = draw1
 
 
 @pytest.fixture
-def club1() -> Club:
-    return Club(id=1, name="RSC")
+def club1() -> TPClub:
+    return TPClub(id=1, name="RSC")
 
 
 @pytest.fixture
-def club2() -> Club:
-    return Club(id=2, name="SomeClub")
+def club2() -> TPClub:
+    return TPClub(id=2, name="SomeClub")
 
 
 club1copy = club1
@@ -88,14 +88,14 @@ country1copy = country1
 
 
 @pytest.fixture
-def player1(club1: Club, country2: Country) -> Player:
+def player1(club1: TPClub, country2: Country) -> Player:
     return Player(
         id=1, firstname="Martin", lastname="Krafft", club=club1, country=country2
     )
 
 
 @pytest.fixture
-def player2(club2: Club, country1: Country) -> Player:
+def player2(club2: TPClub, country1: Country) -> Player:
     return Player(
         id=2, firstname="Iddo", lastname="Hoeve", club=club2, country=country1
     )
