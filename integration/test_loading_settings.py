@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import Session, select
 
-from tptools.sqlmodels import Setting
+from tptools.sqlmodels import TPSetting
 
 type SettingsDict = dict[str, str | None]
 
@@ -9,7 +9,7 @@ type SettingsDict = dict[str, str | None]
 @pytest.fixture
 def all_settings(db_session: Session) -> SettingsDict:
     ret = {}
-    for setting in db_session.exec(select(Setting)):
+    for setting in db_session.exec(select(TPSetting)):
         ret[setting.name] = setting.value
     return ret
 

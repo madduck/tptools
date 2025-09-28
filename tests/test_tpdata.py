@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Court, Draw, Entry, Player, PlayerMatch, Setting
+from tptools.sqlmodels import Court, Draw, Entry, Player, PlayerMatch, TPSetting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -163,7 +163,7 @@ def MockSessionFactory(
         mock_session = mocker.Mock()
         tname_setting = mocker.Mock()
 
-        tname_setting.one_or_none.return_value = Setting(
+        tname_setting.one_or_none.return_value = TPSetting(
             id=1, name="Tournament", value=tournament_name
         )
 

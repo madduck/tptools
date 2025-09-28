@@ -7,7 +7,7 @@ from .match import Match
 from .matchmaker import MatchMaker
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .sqlmodels import Court, Draw, Entry, PlayerMatch, Setting
+from .sqlmodels import Court, Draw, Entry, PlayerMatch, TPSetting
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
@@ -115,7 +115,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
 
 async def load_tournament(db_session: Session) -> TPData:
     tset = db_session.exec(
-        select(Setting).where(Setting.name == "Tournament")
+        select(TPSetting).where(TPSetting.name == "Tournament")
     ).one_or_none()
     entries = db_session.exec(select(Entry))
     draws = db_session.exec(select(Draw))

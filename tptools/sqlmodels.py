@@ -22,7 +22,7 @@ class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
     # themselves, not a list.
 
 
-class Setting(Model, table=True):
+class TPSetting(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Settings"
 
