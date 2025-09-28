@@ -3,7 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from tptools.playermatchstatus import PlayerMatchStatus
-from tptools.sqlmodels import Court, PlayerMatch, TPDraw, TPEntry
+from tptools.sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry
 
 type PlayerMatchFactoryType = Callable[..., PlayerMatch]
 
@@ -23,7 +23,7 @@ def test_repr(pm1: PlayerMatch) -> None:
 
 
 def test_repr_with_court(
-    PlayerMatchFactory: PlayerMatchFactoryType, court1: Court
+    PlayerMatchFactory: PlayerMatchFactoryType, court1: TPCourt
 ) -> None:
     assert repr(PlayerMatchFactory(matchnr=12, planning=2002, court=court1))
 

@@ -254,7 +254,7 @@ class TPLocation(Model, table=True):
 
     id: int = Field(primary_key=True)
     name: str
-    courts: list["Court"] = Relationship(back_populates="location")
+    courts: list["TPCourt"] = Relationship(back_populates="location")
 
     __str_template__ = "{self.name}"
     __repr_fields__ = ("id", "name", "numcourts")
@@ -265,7 +265,7 @@ class TPLocation(Model, table=True):
         return len(self.courts)
 
 
-class Court(Model, table=True):
+class TPCourt(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Court"
 
@@ -306,7 +306,7 @@ class PlayerMatch(Model, table=True):
     courtid_: int | None = Field(
         default=None, sa_column=Column("court", ForeignKey("Court.id"))
     )
-    court: Court | None = Relationship(back_populates="playermatches")
+    court: TPCourt | None = Relationship(back_populates="playermatches")
     winner: int | None = None
     planning: int
     van1: int | None = None

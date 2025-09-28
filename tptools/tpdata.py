@@ -7,14 +7,14 @@ from .match import Match
 from .matchmaker import MatchMaker
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .sqlmodels import Court, PlayerMatch, TPDraw, TPEntry, TPSetting
+from .sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry, TPSetting
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     name: str | None = None
     entries: set[TPEntry] = set()
     draws: set[TPDraw] = set()
-    courts: set[Court] = set()
+    courts: set[TPCourt] = set()
     matches: set[Match] = set()
 
     def add_entry(self, entry: TPEntry) -> None:
@@ -41,12 +41,12 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     def add_draws(self, draws: Iterable[TPDraw]) -> None:
         self.draws |= set(draws)
 
-    def add_court(self, court: Court) -> None:
+    def add_court(self, court: TPCourt) -> None:
         if court in self.courts:
             raise ValueError(f"{court!r} already added")
         self.courts.add(court)
 
-    def add_courts(self, courts: Iterable[Court]) -> None:
+    def add_courts(self, courts: Iterable[TPCourt]) -> None:
         self.courts |= set(courts)
 
     @property
@@ -82,7 +82,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     def get_draws(self) -> set[TPDraw]:
         return self.draws
 
-    def get_courts(self) -> set[Court]:
+    def get_courts(self) -> set[TPCourt]:
         return self.courts
 
     @property
@@ -119,7 +119,7 @@ async def load_tournament(db_session: Session) -> TPData:
     ).one_or_none()
     entries = db_session.exec(select(TPEntry))
     draws = db_session.exec(select(TPDraw))
-    courts = db_session.exec(select(Court))
+    courts = db_session.exec(select(TPCourt))
     mm = MatchMaker()
     for pm in db_session.exec(select(PlayerMatch)):
         mm.add_playermatch(pm)

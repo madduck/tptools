@@ -5,7 +5,7 @@ from typing import Any, Literal, overload
 
 from pydantic import BaseModel, ConfigDict
 
-from .sqlmodels import Court, TPClub, TPCountry, TPPlayer
+from .sqlmodels import TPClub, TPCountry, TPCourt, TPPlayer
 
 
 class ParamsModel(BaseModel):
@@ -186,7 +186,7 @@ class CourtNamePolicy(PolicyBase):
     include_location: bool = False
     no_court_string: str = "No court"
 
-    def __call__(self, court: Court | None) -> str:
+    def __call__(self, court: TPCourt | None) -> str:
         if court is None:
             return self.no_court_string
 

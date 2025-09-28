@@ -2,7 +2,7 @@ import pytest
 from sqlmodel import Session
 
 from tptools.match import Match
-from tptools.sqlmodels import Court, TPDraw, TPEntry
+from tptools.sqlmodels import TPCourt, TPDraw, TPEntry
 from tptools.tpdata import TPData, load_tournament
 
 
@@ -16,7 +16,7 @@ def test_loading_tournament(
     all_matches: list[Match],
     all_entries: list[TPEntry],
     all_draws: list[TPDraw],
-    all_courts: list[Court],
+    all_courts: list[TPCourt],
 ) -> None:
     tpdata.add_matches(all_matches)
     assert tpdata.nmatches == 68

@@ -5,7 +5,7 @@ from tptools.export import Court
 
 def test_repr(sqcourt1: Court) -> None:
     assert repr(sqcourt1) == (
-        "Court(tpcourt=Court(id=1, name='C01', location.name='Sports4You'))"
+        "Court(tpcourt=TPCourt(id=1, name='C01', location.name='Sports4You'))"
     )
 
 

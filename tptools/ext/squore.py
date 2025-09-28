@@ -32,7 +32,7 @@ from tptools.namepolicy import (
     CourtNamePolicy,
     ParamsModel,
 )
-from tptools.sqlmodels import Court as TPCourt
+from tptools.sqlmodels import TPCourt
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.sqlmodels import Court, PlayerMatch, TPDraw, TPEntry, TPPlayer, TPSetting
+from tptools.sqlmodels import PlayerMatch, TPCourt, TPDraw, TPEntry, TPPlayer, TPSetting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType
@@ -71,7 +71,7 @@ def test_add_duplicate_draw(tpdata1: TPData, draw1: TPDraw) -> None:
         tpdata1.add_draw(draw1)
 
 
-def test_add_duplicate_court(tpdata1: TPData, court1: Court) -> None:
+def test_add_duplicate_court(tpdata1: TPData, court1: TPCourt) -> None:
     with pytest.raises(ValueError, match="already added"):
         tpdata1.add_court(court1)
 
@@ -128,7 +128,7 @@ def test_get_draws(tpdata1: TPData, match1: Match, match2: Match) -> None:
     assert match2.draw in draws
 
 
-def test_get_courts(tpdata1: TPData, court1: Court, court2: Court) -> None:
+def test_get_courts(tpdata1: TPData, court1: TPCourt, court2: TPCourt) -> None:
     courts = tpdata1.get_courts()
     assert court1 in courts
     assert court2 in courts
@@ -147,8 +147,8 @@ type AsyncMockSessionFactoryType = Callable[..., AsyncMockType]
 @pytest.fixture
 def MockSessionFactory(
     mocker: MockerFixture,
-    court1: Court,
-    court2: Court,
+    court1: TPCourt,
+    court2: TPCourt,
     draw1: TPDraw,
     draw2: TPDraw,
 ) -> MockSessionFactoryType:
@@ -157,7 +157,7 @@ def MockSessionFactory(
         tournament_name: str | None = None,
         entries: list[TPEntry] | None = None,
         playermatches: list[PlayerMatch] | None = None,
-        courts: list[Court] | None = None,
+        courts: list[TPCourt] | None = None,
         draws: list[TPDraw] | None = None,
     ) -> MockType:
         mock_session = mocker.Mock()

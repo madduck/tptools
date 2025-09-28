@@ -15,8 +15,7 @@ from tptools.mixins.comparable import ComparableMixin
 from tptools.namepolicy import (
     CourtNamePolicy,
 )
-from tptools.sqlmodels import Court as TPCourt
-from tptools.sqlmodels import TPLocation
+from tptools.sqlmodels import TPCourt, TPLocation
 
 logger = logging.getLogger(__name__)
 

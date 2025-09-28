@@ -9,8 +9,7 @@ from tptools.ext.squore import (
     SquoreMatch,
 )
 from tptools.match import Match as TPMatch
-from tptools.sqlmodels import Court as TPCourt
-from tptools.sqlmodels import TPDraw, TPEntry
+from tptools.sqlmodels import TPCourt, TPDraw, TPEntry
 
 from ...export.conftest import exptournament1
 

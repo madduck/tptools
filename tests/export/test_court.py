@@ -1,12 +1,12 @@
 from pytest_mock import MockerFixture
 
 from tptools.export import Court
-from tptools.sqlmodels import Court as TPCourt
+from tptools.sqlmodels import TPCourt
 
 
 def test_repr(expcourt1: Court) -> None:
     assert repr(expcourt1) == (
-        "Court(tpcourt=Court(id=1, name='C01', location.name='Sports4You'))"
+        "Court(tpcourt=TPCourt(id=1, name='C01', location.name='Sports4You'))"
     )
 
 

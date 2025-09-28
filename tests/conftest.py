@@ -8,10 +8,10 @@ from tptools.drawtype import DrawType
 from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
-    Court,
     PlayerMatch,
     TPClub,
     TPCountry,
+    TPCourt,
     TPDraw,
     TPEntry,
     TPEvent,
@@ -193,13 +193,13 @@ location1copy = location1
 
 
 @pytest.fixture
-def court1(location1: TPLocation) -> Court:
-    return Court(id=1, name="C01", location=location1)
+def court1(location1: TPLocation) -> TPCourt:
+    return TPCourt(id=1, name="C01", location=location1)
 
 
 @pytest.fixture
-def court2(location2: TPLocation) -> Court:
-    return Court(id=2, name="C07", location=location2)
+def court2(location2: TPLocation) -> TPCourt:
+    return TPCourt(id=2, name="C07", location=location2)
 
 
 court1copy = court1
@@ -255,7 +255,7 @@ def pmbye(PlayerFactory: PlayerFactoryType) -> PlayerMatch:
 
 @pytest.fixture
 def pm1(
-    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry, court1: Court
+    PlayerMatchFactory: PlayerMatchFactoryType, entry1: TPEntry, court1: TPCourt
 ) -> PlayerMatch:
     return PlayerMatchFactory(
         id=141,
@@ -351,8 +351,8 @@ def tpdata1(
     entry2: TPEntry,
     entry12: TPEntry,
     entry21: TPEntry,
-    court1: Court,
-    court2: Court,
+    court1: TPCourt,
+    court2: TPCourt,
     draw1: TPDraw,
     draw2: TPDraw,
 ) -> TPData:
