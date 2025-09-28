@@ -18,8 +18,16 @@ class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
             object.__setattr__(self, f"{attr}id_", value.id)
         super().__setattr__(attr, value)
 
-    # TODO: a model_serializer that adds Relationships which generate a model
-    # themselves, not a list.
+    @model_serializer(mode="wrap")
+    def replace_id_fields_with_model_instances(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        ret: dict[str, Any] = handler(self)
+        for key in [k for k in ret.keys() if k.endswith("id_")]:
+            if (model := getattr(self, mkey := key[:-3]), None) is not None:
+                del ret[key]
+                ret[mkey] = model
+        return ret
 
 
 class TPSetting(Model, table=True):
@@ -66,13 +74,6 @@ class TPStage(Model, table=True):
     event: TPEvent = Relationship(back_populates="stages")
     draws: list["TPDraw"] = Relationship(back_populates="stage")
 
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        del ret["eventid_"]
-        ret["event"] = self.event
-        return ret
-
     __str_template__ = "{self.name}, {self.event}"
     __repr_fields__ = ("id", "name", "event.name")
     __eq_fields__ = ("event", "name")
@@ -91,13 +92,6 @@ class TPDraw(Model, table=True):
     )
     stage: TPStage = Relationship(back_populates="draws")
     playermatches: list["TPPlayerMatch"] = Relationship(back_populates="draw")
-
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        del ret["stageid_"]
-        ret["stage"] = self.stage
-        return ret
 
     def _type_repr(self) -> str:
         return self.type.name
@@ -165,15 +159,6 @@ class TPPlayer(Model, table=True):
         }
     )
 
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        del ret["clubid_"]
-        ret["club"] = self.club
-        del ret["countryid_"]
-        ret["country"] = self.country
-        return ret
-
     __str_template__ = (
         "{self.name} "
         "({self.club if self.club else 'no club'}"
@@ -210,14 +195,6 @@ class TPEntry(Model, table=True):
         }
     )
     playermatches: list["TPPlayerMatch"] = Relationship(back_populates="entry")
-
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        for f in ("player1", "player2", "event"):
-            del ret[f"{f}id_"]
-            ret[f] = getattr(self, f)
-        return ret
 
     @property
     def players(self) -> tuple[TPPlayer, TPPlayer | None]:
@@ -278,13 +255,6 @@ class TPCourt(Model, table=True):
     sortorder: int | None = None
     playermatches: list["TPPlayerMatch"] = Relationship(back_populates="court")
 
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        del ret["locationid_"]
-        ret["location"] = self.location
-        return ret
-
     __str_template__ = "{self.location}, {self.name}"
     __repr_fields__ = ("id", "name", "location?.name", "sortorder?")
     __eq_fields__ = ("location", "sortorder", "name")
@@ -317,14 +287,6 @@ class TPPlayerMatch(Model, table=True):
     wn: int | None = None
     vn: int | None = None
     reversehomeaway: bool = False
-
-    @model_serializer(mode="wrap")
-    def recurse(self, nxt: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        ret: dict[str, Any] = nxt(self)
-        for f in ("draw", "entry", "court"):
-            del ret[f"{f}id_"]
-            ret[f] = getattr(self, f)
-        return ret
 
     @property
     def van(self) -> tuple[int, int] | tuple[None, None]:
