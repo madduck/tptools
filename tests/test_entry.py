@@ -3,7 +3,7 @@ from types import NoneType
 
 import pytest
 
-from tptools.sqlmodels import Entry, Event, Player
+from tptools.sqlmodels import Entry, Player, TPEvent
 
 
 def test_player1_has_id(entry1: Entry) -> None:
@@ -65,7 +65,7 @@ def test_no_cmp(entry1: Entry) -> None:
         assert entry1 == object()
 
 
-def test_players_must_differ(event1: Event, player1: Player) -> None:
+def test_players_must_differ(event1: TPEvent, player1: Player) -> None:
     with pytest.raises(ValueError, match="player2 cannot be the same as player1"):
         Entry(id=123, event=event1, player1=player1, player2=player1)
 

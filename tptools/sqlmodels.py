@@ -35,7 +35,7 @@ class TPSetting(Model, table=True):
     __eq_fields__ = ("name", "value")
 
 
-class Event(Model, table=True):
+class TPEvent(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Event"
 
@@ -63,7 +63,7 @@ class Stage(Model, table=True):
     eventid_: int | None = Field(
         default=None, sa_column=Column("event", ForeignKey("Event.id"))
     )
-    event: Event = Relationship(back_populates="stages")
+    event: TPEvent = Relationship(back_populates="stages")
     draws: list["Draw"] = Relationship(back_populates="stage")
 
     @model_serializer(mode="wrap")
@@ -190,7 +190,7 @@ class Entry(Model, table=True):
 
     id: int = Field(primary_key=True)
     eventid_: int = Field(sa_column=Column("event", ForeignKey("Event.id")))
-    event: Event = Relationship(back_populates="entries")
+    event: TPEvent = Relationship(back_populates="entries")
     player1id_: int | None = Field(
         default=None, sa_column=Column("player1", ForeignKey("Player.id"))
     )

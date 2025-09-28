@@ -13,35 +13,35 @@ from tptools.sqlmodels import (
     Court,
     Draw,
     Entry,
-    Event,
     Location,
     Player,
     PlayerMatch,
     Stage,
+    TPEvent,
 )
 from tptools.tpdata import TPData
 
 
 @pytest.fixture
-def event1() -> Event:
-    return Event(id=1, name="Herren 1", abbreviation="H1", gender=2)
+def event1() -> TPEvent:
+    return TPEvent(id=1, name="Herren 1", abbreviation="H1", gender=2)
 
 
 @pytest.fixture
-def event2() -> Event:
-    return Event(id=2, name="Damen 1", abbreviation="D1", gender=1)
+def event2() -> TPEvent:
+    return TPEvent(id=2, name="Damen 1", abbreviation="D1", gender=1)
 
 
 event1copy = event1
 
 
 @pytest.fixture
-def stage1(event1: Event) -> Stage:
+def stage1(event1: TPEvent) -> Stage:
     return Stage(id=1, name="Qual", event=event1)
 
 
 @pytest.fixture
-def stage2(event2: Event) -> Stage:
+def stage2(event2: TPEvent) -> Stage:
     return Stage(id=2, name="Main", event=event2)
 
 
@@ -105,24 +105,24 @@ player1copy = player1
 
 
 @pytest.fixture
-def entry1(event1: Event, player1: Player) -> Entry:
+def entry1(event1: TPEvent, player1: Player) -> Entry:
     return Entry(id=1, event=event1, player1=player1)
 
 
 @pytest.fixture
-def entry2(event2: Event, player2: Player) -> Entry:
+def entry2(event2: TPEvent, player2: Player) -> Entry:
     return Entry(id=2, event=event2, player1=player2)
 
 
 entry1copy = entry1
 
 
-type EntryFactoryType = Callable[[int, Event, str], Entry]
+type EntryFactoryType = Callable[[int, TPEvent, str], Entry]
 
 
 @pytest.fixture
 def EntryFactory() -> EntryFactoryType:
-    def entry_maker(id: int, event: Event, name: str) -> Entry:
+    def entry_maker(id: int, event: TPEvent, name: str) -> Entry:
         p = Player(id=id, lastname="", firstname=name)
         return Entry(p, event=event)
 
@@ -130,12 +130,12 @@ def EntryFactory() -> EntryFactoryType:
 
 
 @pytest.fixture
-def entry12(event1: Event, player1: Player, player2: Player) -> Entry:
+def entry12(event1: TPEvent, player1: Player, player2: Player) -> Entry:
     return Entry(id=12, event=event1, player1=player1, player2=player2)
 
 
 @pytest.fixture
-def entry21(event2: Event, player1: Player, player2: Player) -> Entry:
+def entry21(event2: TPEvent, player1: Player, player2: Player) -> Entry:
     return Entry(id=21, event=event2, player1=player2, player2=player1)
 
 
