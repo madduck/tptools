@@ -27,10 +27,8 @@ from tptools.export import (
     Tournament,
 )
 from tptools.mixins import ReprMixin, StrMixin
-from tptools.namepolicy import (
-    CourtNamePolicy,
-    ParamsModel,
-)
+from tptools.namepolicy import CourtNamePolicy
+from tptools.paramsmodel import ParamsModel
 from tptools.sqlmodels import TPCourt
 from tptools.tpmatch import TPMatchStatus
 

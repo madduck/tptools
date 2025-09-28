@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from tptools.namepolicy import PolicyBase
+from tptools.namepolicy.policybase import PolicyBase
 
 
 def test_policybase_is_abstract() -> None:
@@ -14,6 +14,9 @@ def test_policybase_is_abstract() -> None:
 class SomePolicy(PolicyBase):
     one: int = 1
     two: str = "two"
+
+    def __call__(self) -> str:
+        return "string"
 
 
 def test_policybase_params() -> None:

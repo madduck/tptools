@@ -12,7 +12,7 @@ from pydantic import (
 )
 
 from tptools.mixins import ReprMixin, StrMixin
-from tptools.namepolicy import ParamsModel
+from tptools.paramsmodel import ParamsModel
 from tptools.tpdata import TPData
 
 from .court import Court
