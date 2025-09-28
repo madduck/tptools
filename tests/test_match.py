@@ -6,8 +6,8 @@ from pydantic import ValidationError
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.models import Entry, PlayerMatch
 from tptools.slot import Bye, Slot, Unknown
+from tptools.sqlmodels import Entry, PlayerMatch
 
 from .conftest import MatchFactoryType
 

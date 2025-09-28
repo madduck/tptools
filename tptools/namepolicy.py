@@ -5,7 +5,7 @@ from typing import Any, Literal, overload
 
 from pydantic import BaseModel, ConfigDict
 
-from tptools.models import Club, Country, Court, Player
+from .sqlmodels import Club, Country, Court, Player
 
 
 class ParamsModel(BaseModel):

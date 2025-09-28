@@ -15,13 +15,13 @@ from pydantic import (
 
 from tptools.mixins import ReprMixin, StrMixin
 from tptools.mixins.comparable import ComparableMixin
-from tptools.models import Entry as TPEntry
 from tptools.namepolicy import (
     ClubNamePolicy,
     CountryNamePolicy,
     PairCombinePolicy,
     PlayerNamePolicy,
 )
+from tptools.sqlmodels import Entry as TPEntry
 
 logger = logging.getLogger(__name__)
 

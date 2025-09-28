@@ -1,6 +1,6 @@
 import pytest
 
-from tptools.models import Location
+from tptools.sqlmodels import Location
 
 
 def test_repr(location1: Location) -> None:

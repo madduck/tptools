@@ -2,8 +2,8 @@ from collections.abc import Callable
 
 import pytest
 
-from tptools.models import Court, Draw, Entry, PlayerMatch
 from tptools.playermatchstatus import PlayerMatchStatus
+from tptools.sqlmodels import Court, Draw, Entry, PlayerMatch
 
 type PlayerMatchFactoryType = Callable[..., PlayerMatch]
 

@@ -3,12 +3,11 @@ from collections.abc import Iterable
 from pydantic import BaseModel, model_serializer
 from sqlmodel import Session, select
 
-from tptools.matchmaker import MatchMaker
-from tptools.matchstatus import MatchStatus
-from tptools.models import Court, Draw, Entry, PlayerMatch, Setting
-
 from .match import Match
+from .matchmaker import MatchMaker
+from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
+from .sqlmodels import Court, Draw, Entry, PlayerMatch, Setting
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):

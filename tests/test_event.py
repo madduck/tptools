@@ -1,6 +1,6 @@
 import pytest
 
-from tptools.models import Event
+from tptools.sqlmodels import Event
 
 
 def test_repr(event1: Event) -> None:

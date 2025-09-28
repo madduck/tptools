@@ -4,7 +4,7 @@ from typing import cast
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.models import Draw, Stage
+from tptools.sqlmodels import Draw, Stage
 
 
 def test_stage_has_id(draw1: Draw) -> None:

@@ -2,7 +2,7 @@ import pytest
 from sqlmodel import Session
 
 from tptools.match import Match
-from tptools.models import Court, Draw, Entry
+from tptools.sqlmodels import Court, Draw, Entry
 from tptools.tpdata import TPData, load_tournament
 
 

@@ -6,7 +6,7 @@ from pytest_mock import AsyncMockType, MockerFixture, MockType
 
 from tptools.match import Match
 from tptools.matchstatus import MatchStatus
-from tptools.models import Court, Draw, Entry, Player, PlayerMatch, Setting
+from tptools.sqlmodels import Court, Draw, Entry, Player, PlayerMatch, Setting
 from tptools.tpdata import TPData, load_tournament
 
 from .conftest import MatchFactoryType, PlayerFactoryType, PlayerMatchFactoryType

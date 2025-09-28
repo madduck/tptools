@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import Session, select
 
-from tptools.models import Setting
+from tptools.sqlmodels import Setting
 
 type SettingsDict = dict[str, str | None]
 

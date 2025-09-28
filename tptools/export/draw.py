@@ -11,7 +11,7 @@ from pydantic import (
 )
 
 from tptools.mixins import ReprMixin, StrMixin
-from tptools.models import Draw as TPDraw
+from tptools.sqlmodels import Draw as TPDraw
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 import pytest
 
-from tptools.models import Stage
+from tptools.sqlmodels import Stage
 
 
 def test_event_has_id(stage1: Stage) -> None:

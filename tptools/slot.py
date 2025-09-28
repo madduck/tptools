@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 from pydantic import BaseModel, Field, GetCoreSchemaHandler, model_serializer
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .models import Entry
+from .sqlmodels import Entry
 
 
 class SlotContent(ABC, ReprMixin, StrMixin):

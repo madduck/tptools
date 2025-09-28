@@ -4,9 +4,9 @@ from typing import cast
 
 from .match import Match
 from .mixins.repr import ReprMixin
-from .models import Draw, PlayerMatch
 from .playermatchstatus import PlayerMatchStatus
 from .slot import Bye, Playceholder, Slot
+from .sqlmodels import Draw, PlayerMatch
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import pytest
 
-from tptools.models import Country
 from tptools.namepolicy import CountryNamePolicy
+from tptools.sqlmodels import Country
 
 
 @pytest.fixture

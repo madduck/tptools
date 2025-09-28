@@ -7,7 +7,7 @@ import pytest
 from tptools.match import Match
 from tptools.matchmaker import MatchMaker
 from tptools.matchstatus import MatchStatus
-from tptools.models import Entry, PlayerMatch
+from tptools.sqlmodels import Entry, PlayerMatch
 
 from .conftest import MatchFactoryType, PlayerMatchFactoryType
 

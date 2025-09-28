@@ -1,7 +1,7 @@
 import pytest_subtests
 from sqlalchemy import ScalarResult
 
-from tptools.models import Entry
+from tptools.sqlmodels import Entry
 
 
 def test_loading_entries(all_entries: list[Entry]) -> None:

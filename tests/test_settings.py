@@ -1,6 +1,6 @@
 import pytest
 
-from tptools.models import Setting
+from tptools.sqlmodels import Setting
 
 
 @pytest.fixture

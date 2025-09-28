@@ -1,7 +1,7 @@
 import pytest
 
-from tptools.models import Entry
 from tptools.slot import Bye, Playceholder, Slot, SlotContent, SlotType, Unknown
+from tptools.sqlmodels import Entry
 
 
 def test_slot_content_abstract() -> None:

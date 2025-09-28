@@ -2,9 +2,9 @@ import pytest
 
 from tptools.export import Court, Draw, Entry, Match, Tournament
 from tptools.match import Match as TPMatch
-from tptools.models import Court as TPCourt
-from tptools.models import Draw as TPDraw
-from tptools.models import Entry as TPEntry
+from tptools.sqlmodels import Court as TPCourt
+from tptools.sqlmodels import Draw as TPDraw
+from tptools.sqlmodels import Entry as TPEntry
 from tptools.tpdata import TPData
 
 

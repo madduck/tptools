@@ -1,7 +1,7 @@
 from pytest_mock import MockerFixture
 
 from tptools.export import Entry, EntryStruct
-from tptools.models import Entry as TPEntry
+from tptools.sqlmodels import Entry as TPEntry
 
 
 def test_repr(expentry1: Entry) -> None:

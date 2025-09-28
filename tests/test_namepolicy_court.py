@@ -2,8 +2,8 @@ import dataclasses
 
 import pytest
 
-from tptools.models import Court
 from tptools.namepolicy import CourtNamePolicy
+from tptools.sqlmodels import Court
 
 
 @pytest.fixture

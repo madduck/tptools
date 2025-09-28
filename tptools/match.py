@@ -7,8 +7,8 @@ from pydantic import BaseModel, model_validator
 
 from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .models import Court, Draw, Entry, PlayerMatch
 from .slot import Slot, Unknown
+from .sqlmodels import Court, Draw, Entry, PlayerMatch
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)

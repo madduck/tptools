@@ -3,7 +3,7 @@ from types import NoneType
 
 import pytest
 
-from tptools.models import Entry, Event, Player
+from tptools.sqlmodels import Entry, Event, Player
 
 
 def test_player1_has_id(entry1: Entry) -> None:

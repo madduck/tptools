@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 import pytest
 
-from tptools.models import Court
+from tptools.sqlmodels import Court
 
 
 def test_repr(court1: Court) -> None:

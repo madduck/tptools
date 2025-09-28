@@ -1,6 +1,6 @@
 import pytest
 
-from tptools.models import Club
+from tptools.sqlmodels import Club
 
 
 def test_repr(club1: Club) -> None:

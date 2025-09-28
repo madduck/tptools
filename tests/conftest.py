@@ -6,7 +6,8 @@ import pytest
 
 from tptools.drawtype import DrawType
 from tptools.match import Match
-from tptools.models import (
+from tptools.slot import Bye, Playceholder, Slot, Unknown
+from tptools.sqlmodels import (
     Club,
     Country,
     Court,
@@ -18,7 +19,6 @@ from tptools.models import (
     PlayerMatch,
     Stage,
 )
-from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.tpdata import TPData
 
 

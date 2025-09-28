@@ -2,8 +2,8 @@ import pytest
 import pytest_subtests
 from sqlalchemy import ScalarResult
 
-from tptools.models import PlayerMatch
 from tptools.playermatchstatus import PlayerMatchStatus
+from tptools.sqlmodels import PlayerMatch
 
 PLAYERMATCH_ID_BY_STATUS = {
     PlayerMatchStatus.PLAYER: [  # {{{

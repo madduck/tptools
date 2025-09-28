@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 import pytest
 
-from tptools.models import Player
+from tptools.sqlmodels import Player
 
 
 def test_club_has_id(player1: Player) -> None:

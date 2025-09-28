@@ -1,7 +1,7 @@
 import pytest
 
-from tptools.models import Club
 from tptools.namepolicy import ClubNamePolicy
+from tptools.sqlmodels import Club
 
 
 @pytest.fixture

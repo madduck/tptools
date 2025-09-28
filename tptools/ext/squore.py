@@ -28,11 +28,11 @@ from tptools.export import (
 )
 from tptools.matchstatus import MatchStatus
 from tptools.mixins import ReprMixin, StrMixin
-from tptools.models import Court as TPCourt
 from tptools.namepolicy import (
     CourtNamePolicy,
     ParamsModel,
 )
+from tptools.sqlmodels import Court as TPCourt
 
 logger = logging.getLogger(__name__)
 

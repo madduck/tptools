@@ -1,7 +1,7 @@
 from pytest_mock import MockerFixture
 
 from tptools.export import Court
-from tptools.models import Court as TPCourt
+from tptools.sqlmodels import Court as TPCourt
 
 
 def test_repr(expcourt1: Court) -> None:

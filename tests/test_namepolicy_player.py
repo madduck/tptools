@@ -3,8 +3,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from tptools.models import Player
 from tptools.namepolicy import PlayerNamePolicy
+from tptools.sqlmodels import Player
 
 FNAME = "Martin"
 LNAME = "Krafft"
