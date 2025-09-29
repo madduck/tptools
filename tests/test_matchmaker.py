@@ -4,41 +4,40 @@ from typing import Any, ContextManager, Protocol
 
 import pytest
 
-from tptools.matchmaker import MatchMaker
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
-from tptools.tpmatch import TPMatch, TPMatchStatus
+from tptools.tpmatch import TPMatch, TPMatchMaker, TPMatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerMatchFactoryType
 
 
 def test_construction() -> None:
-    _ = MatchMaker()
+    _ = TPMatchMaker()
 
 
 @pytest.fixture
-def matchmaker() -> MatchMaker:
-    return MatchMaker()
+def matchmaker() -> TPMatchMaker:
+    return TPMatchMaker()
 
 
-def test_repr(matchmaker: MatchMaker) -> None:
-    assert repr(matchmaker) == "MatchMaker(nmatches=0, nunmatched=0)"
+def test_repr(matchmaker: TPMatchMaker) -> None:
+    assert repr(matchmaker) == "TPMatchMaker(nmatches=0, nunmatched=0)"
 
 
-def test_str(matchmaker: MatchMaker) -> None:
-    assert repr(matchmaker) == "MatchMaker(nmatches=0, nunmatched=0)"
+def test_str(matchmaker: TPMatchMaker) -> None:
+    assert repr(matchmaker) == "TPMatchMaker(nmatches=0, nunmatched=0)"
 
 
-def test_no_singles_at_start(matchmaker: MatchMaker) -> None:
+def test_no_singles_at_start(matchmaker: TPMatchMaker) -> None:
     assert len(matchmaker.unmatched) == 0
 
 
-def test_make_match_incomplete(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
+def test_make_match_incomplete(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 1
     assert len(matchmaker.matches) == 0
 
 
-def test_make_match(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
+def test_make_match(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm2)
     matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 0
@@ -46,20 +45,20 @@ def test_make_match(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
     assert matchmaker.matches.pop() == tpmatch1
 
 
-def test_make_match_duplicate(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
+def test_make_match_duplicate(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="is already registered"):
         matchmaker.add_playermatch(tpmatch1.pm1)
 
 
-def test_resolve_with_unmatched(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
+def test_resolve_with_unmatched(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(AssertionError, match="Cannot resolve entries with unmatched"):
         matchmaker.resolve_match_entries()
 
 
 def test_resolve_1st_round(
-    matchmaker: MatchMaker,
+    matchmaker: TPMatchMaker,
     tpmatch1: TPMatch,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
@@ -77,7 +76,7 @@ def test_resolve_1st_round(
 
 
 def test_resolve_1st_round_with_bye(
-    matchmaker: MatchMaker,
+    matchmaker: TPMatchMaker,
     tpmatch1: TPMatch,
     pmplayer1: TPPlayerMatch,
     pmbye: TPPlayerMatch,
@@ -93,7 +92,7 @@ def test_resolve_1st_round_with_bye(
 
 
 def test_resolve_unmatched_incomplete(
-    matchmaker: MatchMaker, tpmatch1: TPMatch
+    matchmaker: TPMatchMaker, tpmatch1: TPMatch
 ) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="Cannot resolve unmatched TPPlayerMatch"):
@@ -107,12 +106,12 @@ class MatchMakerTripletFactory(Protocol):
         updict1: dict[str, Any] | None = None,
         updict2: dict[str, Any] | None = None,
         updict3: dict[str, Any] | None = None,
-    ) -> MatchMaker: ...
+    ) -> TPMatchMaker: ...
 
 
 @pytest.fixture
 def matchmaker_with_triplet(
-    matchmaker: MatchMaker,
+    matchmaker: TPMatchMaker,
     tpentry1: TPEntry,
     tpentry2: TPEntry,
     pmplayer1: TPPlayerMatch,
@@ -129,7 +128,7 @@ def matchmaker_with_triplet(
         updict1: dict[str, Any] | None = None,
         updict2: dict[str, Any] | None = None,
         updict3: dict[str, Any] | None = None,
-    ) -> MatchMaker:
+    ) -> TPMatchMaker:
         srcpm1 = TPPlayerMatchFactory(
             **{
                 "matchnr": 1,
@@ -242,7 +241,7 @@ def test_resolve_2nd_round_players_unknown(
 
 
 def test_resolve_unmatched_fabricate(
-    matchmaker: MatchMaker,
+    matchmaker: TPMatchMaker,
     TPPlayerMatchFactory: TPPlayerMatchFactoryType,
 ) -> None:
     common = {
@@ -272,7 +271,7 @@ def test_resolve_unmatched_fabricate(
 
 
 def test_resolve_unmatched_fabricate_1st_round(
-    matchmaker: MatchMaker,
+    matchmaker: TPMatchMaker,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
     TPPlayerMatchFactory: TPPlayerMatchFactoryType,

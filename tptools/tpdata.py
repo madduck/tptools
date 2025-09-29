@@ -3,10 +3,9 @@ from collections.abc import Iterable
 from pydantic import BaseModel, model_serializer
 from sqlmodel import Session, select
 
-from .matchmaker import MatchMaker
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch, TPSetting
-from .tpmatch import TPMatch, TPMatchStatus
+from .tpmatch import TPMatch, TPMatchMaker, TPMatchStatus
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
@@ -119,7 +118,7 @@ async def load_tournament(db_session: Session) -> TPData:
     entries = db_session.exec(select(TPEntry))
     draws = db_session.exec(select(TPDraw))
     courts = db_session.exec(select(TPCourt))
-    mm = MatchMaker()
+    mm = TPMatchMaker()
     for pm in db_session.exec(select(TPPlayerMatch)):
         mm.add_playermatch(pm)
 
