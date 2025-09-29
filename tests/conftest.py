@@ -5,7 +5,6 @@ from typing import Any
 import pytest
 
 from tptools.drawtype import DrawType
-from tptools.match import Match
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
     TPClub,
@@ -20,6 +19,7 @@ from tptools.sqlmodels import (
     TPStage,
 )
 from tptools.tpdata import TPData
+from tptools.tpmatch import TPMatch
 
 
 @pytest.fixture
@@ -291,7 +291,7 @@ def pm2(
 pm1copy = pm1
 
 
-type TPMatchFactoryType = Callable[..., Match]
+type TPMatchFactoryType = Callable[..., TPMatch]
 
 
 @pytest.fixture
@@ -302,7 +302,7 @@ def TPMatchFactory() -> TPMatchFactoryType:
         lldiff: int,
         pldiff: int | None = None,
         iddiff: int = 1,
-    ) -> Match:
+    ) -> TPMatch:
         if pm.entry is not None and tpentry2 is not None:
             entry = tpentry2.model_copy(update={"event": pm.entry.event})
         else:
@@ -317,7 +317,7 @@ def TPMatchFactory() -> TPMatchFactoryType:
                 "winner": ((3 - pm.winner) % 3) if pm.winner is not None else None,
             }
         )
-        return Match(pm1=pm, pm2=pm2)
+        return TPMatch(pm1=pm, pm2=pm2)
 
     return match_maker
 
@@ -327,7 +327,7 @@ def tpmatch1(
     TPMatchFactory: TPMatchFactoryType,
     pm1: TPPlayerMatch,
     tpentry2: TPEntry,
-) -> Match:
+) -> TPMatch:
     return TPMatchFactory(pm1, tpentry2, lldiff=4)
 
 
@@ -339,14 +339,14 @@ def tpmatch2(
     TPMatchFactory: TPMatchFactoryType,
     pm2: TPPlayerMatch,
     tpentry2: TPEntry,
-) -> Match:
+) -> TPMatch:
     return TPMatchFactory(pm2, tpentry2, lldiff=2)
 
 
 @pytest.fixture
 def tpdata1(
-    tpmatch1: Match,
-    tpmatch2: Match,
+    tpmatch1: TPMatch,
+    tpmatch2: TPMatch,
     tpentry1: TPEntry,
     tpentry2: TPEntry,
     tpentry12: TPEntry,
@@ -373,7 +373,7 @@ def tpdata1(
 
 
 @pytest.fixture
-def tpdata2(tpmatch1: Match, tpentry1: TPEntry, tpentry2: TPEntry) -> TPData:
+def tpdata2(tpmatch1: TPMatch, tpentry1: TPEntry, tpentry2: TPEntry) -> TPData:
     t = TPData(name="Test 2")
     t.add_match(tpmatch1)
     t.add_entry(tpentry1)

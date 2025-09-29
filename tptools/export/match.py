@@ -12,9 +12,9 @@ from pydantic import (
     model_serializer,
 )
 
-from tptools.match import Match as TPMatch
-from tptools.matchstatus import MatchStatus
 from tptools.mixins import ReprMixin, StrMixin
+from tptools.tpmatch import TPMatch
+from tptools.tpmatchstatus import MatchStatus
 
 logger = logging.getLogger(__name__)
 

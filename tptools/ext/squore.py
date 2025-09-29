@@ -26,13 +26,13 @@ from tptools.export import (
     MatchStatusSelectionParams,
     Tournament,
 )
-from tptools.matchstatus import MatchStatus
 from tptools.mixins import ReprMixin, StrMixin
 from tptools.namepolicy import (
     CourtNamePolicy,
     ParamsModel,
 )
 from tptools.sqlmodels import TPCourt
+from tptools.tpmatchstatus import MatchStatus
 
 logger = logging.getLogger(__name__)
 

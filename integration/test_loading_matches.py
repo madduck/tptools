@@ -3,18 +3,18 @@ from collections.abc import Iterable
 import pytest
 import pytest_subtests
 
-from tptools.match import Match
-from tptools.matchstatus import MatchStatus
+from tptools.tpmatch import TPMatch
+from tptools.tpmatchstatus import MatchStatus
 
 type MatchIdTuple = tuple[int, int]
 
 
-def test_loading_all_matches(all_matches: list[Match]) -> None:
+def test_loading_all_matches(all_matches: list[TPMatch]) -> None:
     assert len(all_matches) == 68
 
 
 @pytest.fixture
-def matches_by_tuple(all_matches: Iterable[Match]) -> dict[MatchIdTuple, Match]:
+def matches_by_tuple(all_matches: Iterable[TPMatch]) -> dict[MatchIdTuple, TPMatch]:
     return {(m.draw.id, m.matchnr): m for m in all_matches}
 
 
@@ -93,7 +93,7 @@ def expected_status_by_tuple() -> dict[MatchIdTuple, MatchStatus]:
 
 
 def test_match_status(
-    matches_by_tuple: dict[MatchIdTuple, Match],
+    matches_by_tuple: dict[MatchIdTuple, TPMatch],
     expected_status_by_tuple: dict[MatchIdTuple, MatchStatus],
     subtests: pytest_subtests.SubTests,
 ) -> None:

@@ -12,9 +12,9 @@ from click_async_plugins import PluginLifespan, plugin
 from sqlalchemy import URL, Engine
 from sqlalchemy.exc import DatabaseError, DBAPIError, NoSuchModuleError
 from sqlmodel import Session, create_engine, select
+from tptools.models import Setting
 
 from tptools.filewatcher import FileWatcher, StateType
-from tptools.models import Setting
 from tptools.tpdata import load_tournament
 from tptools.util import make_mdb_odbc_connstring
 

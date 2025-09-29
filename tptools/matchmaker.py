@@ -2,11 +2,11 @@ import logging
 from functools import partial
 from typing import cast
 
-from .match import Match
 from .mixins.repr import ReprMixin
 from .playermatchstatus import PlayerMatchStatus
 from .slot import Bye, Playceholder, Slot
 from .sqlmodels import TPDraw, TPPlayerMatch
+from .tpmatch import TPMatch
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 class MatchMaker(ReprMixin):
     def __init__(self) -> None:
         self._unmatched: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
-        self._matches: dict[tuple[TPDraw, int], Match] = {}
+        self._matches: dict[tuple[TPDraw, int], TPMatch] = {}
         self._players: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
-        self._planning_map: dict[tuple[TPDraw, int], Match] = {}
+        self._planning_map: dict[tuple[TPDraw, int], TPMatch] = {}
 
     def _attr_len_repr(self, name: str) -> str:
         return str(len(getattr(self, name)))
@@ -38,7 +38,7 @@ class MatchMaker(ReprMixin):
                 raise ValueError(f"{other} is already registered")
 
             logger.debug(f"Found match for {playermatch!r}: {other!r}")
-            match = Match(pm1=playermatch, pm2=other)
+            match = TPMatch(pm1=playermatch, pm2=other)
             self._matches[playermatch.draw, playermatch.matchnr] = match
 
             self._planning_map[match.draw, playermatch.planning] = match
@@ -54,7 +54,7 @@ class MatchMaker(ReprMixin):
         return set(self._unmatched.values())
 
     @property
-    def matches(self) -> set[Match]:
+    def matches(self) -> set[TPMatch]:
         return set(self._matches.values())
 
     def resolve_unmatched(self) -> None:

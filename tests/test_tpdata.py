@@ -4,8 +4,6 @@ from typing import cast
 import pytest
 from pytest_mock import AsyncMockType, MockerFixture, MockType
 
-from tptools.match import Match
-from tptools.matchstatus import MatchStatus
 from tptools.sqlmodels import (
     TPCourt,
     TPDraw,
@@ -15,6 +13,8 @@ from tptools.sqlmodels import (
     TPSetting,
 )
 from tptools.tpdata import TPData, load_tournament
+from tptools.tpmatch import TPMatch
+from tptools.tpmatchstatus import MatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerFactoryType, TPPlayerMatchFactoryType
 
@@ -63,7 +63,7 @@ def test_no_cmp(tpdata1: TPData) -> None:
         assert tpdata1 == object()
 
 
-def test_add_duplicate_match(tpdata1: TPData, tpmatch1: Match) -> None:
+def test_add_duplicate_match(tpdata1: TPData, tpmatch1: TPMatch) -> None:
     with pytest.raises(ValueError, match="already added"):
         tpdata1.add_match(tpmatch1)
 
@@ -83,7 +83,7 @@ def test_add_duplicate_court(tpdata1: TPData, tpcourt1: TPCourt) -> None:
         tpdata1.add_court(tpcourt1)
 
 
-def test_get_matches(tpdata2: TPData, tpmatch1: Match) -> None:
+def test_get_matches(tpdata2: TPData, tpmatch1: TPMatch) -> None:
     assert tpmatch1 in tpdata2.get_matches()
 
 
@@ -124,12 +124,14 @@ def test_get_entries(tpdata2: TPData, tpentry1: TPEntry) -> None:
     assert tpentry1 in tpdata2.get_entries()
 
 
-def test_get_matches_by_draw(tpdata2: TPData, tpmatch1: Match, tpmatch2: Match) -> None:
+def test_get_matches_by_draw(
+    tpdata2: TPData, tpmatch1: TPMatch, tpmatch2: TPMatch
+) -> None:
     assert tpmatch1 in tpdata2.get_matches_by_draw(tpmatch1.draw)
     assert tpmatch2 not in tpdata2.get_matches_by_draw(tpmatch1.draw)
 
 
-def test_get_draws(tpdata1: TPData, tpmatch1: Match, tpmatch2: Match) -> None:
+def test_get_draws(tpdata1: TPData, tpmatch1: TPMatch, tpmatch2: TPMatch) -> None:
     draws = tpdata1.get_draws()
     assert tpmatch1.draw in draws
     assert tpmatch2.draw in draws

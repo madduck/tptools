@@ -7,10 +7,10 @@ import pytest
 from sqlalchemy.engine import URL
 from sqlmodel import Session, create_engine, select
 
-from tptools.match import Match
 from tptools.matchmaker import MatchMaker
 from tptools.playermatchstatus import PlayerMatchStatus
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
+from tptools.tpmatch import TPMatch
 from tptools.util import make_mdb_odbc_connstring
 
 DB_PATH_BASE = pathlib.Path(__file__).parent / "anon_tournament"
@@ -80,7 +80,7 @@ def all_playermatches(db_session: Session) -> Generator[list[TPPlayerMatch], Any
 
 
 @pytest.fixture
-def all_matches(all_playermatches: list[TPPlayerMatch]) -> set[Match]:
+def all_matches(all_playermatches: list[TPPlayerMatch]) -> set[TPMatch]:
     mm = MatchMaker()
     for pm in all_playermatches:
         if pm.status in (PlayerMatchStatus.BYE, PlayerMatchStatus.PLAYER):

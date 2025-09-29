@@ -1,9 +1,9 @@
 import pytest
 
 from tptools.export import Court, Draw, Entry, Match, Tournament
-from tptools.match import Match as TPMatch
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry
 from tptools.tpdata import TPData
+from tptools.tpmatch import TPMatch
 
 
 @pytest.fixture
@@ -43,13 +43,13 @@ def expdraw1(tpdraw1: TPDraw) -> Draw:
 
 
 @pytest.fixture
-def expmatch1(match1: TPMatch) -> Match:
-    return Match(tpmatch=match1)
+def expmatch1(tpmatch1: TPMatch) -> Match:
+    return Match(tpmatch=tpmatch1)
 
 
 @pytest.fixture
-def expmatch2(match2: TPMatch) -> Match:
-    return Match(tpmatch=match2)
+def expmatch2(tpmatch2: TPMatch) -> Match:
+    return Match(tpmatch=tpmatch2)
 
 
 @pytest.fixture

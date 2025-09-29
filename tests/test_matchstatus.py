@@ -1,7 +1,7 @@
 import pytest
 
-from tptools.matchstatus import MatchStatus
 from tptools.playermatchstatus import PlayerMatchStatus as PMS
+from tptools.tpmatchstatus import MatchStatus
 
 
 @pytest.mark.parametrize("pmstatus", [s for s in PMS if s.is_player])

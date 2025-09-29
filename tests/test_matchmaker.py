@@ -4,10 +4,10 @@ from typing import Any, ContextManager, Protocol
 
 import pytest
 
-from tptools.match import Match
 from tptools.matchmaker import MatchMaker
-from tptools.matchstatus import MatchStatus
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
+from tptools.tpmatch import TPMatch
+from tptools.tpmatchstatus import MatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerMatchFactoryType
 
@@ -33,13 +33,13 @@ def test_no_singles_at_start(matchmaker: MatchMaker) -> None:
     assert len(matchmaker.unmatched) == 0
 
 
-def test_make_match_incomplete(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+def test_make_match_incomplete(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 1
     assert len(matchmaker.matches) == 0
 
 
-def test_make_match(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+def test_make_match(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm2)
     matchmaker.add_playermatch(tpmatch1.pm1)
     assert len(matchmaker.unmatched) == 0
@@ -47,13 +47,13 @@ def test_make_match(matchmaker: MatchMaker, tpmatch1: Match) -> None:
     assert matchmaker.matches.pop() == tpmatch1
 
 
-def test_make_match_duplicate(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+def test_make_match_duplicate(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="is already registered"):
         matchmaker.add_playermatch(tpmatch1.pm1)
 
 
-def test_resolve_with_unmatched(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+def test_resolve_with_unmatched(matchmaker: MatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(AssertionError, match="Cannot resolve entries with unmatched"):
         matchmaker.resolve_match_entries()
@@ -61,7 +61,7 @@ def test_resolve_with_unmatched(matchmaker: MatchMaker, tpmatch1: Match) -> None
 
 def test_resolve_1st_round(
     matchmaker: MatchMaker,
-    tpmatch1: Match,
+    tpmatch1: TPMatch,
     pmplayer1: TPPlayerMatch,
     pmplayer2: TPPlayerMatch,
 ) -> None:
@@ -79,7 +79,7 @@ def test_resolve_1st_round(
 
 def test_resolve_1st_round_with_bye(
     matchmaker: MatchMaker,
-    tpmatch1: Match,
+    tpmatch1: TPMatch,
     pmplayer1: TPPlayerMatch,
     pmbye: TPPlayerMatch,
 ) -> None:
@@ -93,7 +93,9 @@ def test_resolve_1st_round_with_bye(
     assert match.status == MatchStatus.READY
 
 
-def test_resolve_unmatched_incomplete(matchmaker: MatchMaker, tpmatch1: Match) -> None:
+def test_resolve_unmatched_incomplete(
+    matchmaker: MatchMaker, tpmatch1: TPMatch
+) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
     with pytest.raises(ValueError, match="Cannot resolve unmatched TPPlayerMatch"):
         matchmaker.resolve_unmatched()

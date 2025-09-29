@@ -3,11 +3,11 @@ from collections.abc import Iterable
 from pydantic import BaseModel, model_serializer
 from sqlmodel import Session, select
 
-from .match import Match
 from .matchmaker import MatchMaker
-from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch, TPSetting
+from .tpmatch import TPMatch
+from .tpmatchstatus import MatchStatus
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
@@ -15,7 +15,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     entries: set[TPEntry] = set()
     draws: set[TPDraw] = set()
     courts: set[TPCourt] = set()
-    matches: set[Match] = set()
+    matches: set[TPMatch] = set()
 
     def add_entry(self, entry: TPEntry) -> None:
         if entry in self.entries:
@@ -25,12 +25,12 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     def add_entries(self, entries: Iterable[TPEntry]) -> None:
         self.entries |= set(entries)
 
-    def add_match(self, match: Match) -> None:
+    def add_match(self, match: TPMatch) -> None:
         if match in self.matches:
             raise ValueError(f"{match!r} already added")
         self.matches.add(match)
 
-    def add_matches(self, matches: Iterable[Match]) -> None:
+    def add_matches(self, matches: Iterable[TPMatch]) -> None:
         self.matches |= set(matches)
 
     def add_draw(self, draw: TPDraw) -> None:
@@ -63,7 +63,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
 
     def get_matches(
         self, include_played: bool = False, include_not_ready: bool = True
-    ) -> set[Match]:
+    ) -> set[TPMatch]:
         if include_played and include_not_ready:
             return self.matches
 
@@ -76,7 +76,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
 
         return {m for m in self.matches if m.status in accepted_statuses}  # pyright: ignore[reportUnhashable]
 
-    def get_matches_by_draw(self, draw: TPDraw) -> set[Match]:
+    def get_matches_by_draw(self, draw: TPDraw) -> set[TPMatch]:
         return {m for m in self.matches if m.draw == draw}  # pyright: ignore[reportUnhashable]
 
     def get_draws(self) -> set[TPDraw]:
@@ -106,7 +106,7 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     __repr_fields__ = ("name?", "nentries", "ndraws", "ncourts", "nmatches")
 
     @model_serializer
-    def serialise_with_lists(self) -> dict[str, list[TPEntry] | list[Match]]:
+    def serialise_with_lists(self) -> dict[str, list[TPEntry] | list[TPMatch]]:
         return {
             "entries": list(self.entries),
             "matches": list(self.matches),

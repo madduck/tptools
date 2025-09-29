@@ -8,8 +8,8 @@ from tptools.ext.squore import (
     MatchesSection,
     SquoreMatch,
 )
-from tptools.match import Match as TPMatch
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry
+from tptools.tpmatch import TPMatch
 
 from ...export.conftest import exptournament1
 
@@ -42,13 +42,13 @@ def sqdraw1(tpdraw1: TPDraw) -> Draw:
 
 
 @pytest.fixture
-def sqmatch1(match1: TPMatch) -> SquoreMatch:
-    return SquoreMatch(tpmatch=match1)
+def sqmatch1(tpmatch1: TPMatch) -> SquoreMatch:
+    return SquoreMatch(tpmatch=tpmatch1)
 
 
 @pytest.fixture
-def sqmatch2(match2: TPMatch) -> SquoreMatch:
-    return SquoreMatch(tpmatch=match2, config={"numberOfGamesToWinMatch": 11})
+def sqmatch2(tpmatch2: TPMatch) -> SquoreMatch:
+    return SquoreMatch(tpmatch=tpmatch2, config={"numberOfGamesToWinMatch": 11})
 
 
 type MatchesSectionFactoryType = Callable[..., MatchesSection]

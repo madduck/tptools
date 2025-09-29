@@ -5,16 +5,16 @@ from typing import Any, Callable, Literal, Self, cast
 
 from pydantic import BaseModel, model_validator
 
-from .matchstatus import MatchStatus
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Slot, Unknown
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
+from .tpmatchstatus import MatchStatus
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)
 
 
-class Match(ReprMixin, StrMixin, ComparableMixin, BaseModel):
+class TPMatch(ReprMixin, StrMixin, ComparableMixin, BaseModel):
     pm1: TPPlayerMatch
     pm2: TPPlayerMatch
 
