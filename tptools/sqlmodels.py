@@ -12,7 +12,7 @@ from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
 
 
-class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
+class TPModel(ReprMixin, StrMixin, ComparableMixin, SQLModel):
     def __setattr__(self, attr: str, value: Any) -> None:
         if hasattr(self, f"{attr}id_") and hasattr(value, "id"):
             object.__setattr__(self, f"{attr}id_", value.id)
@@ -30,7 +30,7 @@ class Model(ReprMixin, StrMixin, ComparableMixin, SQLModel):
         return ret
 
 
-class TPSetting(Model, table=True):
+class TPSetting(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Settings"
 
@@ -43,7 +43,7 @@ class TPSetting(Model, table=True):
     __eq_fields__ = ("name", "value")
 
 
-class TPEvent(Model, table=True):
+class TPEvent(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Event"
 
@@ -62,7 +62,7 @@ class TPEvent(Model, table=True):
     __eq_fields__ = ("gender", "name", "abbreviation")
 
 
-class TPStage(Model, table=True):
+class TPStage(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Stage"
 
@@ -79,7 +79,7 @@ class TPStage(Model, table=True):
     __eq_fields__ = ("event", "name")
 
 
-class TPDraw(Model, table=True):
+class TPDraw(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Draw"
 
@@ -101,7 +101,7 @@ class TPDraw(Model, table=True):
     __eq_fields__ = ("stage", "name", "type", "size")
 
 
-class TPClub(Model, table=True):
+class TPClub(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Club"
 
@@ -115,7 +115,7 @@ class TPClub(Model, table=True):
     __none_sorts_last__ = True
 
 
-class TPCountry(Model, table=True):
+class TPCountry(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Country"
 
@@ -130,7 +130,7 @@ class TPCountry(Model, table=True):
     __none_sorts_last__ = True
 
 
-class TPPlayer(Model, table=True):
+class TPPlayer(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Player"
 
@@ -169,7 +169,7 @@ class TPPlayer(Model, table=True):
     __none_sorts_last__ = True
 
 
-class TPEntry(Model, table=True):
+class TPEntry(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Entry"
 
@@ -225,7 +225,7 @@ class TPEntry(Model, table=True):
     __eq_fields__ = ["event", "player1", "player2"]
 
 
-class TPLocation(Model, table=True):
+class TPLocation(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Location"
 
@@ -242,7 +242,7 @@ class TPLocation(Model, table=True):
         return len(self.courts)
 
 
-class TPCourt(Model, table=True):
+class TPCourt(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "Court"
 
@@ -260,7 +260,7 @@ class TPCourt(Model, table=True):
     __eq_fields__ = ("location", "sortorder", "name")
 
 
-class TPPlayerMatch(Model, table=True):
+class TPPlayerMatch(TPModel, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "PlayerMatch"
 
