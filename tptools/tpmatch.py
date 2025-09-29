@@ -1,17 +1,45 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime
+from enum import StrEnum, auto
 from functools import partial
 from typing import Any, Callable, Literal, Self, cast
 
 from pydantic import BaseModel, model_validator
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
+from .playermatchstatus import PlayerMatchStatus
 from .slot import Slot, Unknown
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
-from .tpmatchstatus import MatchStatus
 from .util import normalise_time, reduce_common_prefix, zero_to_none
 
 logger = logging.getLogger(__name__)
+
+
+class TPMatchStatus(StrEnum):
+    READY = auto()
+    PENDING = PlayerMatchStatus.PENDING
+    PLAYED = PlayerMatchStatus.PLAYED
+    NOTPLAYED = PlayerMatchStatus.NOTPLAYED
+
+    @classmethod
+    def from_playermatch_status_pair(
+        cls, a: PlayerMatchStatus, b: PlayerMatchStatus
+    ) -> TPMatchStatus:
+        if a.is_player or b.is_player:
+            raise ValueError(
+                "MatchStatus needs two PlayerMatchStatus that are not players or byes"
+            )
+
+        if a == b:
+            return cls(a)
+
+        elif PlayerMatchStatus.NOTPLAYED in (a, b):
+            return cls.NOTPLAYED
+
+        else:
+            return cls.PENDING
 
 
 class TPMatch(ReprMixin, StrMixin, ComparableMixin, BaseModel):
@@ -157,16 +185,18 @@ class TPMatch(ReprMixin, StrMixin, ComparableMixin, BaseModel):
         return self.slot1.is_ready and self.slot2.is_ready
 
     @property
-    def status(self) -> MatchStatus:
-        ret = MatchStatus.from_playermatch_status_pair(self.pm1.status, self.pm2.status)
+    def status(self) -> TPMatchStatus:
+        ret = TPMatchStatus.from_playermatch_status_pair(
+            self.pm1.status, self.pm2.status
+        )
         logger.debug(f"Status {ret} deduced from {self.pm1!r} and {self.pm2!r}")
-        if ret == MatchStatus.PENDING:
+        if ret == TPMatchStatus.PENDING:
             if self.is_ready:
                 logger.debug("Overriding status for match that is ready")
-                return MatchStatus.READY
+                return TPMatchStatus.READY
             elif self.is_group_match:
                 logger.debug("Overriding status for group match")
-                return MatchStatus.READY
+                return TPMatchStatus.READY
 
         return ret
 

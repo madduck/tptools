@@ -32,7 +32,7 @@ from tptools.namepolicy import (
     ParamsModel,
 )
 from tptools.sqlmodels import TPCourt
-from tptools.tpmatchstatus import MatchStatus
+from tptools.tpmatch import TPMatchStatus
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class SquoreMatchStruct(PerMatchOverridableConfig, total=False):
     court: Court | None
     A: Entry | str
     B: Entry | str
-    status: MatchStatus
+    status: TPMatchStatus
 
 
 class SquoreMatch(Match):

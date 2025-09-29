@@ -6,8 +6,7 @@ from pydantic import ValidationError
 
 from tptools.slot import Bye, Slot, Unknown
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
-from tptools.tpmatch import TPMatch
-from tptools.tpmatchstatus import MatchStatus
+from tptools.tpmatch import TPMatch, TPMatchStatus
 
 from .conftest import TPMatchFactoryType
 
@@ -117,7 +116,7 @@ def test_status_finished(tpmatch1: TPMatch) -> None:
     first = tpmatch1.pm1.model_copy(update={"winner": 1})
     second = tpmatch1.pm2.model_copy(update={"winner": 2})
     m = TPMatch(pm1=first, pm2=second)
-    assert m.status == MatchStatus.PLAYED
+    assert m.status == TPMatchStatus.PLAYED
 
 
 @pytest.mark.parametrize(
@@ -125,28 +124,28 @@ def test_status_finished(tpmatch1: TPMatch) -> None:
     [
         # an entry of None signifies a Bye.
         # it. TODO: assess if this should raise an exception!
-        ({"winner": None, "entry": None}, None, nullcontext(MatchStatus.PENDING)),
+        ({"winner": None, "entry": None}, None, nullcontext(TPMatchStatus.PENDING)),
         # if either entry is None, then we are not ready
         (
             {"winner": None, "entry": None},
             {"winner": None},
-            nullcontext(MatchStatus.PENDING),
+            nullcontext(TPMatchStatus.PENDING),
         ),
         (
             {"winner": None},
             {"winner": None, "entry": None},
-            nullcontext(MatchStatus.PENDING),
+            nullcontext(TPMatchStatus.PENDING),
         ),
-        ({"winner": 1}, {"winner": 2}, nullcontext(MatchStatus.PLAYED)),
+        ({"winner": 1}, {"winner": 2}, nullcontext(TPMatchStatus.PLAYED)),
         (
             {"entry": None, "winner": 1},
             {"entry": None, "winner": 2},
-            nullcontext(MatchStatus.NOTPLAYED),
+            nullcontext(TPMatchStatus.NOTPLAYED),
         ),
         (
             {"entry": None, "winner": 1},
             {"winner": 2},
-            nullcontext(MatchStatus.NOTPLAYED),
+            nullcontext(TPMatchStatus.NOTPLAYED),
         ),
         ({"winner": 1}, {}, pytest.raises(ValueError)),
     ],
@@ -169,14 +168,14 @@ def test_set_entry_bye_status_override(tpmatch1: TPMatch) -> None:
     tpmatch1.set_slots(
         Slot(content=Bye()), Slot(content=cast(TPEntry, tpmatch1.pm2.entry))
     )
-    assert tpmatch1.status == MatchStatus.READY
+    assert tpmatch1.status == TPMatchStatus.READY
 
 
 def test_set_entry_knonwn_status_override(tpmatch1: TPMatch) -> None:
     tpmatch1.set_slots(
         Slot(content=Unknown()), Slot(content=cast(TPEntry, tpmatch1.pm2.entry))
     )
-    assert tpmatch1.status == MatchStatus.PENDING
+    assert tpmatch1.status == TPMatchStatus.PENDING
 
 
 def test_lower_planning_playermatch_first(

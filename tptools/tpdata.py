@@ -6,8 +6,7 @@ from sqlmodel import Session, select
 from .matchmaker import MatchMaker
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch, TPSetting
-from .tpmatch import TPMatch
-from .tpmatchstatus import MatchStatus
+from .tpmatch import TPMatch, TPMatchStatus
 
 
 class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
@@ -67,12 +66,12 @@ class TPData(ReprMixin, StrMixin, ComparableMixin, BaseModel):
         if include_played and include_not_ready:
             return self.matches
 
-        accepted_statuses = set(MatchStatus)
+        accepted_statuses = set(TPMatchStatus)
         if not include_played:
-            accepted_statuses.remove(MatchStatus.PLAYED)
-            accepted_statuses.remove(MatchStatus.NOTPLAYED)
+            accepted_statuses.remove(TPMatchStatus.PLAYED)
+            accepted_statuses.remove(TPMatchStatus.NOTPLAYED)
         if not include_not_ready:
-            accepted_statuses.remove(MatchStatus.PENDING)
+            accepted_statuses.remove(TPMatchStatus.PENDING)
 
         return {m for m in self.matches if m.status in accepted_statuses}  # pyright: ignore[reportUnhashable]
 

@@ -13,8 +13,7 @@ from pydantic import (
 )
 
 from tptools.mixins import ReprMixin, StrMixin
-from tptools.tpmatch import TPMatch
-from tptools.tpmatchstatus import MatchStatus
+from tptools.tpmatch import TPMatch, TPMatchStatus
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class MatchStruct(TypedDict, total=True):
     court: int | None
     A: int | str
     B: int | str
-    status: MatchStatus
+    status: TPMatchStatus
 
 
 class Match(ReprMixin, StrMixin, BaseModel):
@@ -70,7 +69,7 @@ class Match(ReprMixin, StrMixin, BaseModel):
         return self.tpmatch.slot2.id or str(self.tpmatch.slot2)
 
     @property
-    def status(self) -> MatchStatus:
+    def status(self) -> TPMatchStatus:
         return self.tpmatch.status
 
     @model_serializer(mode="plain")

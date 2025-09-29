@@ -6,8 +6,7 @@ import pytest
 
 from tptools.matchmaker import MatchMaker
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
-from tptools.tpmatch import TPMatch
-from tptools.tpmatchstatus import MatchStatus
+from tptools.tpmatch import TPMatch, TPMatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerMatchFactoryType
 
@@ -74,7 +73,7 @@ def test_resolve_1st_round(
     match = matchmaker.matches.pop()
     assert match.slot1.content == pmplayer1.entry
     assert match.slot2.content == pmplayer2.entry
-    assert match.status == MatchStatus.READY
+    assert match.status == TPMatchStatus.READY
 
 
 def test_resolve_1st_round_with_bye(
@@ -90,7 +89,7 @@ def test_resolve_1st_round_with_bye(
         matchmaker.add_playermatch(pm)
     matchmaker.resolve_match_entries()
     match = matchmaker.matches.pop()
-    assert match.status == MatchStatus.READY
+    assert match.status == TPMatchStatus.READY
 
 
 def test_resolve_unmatched_incomplete(
@@ -192,7 +191,7 @@ def matchmaker_with_triplet(
             {"planning": 2001},
             nullcontext(
                 {
-                    "status": lambda s: s == MatchStatus.PENDING,
+                    "status": lambda s: s == TPMatchStatus.PENDING,
                     "slot1": lambda s: str(s).startswith("Winner")
                     and str(s).endswith("#1"),
                 }
@@ -207,7 +206,7 @@ def matchmaker_with_triplet(
             {"planning": 2007},
             nullcontext(
                 {
-                    "status": lambda s: s == MatchStatus.PENDING,
+                    "status": lambda s: s == TPMatchStatus.PENDING,
                     "slot1": lambda s: str(s).startswith("Loser")
                     and str(s).endswith("#1"),
                 }

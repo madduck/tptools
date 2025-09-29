@@ -13,8 +13,7 @@ from tptools.sqlmodels import (
     TPSetting,
 )
 from tptools.tpdata import TPData, load_tournament
-from tptools.tpmatch import TPMatch
-from tptools.tpmatchstatus import MatchStatus
+from tptools.tpmatch import TPMatch, TPMatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerFactoryType, TPPlayerMatchFactoryType
 
@@ -104,7 +103,7 @@ def test_get_matches_with_played(
     tpdata1: TPData,
 ) -> None:
     matches = []
-    for status in MatchStatus:
+    for status in TPMatchStatus:
         m = mocker.stub(f"Match {status}")
         m.status = status
         matches.append(m)
