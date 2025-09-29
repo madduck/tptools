@@ -2,7 +2,6 @@ from collections.abc import Callable
 
 import pytest
 
-from tptools.playermatchstatus import PlayerMatchStatus
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 
 type TPPlayerMatchFactoryType = Callable[..., TPPlayerMatch]
@@ -75,14 +74,14 @@ def test_cmp_time_against_none(pm1: TPPlayerMatch) -> None:
 
 
 def test_default_status_bye(pmbye: TPPlayerMatch) -> None:
-    assert pmbye.status == PlayerMatchStatus.BYE
+    assert pmbye.status == TPPlayerMatch.Status.BYE
 
 
 def test_default_status_entry_means_player(
     TPPlayerMatchFactory: TPPlayerMatchFactoryType, tpentry1: TPEntry
 ) -> None:
     pm = TPPlayerMatchFactory(entry=tpentry1)
-    assert pm.status == PlayerMatchStatus.PLAYER
+    assert pm.status == TPPlayerMatch.Status.PLAYER
 
 
 def test_inconsistent_van(pmplayer1: TPPlayerMatch) -> None:
@@ -108,10 +107,10 @@ def test_unscheduled(pm2: TPPlayerMatch) -> None:
 @pytest.mark.parametrize(
     "useentry,winner,status",
     [
-        (True, None, PlayerMatchStatus.PENDING),
-        (False, None, PlayerMatchStatus.PENDING),
-        (True, 1, PlayerMatchStatus.PLAYED),
-        (False, 1, PlayerMatchStatus.NOTPLAYED),
+        (True, None, TPPlayerMatch.Status.PENDING),
+        (False, None, TPPlayerMatch.Status.PENDING),
+        (True, 1, TPPlayerMatch.Status.PLAYED),
+        (False, 1, TPPlayerMatch.Status.NOTPLAYED),
     ],
 )
 def test_status_not_group(
@@ -119,7 +118,7 @@ def test_status_not_group(
     tpentry1: TPEntry,
     useentry: bool,
     winner: None | int,
-    status: PlayerMatchStatus,
+    status: TPPlayerMatch.Status,
 ) -> None:
     pm1 = pm1.model_copy(
         update={"winner": winner, "entry": tpentry1 if useentry else None}
@@ -130,11 +129,11 @@ def test_status_not_group(
 @pytest.mark.parametrize(
     "useentry,wn,vn,winner,status",
     [
-        (True, None, None, None, PlayerMatchStatus.PENDING),
-        (False, None, None, None, PlayerMatchStatus.PENDING),
-        (True, None, None, 1, PlayerMatchStatus.PLAYED),
-        (False, None, None, 1, PlayerMatchStatus.PLAYED),
-        (False, 0, 0, None, PlayerMatchStatus.NOTPLAYED),
+        (True, None, None, None, TPPlayerMatch.Status.PENDING),
+        (False, None, None, None, TPPlayerMatch.Status.PENDING),
+        (True, None, None, 1, TPPlayerMatch.Status.PLAYED),
+        (False, None, None, 1, TPPlayerMatch.Status.PLAYED),
+        (False, 0, 0, None, TPPlayerMatch.Status.NOTPLAYED),
     ],
 )
 def test_status_group(
@@ -145,7 +144,7 @@ def test_status_group(
     wn: int | None,
     vn: int | None,
     winner: None | int,
-    status: PlayerMatchStatus,
+    status: TPPlayerMatch.Status,
 ) -> None:
     pm1.draw = tpdraw2
     if useentry:

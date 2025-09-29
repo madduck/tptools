@@ -2,11 +2,10 @@ import pytest
 import pytest_subtests
 from sqlalchemy import ScalarResult
 
-from tptools.playermatchstatus import PlayerMatchStatus
 from tptools.sqlmodels import TPPlayerMatch
 
 PLAYERMATCH_ID_BY_STATUS = {
-    PlayerMatchStatus.PLAYER: [  # {{{
+    TPPlayerMatch.Status.PLAYER: [  # {{{
         1221,
         1223,
         1224,
@@ -51,14 +50,14 @@ PLAYERMATCH_ID_BY_STATUS = {
         1617,
         1619,
     ],  # }}}
-    PlayerMatchStatus.BYE: [  # {{{
+    TPPlayerMatch.Status.BYE: [  # {{{
         1222,
         1581,
         1605,
         1612,
         1618,
     ],  # }}}
-    PlayerMatchStatus.NOTPLAYED: [  # {{{
+    TPPlayerMatch.Status.NOTPLAYED: [  # {{{
         1211,
         1217,
         1485,
@@ -71,7 +70,7 @@ PLAYERMATCH_ID_BY_STATUS = {
         1632,
         1634,
     ],  # }}}
-    PlayerMatchStatus.PLAYED: [  # {{{
+    TPPlayerMatch.Status.PLAYED: [  # {{{
         1199,
         1200,
         1205,
@@ -140,7 +139,7 @@ PLAYERMATCH_ID_BY_STATUS = {
         1631,
         1633,
     ],  # }}}
-    PlayerMatchStatus.PENDING: [  # {{{
+    TPPlayerMatch.Status.PENDING: [  # {{{
         1469,  # two byes leading in
         1470,  # two byes leading in
         1465,
@@ -207,8 +206,8 @@ PLAYERMATCH_ID_BY_STATUS = {
 
 
 @pytest.fixture
-def status_by_id() -> dict[int, PlayerMatchStatus]:
-    status_by_id: dict[int, PlayerMatchStatus] = {}
+def status_by_id() -> dict[int, TPPlayerMatch.Status]:
+    status_by_id: dict[int, TPPlayerMatch.Status] = {}
     for status, playermatches in PLAYERMATCH_ID_BY_STATUS.items():
         status_by_id |= dict.fromkeys(playermatches, status)
     return status_by_id
@@ -220,7 +219,7 @@ def test_loading_playermatches(all_playermatches: list[TPPlayerMatch]) -> None:
 
 def test_status(
     all_playermatches: ScalarResult[TPPlayerMatch],
-    status_by_id: dict[int, PlayerMatchStatus],
+    status_by_id: dict[int, TPPlayerMatch.Status],
     subtests: pytest_subtests.SubTests,
 ) -> None:
     n = 0

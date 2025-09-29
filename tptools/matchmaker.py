@@ -3,7 +3,6 @@ from functools import partial
 from typing import cast
 
 from .mixins.repr import ReprMixin
-from .playermatchstatus import PlayerMatchStatus
 from .slot import Bye, Playceholder, Slot
 from .sqlmodels import TPDraw, TPPlayerMatch
 from .tpmatch import TPMatch
@@ -27,7 +26,10 @@ class MatchMaker(ReprMixin):
     )
 
     def add_playermatch(self, playermatch: TPPlayerMatch) -> None:
-        if playermatch.status in (PlayerMatchStatus.PLAYER, PlayerMatchStatus.BYE):
+        if playermatch.status in (
+            TPPlayerMatch.Status.PLAYER,
+            TPPlayerMatch.Status.BYE,
+        ):
             self._players[playermatch.draw, playermatch.planning] = playermatch
             return
 

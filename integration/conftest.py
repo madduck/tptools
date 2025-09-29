@@ -8,7 +8,6 @@ from sqlalchemy.engine import URL
 from sqlmodel import Session, create_engine, select
 
 from tptools.matchmaker import MatchMaker
-from tptools.playermatchstatus import PlayerMatchStatus
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 from tptools.tpmatch import TPMatch
 from tptools.util import make_mdb_odbc_connstring
@@ -83,7 +82,7 @@ def all_playermatches(db_session: Session) -> Generator[list[TPPlayerMatch], Any
 def all_matches(all_playermatches: list[TPPlayerMatch]) -> set[TPMatch]:
     mm = MatchMaker()
     for pm in all_playermatches:
-        if pm.status in (PlayerMatchStatus.BYE, PlayerMatchStatus.PLAYER):
+        if pm.status in (TPPlayerMatch.Status.BYE, TPPlayerMatch.Status.PLAYER):
             continue
         mm.add_playermatch(pm)
 

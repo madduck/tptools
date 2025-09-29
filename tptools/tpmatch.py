@@ -9,7 +9,6 @@ from typing import Any, Callable, Literal, Self, cast
 from pydantic import BaseModel, model_validator
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .playermatchstatus import PlayerMatchStatus
 from .slot import Slot, Unknown
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 from .util import normalise_time, reduce_common_prefix, zero_to_none
@@ -19,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 class TPMatchStatus(StrEnum):
     READY = auto()
-    PENDING = PlayerMatchStatus.PENDING
-    PLAYED = PlayerMatchStatus.PLAYED
-    NOTPLAYED = PlayerMatchStatus.NOTPLAYED
+    PENDING = TPPlayerMatch.Status.PENDING
+    PLAYED = TPPlayerMatch.Status.PLAYED
+    NOTPLAYED = TPPlayerMatch.Status.NOTPLAYED
 
     @classmethod
     def from_playermatch_status_pair(
-        cls, a: PlayerMatchStatus, b: PlayerMatchStatus
+        cls, a: TPPlayerMatch.Status, b: TPPlayerMatch.Status
     ) -> TPMatchStatus:
         if a.is_player or b.is_player:
             raise ValueError(
@@ -35,7 +34,7 @@ class TPMatchStatus(StrEnum):
         if a == b:
             return cls(a)
 
-        elif PlayerMatchStatus.NOTPLAYED in (a, b):
+        elif TPPlayerMatch.Status.NOTPLAYED in (a, b):
             return cls.NOTPLAYED
 
         else:

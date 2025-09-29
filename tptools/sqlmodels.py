@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum, auto
 from functools import partial
 from typing import Any, ClassVar
 
@@ -8,7 +9,6 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from .drawtype import DrawType
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .playermatchstatus import PlayerMatchStatus
 from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
 
 
@@ -264,6 +264,21 @@ class TPPlayerMatch(Model, table=True):
     # ClassVar as per https://github.com/fastapi/sqlmodel/issues/98#issuecomment-3247459451
     __tablename__: ClassVar[Any] = "PlayerMatch"
 
+    class Status(StrEnum):
+        BYE = auto()
+        PLAYER = auto()
+        PENDING = auto()
+        PLAYED = auto()
+        NOTPLAYED = auto()
+
+        @property
+        def is_player(self) -> bool:
+            return self in (self.BYE.value, self.PLAYER.value)
+
+        @property
+        def is_match(self) -> bool:
+            return not self.is_player
+
     id: int = Field(primary_key=True)
     drawid_: int = Field(sa_column=Column("draw", ForeignKey("Draw.id")))
     draw: TPDraw = Relationship(back_populates="playermatches")
@@ -310,34 +325,34 @@ class TPPlayerMatch(Model, table=True):
         )
 
     @property
-    def status(self) -> PlayerMatchStatus:
+    def status(self) -> Status:
         try:
             if self.van[0] is None:
                 if self.entry is None:
-                    return PlayerMatchStatus.BYE
+                    return self.Status.BYE
                 else:
-                    return PlayerMatchStatus.PLAYER
+                    return self.Status.PLAYER
 
             else:
                 winner = zero_to_none(self.winner)
                 if self.draw.type == DrawType.GROUP:
                     if winner is not None:
-                        return PlayerMatchStatus.PLAYED
+                        return self.Status.PLAYED
 
                     elif self.wn == 0 and self.vn == 0:
-                        return PlayerMatchStatus.NOTPLAYED
+                        return self.Status.NOTPLAYED
 
                     else:
-                        return PlayerMatchStatus.PENDING
+                        return self.Status.PENDING
 
                 elif winner is None:
-                    return PlayerMatchStatus.PENDING
+                    return self.Status.PENDING
 
                 elif self.entry is None:
-                    return PlayerMatchStatus.NOTPLAYED
+                    return self.Status.NOTPLAYED
 
                 else:
-                    return PlayerMatchStatus.PLAYED
+                    return self.Status.PLAYED
 
         except AssertionError as err:
             raise RuntimeError(f"{self} has an invalid status: {str(err)}") from err

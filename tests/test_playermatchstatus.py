@@ -1,20 +1,22 @@
 import pytest
 
-from tptools.playermatchstatus import PlayerMatchStatus
+from tptools.sqlmodels import TPPlayerMatch
 
 
-@pytest.mark.parametrize("pmstatus", [PlayerMatchStatus.BYE, PlayerMatchStatus.PLAYER])
-def test_player(pmstatus: PlayerMatchStatus) -> None:
+@pytest.mark.parametrize(
+    "pmstatus", [TPPlayerMatch.Status.BYE, TPPlayerMatch.Status.PLAYER]
+)
+def test_player(pmstatus: TPPlayerMatch.Status) -> None:
     assert pmstatus.is_player
 
 
 @pytest.mark.parametrize(
     "pmstatus",
     [
-        PlayerMatchStatus.PENDING,
-        PlayerMatchStatus.PLAYED,
-        PlayerMatchStatus.NOTPLAYED,
+        TPPlayerMatch.Status.PENDING,
+        TPPlayerMatch.Status.PLAYED,
+        TPPlayerMatch.Status.NOTPLAYED,
     ],
 )
-def test_match(pmstatus: PlayerMatchStatus) -> None:
+def test_match(pmstatus: TPPlayerMatch.Status) -> None:
     assert pmstatus.is_match
