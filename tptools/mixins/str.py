@@ -5,7 +5,7 @@ class StrMixin:
     __str_template__: str | None = None
 
     def __init_subclass__(cls, *args: Any, **kwargs: Any) -> None:
-        _ = args, kwargs
+        super().__init_subclass__(*args, **kwargs)
 
     def __str__(self) -> str:
         if self.__str_template__ is None:

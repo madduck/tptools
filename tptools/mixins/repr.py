@@ -13,7 +13,7 @@ class ReprMixin:
     __repr_fields__: ReprFieldsType[Self] = None
 
     def __init_subclass__(cls, *args: Any, **kwargs: Any) -> None:
-        _ = args, kwargs
+        super().__init_subclass__(*args, **kwargs)
 
     def _class_name(self) -> str:
         return self.__class__.__name__

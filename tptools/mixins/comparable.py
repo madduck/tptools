@@ -15,7 +15,7 @@ class ComparableMixin:
     __none_sorts_last__: bool | None = None
 
     def __init_subclass__(cls, *args: Any, **kwargs: Any) -> None:
-        _ = args, kwargs
+        super().__init_subclass__(*args, **kwargs)
 
     def _cmp(
         self,
