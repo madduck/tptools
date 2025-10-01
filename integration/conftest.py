@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy.engine import URL
 from sqlmodel import Session, create_engine, select
 
+from tptools import Court, Draw, Entry, Match
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 from tptools.tpmatch import TPMatch, TPMatchMaker
 from tptools.util import make_mdb_odbc_connstring
@@ -58,32 +59,52 @@ def db_session() -> Generator[Session, Any]:
 
 
 @pytest.fixture
-def all_entries(db_session: Session) -> Generator[list[TPEntry], Any]:
+def all_tpentries(db_session: Session) -> Generator[list[TPEntry], Any]:
     yield list(db_session.exec(select(TPEntry)))
 
 
 @pytest.fixture
-def all_draws(db_session: Session) -> Generator[list[TPDraw], Any]:
+def all_entries(all_tpentries: list[TPEntry]) -> list[Entry]:
+    return [Entry.from_tp_model(e) for e in all_tpentries]
+
+
+@pytest.fixture
+def all_tpdraws(db_session: Session) -> Generator[list[TPDraw], Any]:
     yield list(db_session.exec(select(TPDraw)))
 
 
 @pytest.fixture
-def all_courts(db_session: Session) -> Generator[list[TPCourt], Any]:
+def all_draws(all_tpdraws: list[TPDraw]) -> list[Draw]:
+    return [Draw.from_tp_model(d) for d in all_tpdraws]
+
+
+@pytest.fixture
+def all_tpcourts(db_session: Session) -> Generator[list[TPCourt], Any]:
     yield list(db_session.exec(select(TPCourt)))
 
 
 @pytest.fixture
-def all_playermatches(db_session: Session) -> Generator[list[TPPlayerMatch], Any]:
+def all_courts(all_tpcourts: list[TPCourt]) -> list[Court]:
+    return [Court.from_tp_model(c) for c in all_tpcourts]
+
+
+@pytest.fixture
+def all_tpplayermatches(db_session: Session) -> Generator[list[TPPlayerMatch], Any]:
     yield list(db_session.exec(select(TPPlayerMatch)))
 
 
 @pytest.fixture
-def all_matches(all_playermatches: list[TPPlayerMatch]) -> set[TPMatch]:
+def all_tpmatches(all_tpplayermatches: list[TPPlayerMatch]) -> set[TPMatch]:
     mm = TPMatchMaker()
-    for pm in all_playermatches:
+    for pm in all_tpplayermatches:
         if pm.status in (TPPlayerMatch.Status.BYE, TPPlayerMatch.Status.PLAYER):
             continue
         mm.add_playermatch(pm)
 
     assert len(mm.unmatched) == 0
     return mm.matches
+
+
+@pytest.fixture
+def all_matches(all_tpmatches: list[TPMatch]) -> list[Match]:
+    return [Match.from_tpmatch(m) for m in all_tpmatches]

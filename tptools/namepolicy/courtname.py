@@ -1,8 +1,14 @@
+# needed < 3.14 so that annotations aren't evaluated
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from ..paramsmodel import ParamsModel
-from ..sqlmodels import TPCourt
 from .policybase import PolicyBase
+
+if TYPE_CHECKING:
+    from ..court import Court
 
 
 class CourtNamePolicyParams(ParamsModel):
@@ -21,7 +27,7 @@ class CourtNamePolicy(PolicyBase):
     include_location: bool = False
     no_court_string: str = "No court"
 
-    def __call__(self, court: TPCourt | None) -> str:
+    def __call__(self, court: Court | None) -> str:
         if court is None:
             return self.no_court_string
 

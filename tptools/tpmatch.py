@@ -41,7 +41,7 @@ class TPMatchStatus(StrEnum):
             return cls.PENDING
 
 
-class TPMatch(ReprMixin, StrMixin, ComparableMixin, BaseModel):
+class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     pm1: TPPlayerMatch
     pm2: TPPlayerMatch
 

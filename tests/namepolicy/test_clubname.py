@@ -1,7 +1,7 @@
 import pytest
 
+from tptools.entry import Club
 from tptools.namepolicy import ClubNamePolicy
-from tptools.sqlmodels import TPClub
 
 
 @pytest.fixture
@@ -13,8 +13,8 @@ def test_constructor(policy: ClubNamePolicy) -> None:
     _ = policy
 
 
-def test_passthrough(policy: ClubNamePolicy, tpclub1: TPClub) -> None:
-    assert policy(tpclub1) == "RSC"
+def test_passthrough(policy: ClubNamePolicy, club1: Club) -> None:
+    assert policy(club1) == "RSC"
 
 
 def test_no_club(policy: ClubNamePolicy) -> None:

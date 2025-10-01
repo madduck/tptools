@@ -4,7 +4,9 @@ from typing import Any
 
 import pytest
 
+from tptools import Court, Draw, Entry, Match, Tournament
 from tptools.drawtype import DrawType
+from tptools.entry import Club, Country, Player
 from tptools.slot import Bye, Playceholder, Slot, Unknown
 from tptools.sqlmodels import (
     TPClub,
@@ -18,7 +20,6 @@ from tptools.sqlmodels import (
     TPPlayerMatch,
     TPStage,
 )
-from tptools.tpdata import TPData
 from tptools.tpmatch import TPMatch
 
 
@@ -62,6 +63,19 @@ tpdraw1copy = tpdraw1
 
 
 @pytest.fixture
+def draw1(tpdraw1: TPDraw) -> Draw:
+    return Draw.from_tp_model(tpdraw1)
+
+
+@pytest.fixture
+def draw2(tpdraw2: TPDraw) -> Draw:
+    return Draw.from_tp_model(tpdraw2)
+
+
+draw1copy = draw1
+
+
+@pytest.fixture
 def tpclub1() -> TPClub:
     return TPClub(id=1, name="RSC")
 
@@ -75,6 +89,11 @@ tpclub1copy = tpclub1
 
 
 @pytest.fixture
+def club1(tpclub1: TPClub) -> Club:
+    return Club.from_tp_model(tpclub1)
+
+
+@pytest.fixture
 def tpcountry1() -> TPCountry:
     return TPCountry(id=1, name="Holland", code="NL")
 
@@ -85,6 +104,11 @@ def tpcountry2() -> TPCountry:
 
 
 tpcountry1copy = tpcountry1
+
+
+@pytest.fixture
+def country1(tpcountry1: TPCountry) -> Country:
+    return Country.from_tp_model(tpcountry1)
 
 
 @pytest.fixture
@@ -102,6 +126,11 @@ def tpplayer2(tpclub2: TPClub, tpcountry1: TPCountry) -> TPPlayer:
 
 
 tpplayer1copy = tpplayer1
+
+
+@pytest.fixture
+def player1(tpplayer1: TPPlayer) -> Player:
+    return Player.from_tp_model(tpplayer1)
 
 
 @pytest.fixture
@@ -124,7 +153,7 @@ type EntryFactoryType = Callable[[int, TPEvent, str], TPEntry]
 def EntryFactory() -> EntryFactoryType:
     def entry_maker(id: int, event: TPEvent, name: str) -> TPEntry:
         p = TPPlayer(id=id, lastname="", firstname=name)
-        return TPEntry(p, event=event)
+        return TPEntry(event=event, player1=p)
 
     return entry_maker
 
@@ -137,6 +166,29 @@ def tpentry12(tpevent1: TPEvent, tpplayer1: TPPlayer, tpplayer2: TPPlayer) -> TP
 @pytest.fixture
 def tpentry21(tpevent2: TPEvent, tpplayer1: TPPlayer, tpplayer2: TPPlayer) -> TPEntry:
     return TPEntry(id=21, event=tpevent2, player1=tpplayer2, player2=tpplayer1)
+
+
+@pytest.fixture
+def entry1(tpentry1: TPEntry) -> Entry:
+    return Entry.from_tp_model(tpentry1)
+
+
+@pytest.fixture
+def entry2(tpentry2: TPEntry) -> Entry:
+    return Entry.from_tp_model(tpentry2)
+
+
+entry1copy = entry1
+
+
+@pytest.fixture
+def entry12(tpentry12: TPEntry) -> Entry:
+    return Entry.from_tp_model(tpentry12)
+
+
+@pytest.fixture
+def entry21(tpentry21: TPEntry) -> Entry:
+    return Entry.from_tp_model(tpentry21)
 
 
 @pytest.fixture
@@ -203,6 +255,19 @@ def tpcourt2(tplocation2: TPLocation) -> TPCourt:
 
 
 tpcourt1copy = tpcourt1
+
+
+@pytest.fixture
+def court1(tpcourt1: TPCourt) -> Court:
+    return Court.from_tp_model(tpcourt1)
+
+
+@pytest.fixture
+def court2(tpcourt2: TPCourt) -> Court:
+    return Court.from_tp_model(tpcourt2)
+
+
+court1copy = court1
 
 
 type TPPlayerMatchFactoryType = Callable[..., TPPlayerMatch]
@@ -344,41 +409,67 @@ def tpmatch2(
 
 
 @pytest.fixture
-def tpdata1(
-    tpmatch1: TPMatch,
-    tpmatch2: TPMatch,
-    tpentry1: TPEntry,
-    tpentry2: TPEntry,
-    tpentry12: TPEntry,
-    tpentry21: TPEntry,
-    tpcourt1: TPCourt,
-    tpcourt2: TPCourt,
-    tpdraw1: TPDraw,
-    tpdraw2: TPDraw,
-) -> TPData:
-    t = TPData(
+def match1(tpmatch1: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch1)
+
+
+@pytest.fixture
+def match2(tpmatch2: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch2)
+
+
+match1copy = match1
+
+
+@pytest.fixture
+def tpmatch_pending(
+    TPMatchFactory: TPMatchFactoryType,
+    pm2: TPPlayerMatch,
+) -> TPMatch:
+    return TPMatchFactory(pm2, None, lldiff=2)
+
+
+@pytest.fixture
+def match_pending(tpmatch_pending: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch_pending)
+
+
+@pytest.fixture
+def tournament1(
+    match1: Match,
+    match2: Match,
+    entry1: Entry,
+    entry2: Entry,
+    entry12: Entry,
+    entry21: Entry,
+    court1: Court,
+    court2: Court,
+    draw1: Draw,
+    draw2: Draw,
+) -> Tournament:
+    t = Tournament(
         name="Test 1",
     )
-    t.add_match(tpmatch1)
-    t.add_match(tpmatch2)
-    t.add_entry(tpentry1)
-    t.add_entry(tpentry2)
-    t.add_entry(tpentry21)
-    t.add_entry(tpentry12)
-    t.add_court(tpcourt1)
-    t.add_court(tpcourt2)
-    t.add_draw(tpdraw1)
-    t.add_draw(tpdraw2)
+    t.add_match(match1)
+    t.add_match(match2)
+    t.add_entry(entry1)
+    t.add_entry(entry2)
+    t.add_entry(entry21)
+    t.add_entry(entry12)
+    t.add_court(court1)
+    t.add_court(court2)
+    t.add_draw(draw1)
+    t.add_draw(draw2)
     return t
 
 
 @pytest.fixture
-def tpdata2(tpmatch1: TPMatch, tpentry1: TPEntry, tpentry2: TPEntry) -> TPData:
-    t = TPData(name="Test 2")
-    t.add_match(tpmatch1)
-    t.add_entry(tpentry1)
-    t.add_entry(tpentry2)
+def tournament2(match1: Match, entry1: Entry, entry2: Entry) -> Tournament:
+    t = Tournament(name="Test 2")
+    t.add_match(match1)
+    t.add_entry(entry1)
+    t.add_entry(entry2)
     return t
 
 
-tpdata1copy = tpdata1
+tournament1copy = tournament1

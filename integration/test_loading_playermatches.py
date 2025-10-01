@@ -213,17 +213,17 @@ def status_by_id() -> dict[int, TPPlayerMatch.Status]:
     return status_by_id
 
 
-def test_loading_playermatches(all_playermatches: list[TPPlayerMatch]) -> None:
-    assert len(all_playermatches) == 184
+def test_loading_playermatches(all_tpplayermatches: list[TPPlayerMatch]) -> None:
+    assert len(all_tpplayermatches) == 184
 
 
 def test_status(
-    all_playermatches: ScalarResult[TPPlayerMatch],
+    all_tpplayermatches: ScalarResult[TPPlayerMatch],
     status_by_id: dict[int, TPPlayerMatch.Status],
     subtests: pytest_subtests.SubTests,
 ) -> None:
     n = 0
-    for pm in all_playermatches:
+    for pm in all_tpplayermatches:
         n += 1
         with subtests.test(_=pm):
             assert pm.status == (expected := status_by_id[pm.id]), (

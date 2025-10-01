@@ -1,7 +1,7 @@
 from dataclasses import KW_ONLY, dataclass
 
+from ..entry import Player
 from ..paramsmodel import ParamsModel
-from ..sqlmodels import TPPlayer
 from .clubname import ClubNamePolicy
 from .countryname import CountryNamePolicy
 from .policybase import PolicyBase
@@ -34,7 +34,7 @@ class PlayerNamePolicy(PolicyBase):
 
     def __call__(
         self,
-        player: TPPlayer | None,
+        player: Player | None,
         *,
         clubnamepolicy: ClubNamePolicy | None = None,
         countrynamepolicy: CountryNamePolicy | None = None,

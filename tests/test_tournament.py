@@ -4,86 +4,102 @@ from typing import cast
 import pytest
 from pytest_mock import AsyncMockType, MockerFixture, MockType
 
+from tptools import Tournament, load_tournament
+from tptools.court import Court
+from tptools.draw import Draw
+from tptools.entry import Entry
+from tptools.match import Match
 from tptools.sqlmodels import (
     TPCourt,
     TPDraw,
     TPEntry,
+    TPEvent,
     TPPlayer,
     TPPlayerMatch,
     TPSetting,
 )
-from tptools.tpdata import TPData, load_tournament
-from tptools.tpmatch import TPMatch, TPMatchStatus
+from tptools.tpmatch import TPMatch
+from tptools.tpmatch import TPMatchStatus as MatchStatus
 
 from .conftest import TPMatchFactoryType, TPPlayerFactoryType, TPPlayerMatchFactoryType
 
 
+def test_from_tournament(tournament1: Tournament) -> None:
+    assert Tournament.from_tournament(tournament1) == tournament1
+
+
 def test_repr_empty_noname() -> None:
-    assert repr(TPData()) == "TPData(nentries=0, ndraws=0, ncourts=0, nmatches=0)"
-
-
-def test_repr(tpdata1: TPData) -> None:
     assert (
-        repr(tpdata1)
-        == "TPData(name='Test 1', nentries=4, ndraws=2, ncourts=2, nmatches=2)"
+        repr(Tournament()) == "Tournament(nentries=0, ndraws=0, ncourts=0, nmatches=0)"
     )
 
 
-def test_str(tpdata1: TPData) -> None:
-    assert str(tpdata1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
+def test_repr(tournament1: Tournament) -> None:
+    assert (
+        repr(tournament1)
+        == "Tournament(name='Test 1', nentries=4, ndraws=2, ncourts=2, nmatches=2)"
+    )
 
 
-def test_eq(tpdata1: TPData, tpdata1copy: TPData) -> None:
-    assert tpdata1 == tpdata1copy
+def test_str(tournament1: Tournament) -> None:
+    assert str(tournament1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
 
 
-def test_ne(tpdata1: TPData, tpdata2: TPData) -> None:
-    assert tpdata1 != tpdata2
+def test_eq(tournament1: Tournament, tournament1copy: Tournament) -> None:
+    assert tournament1 == tournament1copy
 
 
-def test_lt(tpdata1: TPData, tpdata2: TPData) -> None:
-    assert tpdata1 < tpdata2
+def test_ne(tournament1: Tournament, tournament2: Tournament) -> None:
+    assert tournament1 != tournament2
 
 
-def test_le(tpdata1: TPData, tpdata2: TPData, tpdata1copy: TPData) -> None:
-    assert tpdata1 <= tpdata2 and tpdata1 <= tpdata1copy
+def test_lt(tournament1: Tournament, tournament2: Tournament) -> None:
+    assert tournament1 < tournament2
 
 
-def test_gt(tpdata1: TPData, tpdata2: TPData) -> None:
-    assert tpdata2 > tpdata1
+def test_le(
+    tournament1: Tournament, tournament2: Tournament, tournament1copy: Tournament
+) -> None:
+    assert tournament1 <= tournament2 and tournament1 <= tournament1copy
 
 
-def test_ge(tpdata1: TPData, tpdata2: TPData, tpdata1copy: TPData) -> None:
-    assert tpdata2 >= tpdata1 and tpdata1 >= tpdata1copy
+def test_gt(tournament1: Tournament, tournament2: Tournament) -> None:
+    assert tournament2 > tournament1
 
 
-def test_no_cmp(tpdata1: TPData) -> None:
+def test_ge(
+    tournament1: Tournament, tournament2: Tournament, tournament1copy: Tournament
+) -> None:
+    assert tournament2 >= tournament1 and tournament1 >= tournament1copy
+
+
+def test_no_cmp(tournament1: Tournament) -> None:
     with pytest.raises(NotImplementedError):
-        assert tpdata1 == object()
+        assert tournament1 == object()
 
 
-def test_add_duplicate_match(tpdata1: TPData, tpmatch1: TPMatch) -> None:
+def test_add_duplicate_match(tournament1: Tournament, match1: Match) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_match(tpmatch1)
+        tournament1.add_match(match1)
 
 
-def test_add_duplicate_entry(tpdata1: TPData, tpentry1: TPEntry) -> None:
+def test_add_duplicate_entry(tournament1: Tournament, entry1: Entry) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_entry(tpentry1)
+        tournament1.add_entry(entry1)
 
 
-def test_add_duplicate_draw(tpdata1: TPData, tpdraw1: TPDraw) -> None:
+def test_add_duplicate_draw(tournament1: Tournament, draw1: Draw) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_draw(tpdraw1)
+        tournament1.add_draw(draw1)
 
 
-def test_add_duplicate_court(tpdata1: TPData, tpcourt1: TPCourt) -> None:
+def test_add_duplicate_court(tournament1: Tournament, court1: Court) -> None:
     with pytest.raises(ValueError, match="already added"):
-        tpdata1.add_court(tpcourt1)
+        tournament1.add_court(court1)
 
 
-def test_get_matches(tpdata2: TPData, tpmatch1: TPMatch) -> None:
-    assert tpmatch1 in tpdata2.get_matches()
+def test_get_matches(tournament2: Tournament, match1: Match) -> None:
+    assert match1 in tournament2.get_matches()
 
 
 @pytest.mark.parametrize(
@@ -95,20 +111,21 @@ def test_get_matches(tpdata2: TPData, tpmatch1: TPMatch) -> None:
         (False, False, (0,)),
     ],
 )
-def test_get_matches_with_played(
+def test_get_matches_params(
     include_played: bool,
     include_not_ready: bool,
     expected: list[int],
     mocker: MockerFixture,
-    tpdata1: TPData,
+    tournament1: Tournament,
 ) -> None:
-    matches = []
-    for status in TPMatchStatus:
+    matches: dict[int, Match] = {}
+    for i, status in enumerate(MatchStatus):
         m = mocker.stub(f"Match {status}")
         m.status = status
-        matches.append(m)
+        m.id = str(i)
+        matches[i] = m
 
-    t = tpdata1.model_copy(update={"matches": matches})
+    t = tournament1.model_copy(update={"matches": matches})
 
     ret = t.get_matches(
         include_played=include_played, include_not_ready=include_not_ready
@@ -119,33 +136,39 @@ def test_get_matches_with_played(
         assert matches[e] in ret
 
 
-def test_get_entries(tpdata2: TPData, tpentry1: TPEntry) -> None:
-    assert tpentry1 in tpdata2.get_entries()
+def test_get_entries(tournament2: Tournament, tpentry1: TPEntry) -> None:
+    assert tpentry1 in tournament2.get_entries()
 
 
 def test_get_matches_by_draw(
-    tpdata2: TPData, tpmatch1: TPMatch, tpmatch2: TPMatch
+    tournament2: Tournament, match1: Match, match2: Match
 ) -> None:
-    assert tpmatch1 in tpdata2.get_matches_by_draw(tpmatch1.draw)
-    assert tpmatch2 not in tpdata2.get_matches_by_draw(tpmatch1.draw)
+    assert match1 in tournament2.get_matches_by_draw(match1.draw)
+    assert match2 not in tournament2.get_matches_by_draw(match1.draw)
 
 
-def test_get_draws(tpdata1: TPData, tpmatch1: TPMatch, tpmatch2: TPMatch) -> None:
-    draws = tpdata1.get_draws()
+def test_get_draws(
+    tournament1: Tournament, tpmatch1: TPMatch, tpmatch2: TPMatch
+) -> None:
+    draws = tournament1.get_draws()
     assert tpmatch1.draw in draws
     assert tpmatch2.draw in draws
 
 
-def test_get_courts(tpdata1: TPData, tpcourt1: TPCourt, tpcourt2: TPCourt) -> None:
-    courts = tpdata1.get_courts()
+def test_get_courts(
+    tournament1: Tournament, tpcourt1: TPCourt, tpcourt2: TPCourt
+) -> None:
+    courts = tournament1.get_courts()
     assert tpcourt1 in courts
     assert tpcourt2 in courts
 
 
-def test_model_dump(tpdata1: TPData) -> None:
-    dump = tpdata1.model_dump()
+def test_model_dump(tournament1: Tournament) -> None:
+    dump = tournament1.model_dump()
     assert "matches" in dump
     assert "entries" in dump
+    assert "courts" in dump
+    assert "draws" in dump
 
 
 type MockSessionFactoryType = Callable[..., MockType]
@@ -194,6 +217,7 @@ async def test_load_tournament_elim4(
     TPPlayerFactory: TPPlayerFactoryType,
     TPPlayerMatchFactory: TPPlayerMatchFactoryType,
     TPMatchFactory: TPMatchFactoryType,
+    tpevent1: TPEvent,
 ) -> None:
     entries: list[TPEntry] = []
     pms: list[TPPlayerMatch] = []
@@ -203,7 +227,11 @@ async def test_load_tournament_elim4(
         (3, "three", 2),
         (4, "four", 2),
     ):
-        entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
+        entry = TPEntry(
+            id=id,
+            player1=TPPlayer(id=id, lastname=name, firstname="test"),
+            event=tpevent1,
+        )
         entries.append(entry)
         pms.append(
             TPPlayerFactory(
@@ -235,11 +263,11 @@ async def test_load_tournament_elim4(
         playermatches=pms,
     )
 
-    tpdata = await load_tournament(mock_session)
+    tournament = await load_tournament(mock_session)
 
-    assert tpdata.name == "Test"
-    assert tpdata.nentries == 4
-    assert tpdata.nmatches == 4
+    assert tournament.name == "Test"
+    assert tournament.nentries == 4
+    assert tournament.nmatches == 4
 
 
 @pytest.mark.asyncio
@@ -248,6 +276,7 @@ async def test_load_tournament_group3(
     TPPlayerFactory: TPPlayerFactoryType,
     TPPlayerMatchFactory: TPPlayerMatchFactoryType,
     tpdraw2: TPDraw,
+    tpevent1: TPEvent,
 ) -> None:
     entries: list[TPEntry] = []
     pms: list[TPPlayerMatch] = []
@@ -256,7 +285,11 @@ async def test_load_tournament_group3(
         (2, "two"),
         (3, "three"),
     ):
-        entry = TPEntry(player1=TPPlayer(id=id, lastname=name, firstname="test"))
+        entry = TPEntry(
+            id=id,
+            event=tpevent1,
+            player1=TPPlayer(id=id, lastname=name, firstname="test"),
+        )
         entries.append(entry)
         pms.append(
             TPPlayerFactory(planning=id * 1000, wn=0, vn=0, entry=entry, draw=tpdraw2)
@@ -289,11 +322,11 @@ async def test_load_tournament_group3(
         playermatches=pms,
     )
 
-    tpdata = await load_tournament(mock_session)
+    tournament = await load_tournament(mock_session)
 
-    assert tpdata.name == "Test"
-    assert tpdata.nentries == 3
-    assert tpdata.nmatches == 3
+    assert tournament.name == "Test"
+    assert tournament.nentries == 3
+    assert tournament.nmatches == 3
 
 
 @pytest.mark.asyncio
@@ -305,5 +338,21 @@ async def test_load_tournament_with_player(
     mock_session = MockSessionFactory(
         playermatches=[pmplayer1, pmplayer2],
     )
-    tpdata = await load_tournament(mock_session)
-    assert tpdata.nmatches == 0
+    tournament = await load_tournament(mock_session)
+    assert tournament.nmatches == 0
+
+
+def test_resolve_entry(tournament1: Tournament, entry1: Entry) -> None:
+    assert tournament1.resolve_entry_by_id(entry1.id) == entry1
+
+
+def test_resolve_court(tournament1: Tournament, court1: Court) -> None:
+    assert tournament1.resolve_court_by_id(court1.id) == court1
+
+
+def test_resolve_draw(tournament1: Tournament, draw1: Draw) -> None:
+    assert tournament1.resolve_draw_by_id(draw1.id) == draw1
+
+
+def test_resolve_match(tournament1: Tournament, match1: Match) -> None:
+    assert tournament1.resolve_match_by_id(match1.id) == match1

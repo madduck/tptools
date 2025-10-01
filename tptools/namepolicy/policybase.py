@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Protocol
 
 
 @dataclass(frozen=True)
@@ -10,3 +10,7 @@ class PolicyBase(ABC):
 
     def params(self) -> dict[str, Any]:
         return asdict(self)
+
+
+class PolicyCallable[ReturnT](Protocol):
+    def __call__(self, *args: Any, **kwargs: Any) -> ReturnT: ...
