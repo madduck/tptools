@@ -206,13 +206,15 @@ class TPEntry(TPModel, table=True):
 
     def __init__(
         self,
+        *,
+        event: TPEvent,
         player1: TPPlayer,
         player2: TPPlayer | None = None,
         **kwargs: Any,
     ) -> None:
         if player1 == player2:
             raise ValueError(f"player2 cannot be the same as player1: {player1}")
-        kwargs |= {"player1": player1, "player2": player2}
+        kwargs |= {"event": event, "player1": player1, "player2": player2}
         super().__init__(**kwargs)
 
     __str_template__ = "{self.name}"
