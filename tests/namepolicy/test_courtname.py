@@ -20,6 +20,11 @@ def test_passthrough(policy: CourtNamePolicy, court1: Court) -> None:
 
 
 def test_no_court(policy: CourtNamePolicy) -> None:
+    assert policy(None) is None
+
+
+def test_no_court_string() -> None:
+    policy = CourtNamePolicy(no_court_string="No court")
     assert policy(None) == "No court"
 
 

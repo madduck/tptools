@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class CourtNamePolicyParams(ParamsModel):
     include_location: bool = False
-    no_court_string: str = "No court"
+    no_court_string: str | None = None
 
 
 # TODO: remove redundancy between these two classes
@@ -25,9 +25,9 @@ class CourtNamePolicyParams(ParamsModel):
 @dataclass(frozen=True)
 class CourtNamePolicy(PolicyBase):
     include_location: bool = False
-    no_court_string: str = "No court"
+    no_court_string: str | None = None
 
-    def __call__(self, court: Court | None) -> str:
+    def __call__(self, court: Court | None) -> str | None:
         if court is None:
             return self.no_court_string
 
