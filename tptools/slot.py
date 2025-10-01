@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import enum
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, cast
 
@@ -18,10 +18,6 @@ from .sqlmodels import TPEntry
 
 
 class SlotContent(ABC, ReprMixin, StrMixin):
-    @abstractmethod
-    def __init__(self) -> None:
-        super().__init__()
-
     __repr_fields__ = ()
 
     @classmethod
@@ -48,16 +44,10 @@ class Playceholder(SlotContent):
 
 
 class Bye(SlotContent):
-    def __init__(self) -> None:
-        super().__init__()
-
     __str_template__ = "Bye"
 
 
 class Unknown(SlotContent):
-    def __init__(self) -> None:
-        super().__init__()
-
     __str_template__ = "Unknown"
 
 

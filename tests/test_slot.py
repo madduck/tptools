@@ -4,11 +4,6 @@ from tptools.slot import Bye, Playceholder, Slot, SlotContent, SlotType, Unknown
 from tptools.sqlmodels import TPEntry
 
 
-def test_slot_content_abstract() -> None:
-    with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-        _ = SlotContent()  # type: ignore[abstract]
-
-
 def test_slot_type_invalid() -> None:
     with pytest.raises(ValueError, match="is not valid for Slot"):
         _ = SlotType.from_instance(object())  # type: ignore[arg-type]
