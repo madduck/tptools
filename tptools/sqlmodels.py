@@ -24,9 +24,9 @@ class TPModel(ReprMixin, StrMixin, ComparableMixin, SQLModel):
     ) -> dict[str, Any]:
         ret: dict[str, Any] = handler(self)
         for key in [k for k in ret.keys() if k.endswith("id_")]:
-            if (model := getattr(self, mkey := key[:-3]), None) is not None:
+            if hasattr(self, mkey := key[:-3]):
                 del ret[key]
-                ret[mkey] = model
+                ret[mkey] = getattr(self, mkey)
         return ret
 
 
