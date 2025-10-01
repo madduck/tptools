@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 from .policybase import PolicyBase
 
@@ -13,6 +13,12 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class ClubNamePolicy(PolicyBase):
     def __init__(self) -> None: ...
+
+    @overload
+    def __call__(self, club: Club) -> str: ...
+
+    @overload
+    def __call__(self, club: None) -> None: ...
 
     def __call__(self, club: Club | None) -> str | None:
         return str(club) if club is not None else None

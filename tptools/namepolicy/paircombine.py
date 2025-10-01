@@ -1,5 +1,5 @@
 from dataclasses import KW_ONLY, dataclass
-from typing import Literal, overload
+from typing import Literal, Never, overload
 
 from ..paramsmodel import ParamsModel
 from .policybase import PolicyBase
@@ -28,13 +28,23 @@ class PairCombinePolicy(PolicyBase):
 
     @overload
     def __call__(
-        self, a: str, b: str | None, *, first_can_be_none: Literal[False] = False
+        self, a: str, b: str | None, *, first_can_be_none: bool = False
     ) -> str: ...
 
     @overload
     def __call__(
-        self, a: str | None, b: str | None, *, first_can_be_none: Literal[True]
-    ) -> str | None: ...
+        self, a: None, b: str | None, *, first_can_be_none: Literal[False]
+    ) -> Never: ...
+
+    @overload
+    def __call__(
+        self, a: str | None, b: str, *, first_can_be_none: Literal[True]
+    ) -> str: ...
+
+    @overload
+    def __call__(
+        self, a: None, b: None, *, first_can_be_none: Literal[True]
+    ) -> None: ...
 
     def __call__(self, a, b, *, first_can_be_none=False):  # type: ignore[no-untyped-def]
         if a is None and not first_can_be_none:

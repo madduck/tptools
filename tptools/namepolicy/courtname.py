@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 from ..paramsmodel import ParamsModel
 from .policybase import PolicyBase
@@ -26,6 +26,12 @@ class CourtNamePolicyParams(ParamsModel):
 class CourtNamePolicy(PolicyBase):
     include_location: bool = False
     no_court_string: str | None = None
+
+    @overload
+    def __call__(self, court: Court) -> str: ...
+
+    @overload
+    def __call__(self, court: None) -> str | None: ...
 
     def __call__(self, court: Court | None) -> str | None:
         if court is None:

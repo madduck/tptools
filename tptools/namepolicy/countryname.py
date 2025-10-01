@@ -14,5 +14,11 @@ if TYPE_CHECKING:
 class CountryNamePolicy(PolicyBase):
     def __init__(self) -> None: ...
 
+    @overload
+    def __call__(self, country: Country) -> str: ...
+
+    @overload
+    def __call__(self, country: None) -> None: ...
+
     def __call__(self, country: Country | None) -> str | None:
         return str(country) if country is not None else None

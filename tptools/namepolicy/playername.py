@@ -1,4 +1,5 @@
 from dataclasses import KW_ONLY, dataclass
+from typing import overload
 
 from ..entry import Player
 from ..paramsmodel import ParamsModel
@@ -31,6 +32,24 @@ class PlayerNamePolicy(PolicyBase):
     lnamefirst: bool = False
     include_club: bool = False
     include_country: bool = False
+
+    @overload
+    def __call__(
+        self,
+        player: Player,
+        *,
+        clubnamepolicy: ClubNamePolicy | None = None,
+        countrynamepolicy: CountryNamePolicy | None = None,
+    ) -> str: ...
+
+    @overload
+    def __call__(
+        self,
+        player: None,
+        *,
+        clubnamepolicy: ClubNamePolicy | None = None,
+        countrynamepolicy: CountryNamePolicy | None = None,
+    ) -> None: ...
 
     def __call__(
         self,
