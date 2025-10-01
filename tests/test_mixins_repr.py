@@ -33,7 +33,7 @@ type DummyClassFactoryType = Callable[..., DummyClassType]
 @pytest.fixture
 def DummyClassFactory() -> DummyClassFactoryType:
     def class_maker(*, reprfields: list[str] | None = None) -> DummyClassType:
-        DummyClass.__repr_fields__ = reprfields  # type: ignore[misc]
+        DummyClass.__repr_fields__ = reprfields
         return DummyClass
 
     return class_maker

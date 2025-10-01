@@ -1,16 +1,16 @@
 from collections.abc import Callable, Iterable
-from typing import Any, Self
+from typing import Any
 
-type ReprFieldCallableType[T] = Callable[[T], Any]
-type ReprFieldTupleType[T] = (
-    tuple[str, ReprFieldCallableType[T], bool] | tuple[str, ReprFieldCallableType[T]]
+type ReprFieldCallableType = Callable[[Any], Any]
+type ReprFieldTupleType = (
+    tuple[str, ReprFieldCallableType, bool] | tuple[str, ReprFieldCallableType]
 )
-type FieldsType[T] = Iterable[str | ReprFieldTupleType[T]]
-type ReprFieldsType[T] = FieldsType[T] | None
+type FieldsType = Iterable[str | ReprFieldTupleType]
+type ReprFieldsType = FieldsType | None
 
 
 class ReprMixin:
-    __repr_fields__: ReprFieldsType[Self] = None
+    __repr_fields__: ReprFieldsType = None
 
     def __init_subclass__(cls, *args: Any, **kwargs: Any) -> None:
         super().__init_subclass__(*args, **kwargs)
