@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 
 from .basemodel import BaseModel
 from .court import Court
-from .draw import Draw
+from .draw import Draw, InvalidDrawType
 from .entry import Entry
 from .match import Match
 from .paramsmodel import ParamsModel
@@ -196,7 +196,18 @@ async def load_tournament(
         select(TPSetting).where(TPSetting.name == "Tournament")
     ).one_or_none()
     entries = [EntryClass.from_tp_model(e) for e in db_session.exec(select(TPEntry))]
-    draws = [DrawClass.from_tp_model(d) for d in db_session.exec(select(TPDraw))]
+
+    try:
+        draws = [DrawClass.from_tp_model(d) for d in db_session.exec(select(TPDraw))]
+
+    except ValueError as err:  # pragma: nocover
+        # TODO: figure out how to test for this branch
+        if "is not a valid DrawType" in err.args[0]:
+            split = err.args[0].split(" ", 1)
+            raise InvalidDrawType(int(split[0])) from err
+
+        raise
+
     courts = [CourtClass.from_tp_model(c) for c in db_session.exec(select(TPCourt))]
     mm = TPMatchMaker()
     for pm in db_session.exec(select(TPPlayerMatch)):

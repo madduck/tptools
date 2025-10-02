@@ -47,3 +47,8 @@ class Draw(BaseModel[TPDraw]):
         "size",
     )
     __eq_fields__ = ("stage", "name", "type", "size")
+
+
+class InvalidDrawType(ValueError):
+    def __init__(self, drawtypeid: int) -> None:
+        super().__init__(f"Unable to handle draw type with ID {drawtypeid}")
