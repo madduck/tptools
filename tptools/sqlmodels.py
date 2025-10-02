@@ -93,6 +93,14 @@ class TPDraw(TPModel, table=True):
     stage: TPStage = Relationship(back_populates="draws")
     playermatches: list["TPPlayerMatch"] = Relationship(back_populates="draw")
 
+    @property
+    def is_group_draw(self) -> bool:
+        return self.type.is_group_draw
+
+    @property
+    def is_tree_draw(self) -> bool:
+        return self.type.is_tree_draw
+
     def _type_repr(self) -> str:
         return self.type.name
 
@@ -337,7 +345,7 @@ class TPPlayerMatch(TPModel, table=True):
 
             else:
                 winner = zero_to_none(self.winner)
-                if self.draw.type == DrawType.GROUP:
+                if self.draw.is_group_draw:
                     if winner is not None:
                         return self.Status.PLAYED
 

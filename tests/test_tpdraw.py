@@ -73,3 +73,13 @@ def test_draw_model_dump_has_stage(tpdraw1: TPDraw) -> None:
     md = tpdraw1.model_dump()
     assert "stageid_" not in md
     assert isinstance(md.get("stage"), Mapping)
+
+
+def test_tree_type_property(tpdraw1: TPDraw) -> None:
+    assert tpdraw1.is_tree_draw
+    assert not tpdraw1.is_group_draw
+
+
+def test_group_type_property(tpdraw2: TPDraw) -> None:
+    assert tpdraw2.is_group_draw
+    assert not tpdraw2.is_tree_draw
