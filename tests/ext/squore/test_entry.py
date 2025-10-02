@@ -1,66 +1,112 @@
+from collections.abc import Callable
+from typing import Literal
+
+import pytest
 from pytest_mock import MockerFixture
 
-from tptools.export import Entry, EntryStruct
+from tptools.entry import Club, Country, Player
+from tptools.ext.squore import SquoreEntry
 
 
-def test_repr(sqplayer1: Entry) -> None:
-    assert repr(sqplayer1) == (
-        "Entry(tpentry="
-        "TPEntry(id=1, event.name='Herren 1', player1.name='Martin Krafft')"
-        ")"
-    )
-
-
-def test_str(sqplayer1: Entry) -> None:
-    assert str(sqplayer1) == "Martin Krafft"
-
-
-def test_model_dump(sqplayer1: Entry) -> None:
-    player = sqplayer1.model_dump()
-    assert player.keys() == EntryStruct.__annotations__.keys()
-
-
-def test_playernamepolicy_invocation(
-    sqplayer1: Entry,
-    mocker: MockerFixture,
+@pytest.mark.parametrize(
+    "field, exp",
+    [
+        ("name", "Martin Krafft"),
+        ("club", "RSC"),
+        ("country", "Deutschland"),
+    ],
+)
+def test_namepolicy_default(
+    sqentry: SquoreEntry,
+    field: Literal["name"] | Literal["club"] | Literal["country"],
+    exp: str,
 ) -> None:
-    policy = mocker.stub(name="playernamepolicy")
-    policy.return_value = "Martin"
+    assert sqentry.model_dump()[field] == exp
+
+
+@pytest.mark.parametrize(
+    "field, exp",
+    [
+        ("name", "Martin Krafft&Iddo Hoeve"),
+        ("club", "RSC&SomeClub"),
+        ("country", "Deutschland&Holland"),
+    ],
+)
+def test_doubles_namepolicy_default(
+    sqentrydbl: SquoreEntry,
+    field: Literal["name"] | Literal["club"] | Literal["country"],
+    exp: str,
+) -> None:
+    assert sqentrydbl.model_dump()[field] == exp
+
+
+@pytest.mark.parametrize(
+    "field, policyname, argfn",
+    [
+        ("name", "playernamepolicy", lambda e: e.player1),
+        ("club", "clubnamepolicy", lambda e: e.player1.club),
+        ("country", "countrynamepolicy", lambda e: e.player1.country),
+    ],
+)
+def test_namepolicy_application(
+    sqentry: SquoreEntry,
+    mocker: MockerFixture,
+    field: Literal["name"] | Literal["club"] | Literal["country"],
+    policyname: str,
+    argfn: Callable[[SquoreEntry], Player | Club | Country],
+) -> None:
+    namepolicy = mocker.stub(name="namepolicy")
+    namepolicy.return_value = "namepolicy"
     assert (
-        sqplayer1.model_dump(context={"playernamepolicy": policy})["name"] == "Martin"
+        sqentry.model_dump(context={policyname: namepolicy})[field]
+        == namepolicy.return_value
     )
-    policy.assert_called_once_with(sqplayer1.tpentry.player1)
+    namepolicy.assert_called_once_with(argfn(sqentry))
 
 
-def test_clubnamepolicy_invocation(
-    sqplayer1: Entry,
+@pytest.mark.parametrize(
+    "field, policyname, firstnone, argfn",
+    [
+        ("name", "playernamepolicy", False, lambda n, e: getattr(e, f"player{n}")),
+        ("club", "clubnamepolicy", True, lambda n, e: getattr(e, f"player{n}").club),
+        (
+            "country",
+            "countrynamepolicy",
+            True,
+            lambda n, e: getattr(e, f"player{n}").country,
+        ),
+    ],
+)
+def test_doubles_namepolicy_application(
+    sqentrydbl: SquoreEntry,
     mocker: MockerFixture,
+    field: Literal["name"] | Literal["club"] | Literal["country"],
+    policyname: str,
+    argfn: Callable[[int, SquoreEntry], Player | Club | Country],
+    firstnone: bool,
 ) -> None:
-    policy = mocker.stub(name="clubnamepolicy")
-    policy.return_value = "RSC"
-    assert sqplayer1.model_dump(context={"clubnamepolicy": policy})["club"] == "RSC"
-    policy.assert_called_once_with(sqplayer1.tpentry.player1.club)
-
-
-def test_countrynamepolicy_invocation(
-    sqplayer1: Entry,
-    mocker: MockerFixture,
-) -> None:
-    policy = mocker.stub(name="countrynamepolicy")
-    policy.return_value = "Deutschland"
+    namepolicy = mocker.stub(name="namepolicy")
+    namepolicy.return_value = "namepolicy"
+    paircombinepolicy = mocker.stub(name="paircombinepolicy")
+    paircombinepolicy.return_value = "combined"
     assert (
-        sqplayer1.model_dump(context={"countrynamepolicy": policy})["country"]
-        == "Deutschland"
+        sqentrydbl.model_dump(
+            context={
+                policyname: namepolicy,
+                "paircombinepolicy": paircombinepolicy,
+            }
+        )[field]
+        == paircombinepolicy.return_value
     )
-    policy.assert_called_once_with(sqplayer1.tpentry.player1.country)
+    namepolicy.assert_any_call(argfn(1, sqentrydbl))
+    namepolicy.assert_any_call(argfn(2, sqentrydbl))
+    paircombinepolicy.assert_any_call(
+        namepolicy.return_value, namepolicy.return_value, first_can_be_none=firstnone
+    )
 
 
-def test_paircombinepolicy_invocation(
-    sqplayer12: Entry,
-    mocker: MockerFixture,
-) -> None:
-    policy = mocker.stub(name="paircombinepolicy")
-    policy.return_value = "Team"
-    assert (
-        sqplayer12.model_dump(context={"paircombinepolicy": policy})["name"] == "Team"
-    )
+def test_no_name_discernable(mocker: MockerFixture, sqentry: SquoreEntry) -> None:
+    namepolicy = mocker.stub(name="namepolicy")
+    namepolicy.return_value = None
+    with pytest.raises(ValueError, match="No player name discernable"):
+        _ = sqentry.model_dump(context={"playernamepolicy": namepolicy})

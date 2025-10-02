@@ -1,6 +1,6 @@
 import pytest
 
-from tptools.export import Match
+from tptools import Match
 from tptools.ext.squore import MatchesSection
 
 from .conftest import MatchesSectionFactoryType

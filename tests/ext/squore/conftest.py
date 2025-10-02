@@ -1,54 +1,73 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 
-from tptools.export import Court, Draw, Entry, Tournament
 from tptools.ext.squore import (
     MatchesFeed,
     MatchesSection,
-    SquoreMatch,
+    SquoreCourt,
+    SquoreDraw,
+    SquoreEntry,
 )
+from tptools.ext.squore.feed import SquoreTournament
+from tptools.ext.squore.match import SquoreMatch
 from tptools.sqlmodels import TPCourt, TPDraw, TPEntry
 from tptools.tpmatch import TPMatch
 
-from ...export.conftest import exptournament1
 
-_ = exptournament1
+@pytest.fixture
+def sqcourt(tpcourt1: TPCourt) -> SquoreCourt:
+    return SquoreCourt.from_tp_model(tpcourt1)
 
 
 @pytest.fixture
-def sqplayer1(tpentry1: TPEntry) -> Entry:
-    return Entry(tpentry=tpentry1)
+def sqdraw(tpdraw1: TPDraw) -> SquoreDraw:
+    return SquoreDraw.from_tp_model(tpdraw1)
 
 
 @pytest.fixture
-def sqplayer2(tpentry2: TPEntry) -> Entry:
-    return Entry(tpentry=tpentry2)
+def sqentry(tpentry1: TPEntry) -> SquoreEntry:
+    return SquoreEntry.from_tp_model(tpentry1)
 
 
 @pytest.fixture
-def sqplayer12(tpentry12: TPEntry) -> Entry:
-    return Entry(tpentry=tpentry12)
-
-
-@pytest.fixture
-def sqcourt1(tpcourt1: TPCourt) -> Court:
-    return Court(tpcourt=tpcourt1)
-
-
-@pytest.fixture
-def sqdraw1(tpdraw1: TPDraw) -> Draw:
-    return Draw(tpdraw=tpdraw1)
+def sqentrydbl(tpentry12: TPEntry) -> SquoreEntry:
+    return SquoreEntry.from_tp_model(tpentry12)
 
 
 @pytest.fixture
 def sqmatch1(tpmatch1: TPMatch) -> SquoreMatch:
-    return SquoreMatch(tpmatch=tpmatch1)
+    return SquoreMatch.from_tpmatch(tpmatch1)
 
 
 @pytest.fixture
 def sqmatch2(tpmatch2: TPMatch) -> SquoreMatch:
-    return SquoreMatch(tpmatch=tpmatch2, config={"numberOfGamesToWinMatch": 11})
+    return SquoreMatch.from_tpmatch(tpmatch2)
+
+
+@pytest.fixture
+def sqmatch_pending(tpmatch_pending: TPMatch) -> SquoreMatch:
+    return SquoreMatch.from_tpmatch(tpmatch_pending)
+
+
+@pytest.fixture
+def sqtournament(
+    sqentry: SquoreEntry,
+    sqentrydbl: SquoreEntry,
+    sqcourt: SquoreCourt,
+    sqdraw: SquoreDraw,
+    sqmatch1: SquoreMatch,
+    sqmatch2: SquoreMatch,
+) -> SquoreTournament:
+    st = SquoreTournament(name="Squore tournament")
+    st.add_court(sqcourt)
+    st.add_draw(sqdraw)
+    st.add_entry(sqentry)
+    st.add_entry(sqentrydbl)
+    st.add_match(sqmatch1)
+    st.add_match(sqmatch2)
+    return st
 
 
 type MatchesSectionFactoryType = Callable[..., MatchesSection]
@@ -67,10 +86,11 @@ type MatchesFeedFactoryType = Callable[..., MatchesFeed]
 
 
 @pytest.fixture
-def MatchesFeedFactory(exptournament1: Tournament) -> MatchesFeedFactoryType:
+def MatchesFeedFactory(sqtournament: SquoreTournament) -> MatchesFeedFactoryType:
     def mfmaker(**kwargs: Any) -> MatchesFeed:
         defaults: dict[str, Any] = {
-            "tournament": exptournament1,
+            "name": "tournament name",
+            "tournament": sqtournament,
             "default_name": "default name",
         }
         return MatchesFeed(**defaults | kwargs)

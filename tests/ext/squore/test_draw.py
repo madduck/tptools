@@ -1,16 +1,21 @@
-from tptools.export import Draw, DrawStruct
+from pytest_mock import MockerFixture
+
+from tptools.ext.squore import SquoreDraw
 
 
-def test_repr(sqdraw1: Draw) -> None:
-    assert repr(sqdraw1) == (
-        "Draw(tpdraw=TPDraw(id=1, name='Baum', stage.name='Qual', type=MONRAD, size=8))"
-    )
+def test_namepolicy_default(sqdraw: SquoreDraw) -> None:
+    dump = sqdraw.model_dump()
+    assert isinstance(dump, dict)
+    assert dump["name"] == sqdraw.name
+    assert "stage" in dump
+    assert "event" in dump
 
 
-def test_str(sqdraw1: Draw) -> None:
-    assert str(sqdraw1) == "Baum, Qual, Herren 1"
-
-
-def test_model_dump(sqdraw1: Draw) -> None:
-    draw = sqdraw1.model_dump()
-    assert draw.keys() == DrawStruct.__annotations__.keys()
+def test_namepolicy(
+    sqdraw: SquoreDraw,
+    mocker: MockerFixture,
+) -> None:
+    policy = mocker.stub(name="drawnamepolicy")
+    policy.return_value = "draw"
+    assert sqdraw.model_dump(context={"drawnamepolicy": policy}) == "draw"
+    policy.assert_called_once_with(sqdraw)

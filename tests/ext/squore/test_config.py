@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from tptools.ext.squore import ConfigValidator, PerMatchConfigValidator
+from tptools.ext.squore.config import ConfigValidator, PerMatchConfigValidator
 
 
 def test_config_invalid_key() -> None:

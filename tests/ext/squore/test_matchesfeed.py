@@ -1,11 +1,10 @@
 import pytest
 
-from tptools.export import Tournament
-from tptools.ext.squore import (
+from tptools.ext.squore.feed import (
     CourtSelectionParams,
     MatchesFeed,
+    SquoreTournament,
 )
-from tptools.tpdata import TPData
 
 from .conftest import MatchesFeedFactoryType
 
@@ -19,7 +18,7 @@ mf1copy = mf1
 
 
 def test_matches_feed_empty(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
-    mf = MatchesFeedFactory(tournament=Tournament(tpdata=TPData()))
+    mf = MatchesFeedFactory(tournament=SquoreTournament())
     dump = mf.model_dump()
     assert "name" in dump
     assert dump.get("config") == {}
@@ -29,15 +28,14 @@ def test_matches_feed_empty(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
 
 def test_repr(mf1: MatchesFeed) -> None:
     assert repr(mf1) == (
-        "MatchesFeed("
-        "tournament=Tournament(tpdata=TPData(name='Test 1', "
-        "nentries=4, ndraws=2, ncourts=2, nmatches=2))"
-        ", nconfig=0)"
+        "MatchesFeed(tournament=SquoreTournament(name='Squore tournament', "
+        "nentries=2, ndraws=1, ncourts=1, nmatches=2), "
+        "nconfig=0)"
     )
 
 
 def test_str(mf1: MatchesFeed) -> None:
-    assert str(mf1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
+    assert str(mf1) == "Squore tournament (2 entries, 1 draws, 1 courts, 2 matches)"
 
 
 def test_matches_feed(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
