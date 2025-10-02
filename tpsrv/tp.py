@@ -12,10 +12,11 @@ from click_async_plugins import PluginLifespan, plugin
 from sqlalchemy import URL, Engine
 from sqlalchemy.exc import DatabaseError, DBAPIError, NoSuchModuleError
 from sqlmodel import Session, create_engine, select
-from tptools.models import Setting
 
+from tptools import load_tournament
+from tptools.draw import InvalidDrawType
 from tptools.filewatcher import FileWatcher, StateType
-from tptools.tpdata import load_tournament
+from tptools.sqlmodels import TPSetting
 from tptools.util import make_mdb_odbc_connstring
 
 from .util import CliContext, pass_clictx
@@ -48,7 +49,7 @@ def try_make_engine_for_url(url: URL, *, verify: bool = True) -> Engine | Never:
             # an error, even if the file is not a database. So to
             # verify that the file is actually a valid TP SQLite export.
             # see if we can query one of the known models:
-            _ = conn.execute(select(Setting))
+            _ = conn.execute(select(TPSetting))
     return engine
 
 
@@ -64,11 +65,15 @@ async def tp_source(
         raise click.ClickException("Another TP source is already registered")
 
     async def callback() -> StateType:
-        logger.info("Loading TPData…")
-        session.expire_all()
-        tpdata = await load_tournament(session)
-        clictx.itc.set("tpdata", tpdata)
-        return MappingProxyType({})
+        logger.info("Loading tournament…")
+        try:
+            session.expire_all()
+            tournament = await load_tournament(session)
+            clictx.itc.set("tournament", tournament)
+            return MappingProxyType({})
+
+        except InvalidDrawType as err:
+            raise click.ClickException(err.args[0]) from err
 
     watcher = FileWatcher(tp_file, fire_once_asap=not no_fire_on_startup)
     watcher.register_callback(callback)

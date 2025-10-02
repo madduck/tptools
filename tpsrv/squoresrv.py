@@ -8,7 +8,7 @@ import tomllib
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from operator import attrgetter
-from typing import Annotated, Any, Never, cast
+from typing import Annotated, Any, Never, Sequence, cast
 from warnings import warn
 
 import click
@@ -25,12 +25,10 @@ from starlette.status import (
 )
 from yarl import URL
 
-from tptools.export import (
+from tptools import (
     Court,
     Draw,
-    DrawStruct,
     Entry,
-    EntryStruct,
     MatchStatusSelectionParams,
     Tournament,
 )
@@ -39,6 +37,7 @@ from tptools.ext.squore import (
     ConfigValidator,
     CourtSelectionParams,
     MatchesFeed,
+    SquoreTournament,
 )
 from tptools.namepolicy import (
     ClubNamePolicy,
@@ -50,7 +49,7 @@ from tptools.namepolicy import (
     PlayerNamePolicy,
     PlayerNamePolicyParams,
 )
-from tptools.util import dict_value_replace_bool_with_int
+from tptools.util import dict_value_replace_bool_with_int, silence_logger
 
 from .util import CliContext, pass_clictx
 
@@ -67,6 +66,9 @@ SQUORE_PATH_VERSION = "v1"
 API_MOUNTPOINT = "/squore"
 
 logger = logging.getLogger(__name__)
+
+
+silence_logger("tptools.ext.squore.feed", level=logging.INFO)
 
 
 class SquoreDevQueryParams(BaseModel):
@@ -239,44 +241,44 @@ def get_courtid_for_dev(
     return dev_court_map.get(squoredev.device_id) if squoredev.device_id else None
 
 
-def get_tournament(request: Request) -> Tournament | Never:
+def get_tournament(request: Request) -> SquoreTournament | Never:
     if (tournament := getattr(request.app.state, "tournament", None)) is None:
         raise HTTPException(
             status_code=HTTP_424_FAILED_DEPENDENCY,
             detail="Tournament not loaded",
         )
-    return cast(Tournament, tournament)
+    return cast(SquoreTournament, tournament)
 
 
 def get_tournament_name(
-    tournament: Annotated[Tournament, Depends(get_tournament)],
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
 ) -> str:
     return tournament.name or "tptools Tournament"
 
 
 def get_courts(
-    tournament: Annotated[Tournament, Depends(get_tournament)],
-) -> list[Court]:
-    return list(tournament.get_courts().values())
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> Sequence[Court]:
+    return tournament.get_courts()
 
 
 def get_draws(
-    tournament: Annotated[Tournament, Depends(get_tournament)],
-) -> list[Draw]:
-    return list(tournament.get_draws().values())
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> Sequence[Draw]:
+    return tournament.get_draws()
 
 
 def get_entries(
-    tournament: Annotated[Tournament, Depends(get_tournament)],
-) -> list[Entry]:
-    return list(tournament.get_entries().values())
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> Sequence[Entry]:
+    return tournament.get_entries()
 
 
 def get_players_list(
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
     entries: Annotated[list[Entry], Depends(get_entries)],
-) -> list[EntryStruct]:
+) -> Sequence[dict[str, Any]]:
     return [
         e.model_dump(
             context={
@@ -284,12 +286,12 @@ def get_players_list(
                 "paircombinepolicy": paircombinepolicy,
             }
         )
-        for e in sorted(entries, key=attrgetter("tpentry.player1", "tpentry.player2"))
+        for e in sorted(entries, key=attrgetter("player1", "player2"))
     ]
 
 
 def get_matches_feed_dict(
-    tournament: Annotated[Tournament, Depends(get_tournament)],
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
     config: Annotated[Config, Depends(get_config)],
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
@@ -303,7 +305,7 @@ def get_matches_feed_dict(
     court_for_dev: Annotated[int | None, Depends(get_courtid_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> dict[str, Any]:
-    if courtselectionparams.court is None:
+    if courtselectionparams.court is None and court_for_dev:
         # I actually don't think this branch will ever enter as the device ID is not
         # sent for matches. Oh well.
         courtselectionparams.court = court_for_dev
@@ -370,13 +372,18 @@ def get_court_feeds_list(
             | {"court": court.id}
         )
         matchesurl = (urlbase / ".." / "matches").with_query(
-            **dict_value_replace_bool_with_int(params)
+            **{
+                k: v
+                for k, v in dict_value_replace_bool_with_int(params).items()
+                # TODO: utility function?
+                if v is not None
+            }
         )
 
         ret.append(
             Feed(
                 Section=tournament_name,
-                Name=courtnamepolicy(court.tpcourt) or "",
+                Name=courtnamepolicy(court) or "",
                 FeedPlayers=str(playersurl),
                 FeedMatches=str(matchesurl),
                 PostResult=None,
@@ -415,7 +422,7 @@ async def matches(
 async def players(
     remote: Annotated[str, Depends(get_remote)],
     policyparams: Annotated[PlayersPolicyParams, Query()],
-    players: Annotated[list[EntryStruct], Depends(get_players_list)],
+    players: Annotated[list[dict[str, Any]], Depends(get_players_list)],
 ) -> PlainTextResponse:
     logger.info(
         f"Returning {len(players)} players in response to request from {remote} "
@@ -427,8 +434,8 @@ async def players(
 @squoreapp.get("/tournament")
 async def tournament(
     remote: Annotated[str, Depends(get_remote)],
-    tournament: Annotated[Tournament, Depends(get_tournament)],
-) -> Tournament:
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> SquoreTournament:
     logger.info(f"Returning tournament name in response to request from {remote}")
     return tournament
 
@@ -443,22 +450,18 @@ class CourtInfo(BaseModel):
 async def courts(
     remote: Annotated[str, Depends(get_remote)],
     courts: Annotated[list[Court], Depends(get_courts)],
-) -> list[CourtInfo]:
+) -> list[Court]:
     logger.info(f"Returning {len(courts)} courts in response to request from {remote}")
-    return [CourtInfo(id=c.id, name=c.name, location=c.location.name) for c in courts]
-
-
-class DrawInfo(DrawStruct):
-    id: int
+    return courts
 
 
 @squoreapp.get("/draws")
 async def draws(
     remote: Annotated[str, Depends(get_remote)],
     draws: Annotated[list[Draw], Depends(get_draws)],
-) -> list[DrawInfo]:
+) -> list[Draw]:
     logger.info(f"Returning {len(draws)} draws in response to request from {remote}")
-    return [DrawInfo(id=d.id, **d.model_dump()) for d in draws]
+    return draws
 
 
 @squoreapp.get("/feeds")
@@ -564,8 +567,11 @@ async def setup_for_squore(
     logger.info(f"Configured the app to serve to Squore from {api_path}")
 
     async def callback(tournament: Tournament) -> None:
-        logger.info("Received new tournament data")
-        squoreapp.state.tournament = tournament
+        logger.info("Received new tournament data, making MatchesFeed")
+        squoreapp.state.tournament = (
+            sqt := SquoreTournament.from_tournament(tournament)
+        )
+        clictx.itc.set("sqtournament", sqt)
 
     updates_gen = cast(AsyncGenerator[Tournament], clictx.itc.updates("tournament"))
     yield react_to_data_update(updates_gen, callback=callback)

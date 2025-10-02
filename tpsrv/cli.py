@@ -22,14 +22,11 @@ from starlette.types import StatefulLifespan, StatelessLifespan
 
 from tptools.util import silence_logger
 
-from .tp_proc import tp_proc
 from .util import CliContext, pass_clictx
 
 PLUGINS = [
     "debug",
     "tp",
-    "tp_stdout",
-    "tp_post",
     "stdout",
     "post",
     "squoresrv",
@@ -100,7 +97,8 @@ def make_app(
     strict=True,
     show_default=True,
     formats=Formats.TOML,
-    default=pathlib.Path(click.get_app_dir("tptools")) / "cfg.toml",
+    # TODO:https://github.com/kdeldycke/click-extra/issues/1356 for str() call
+    default=str(pathlib.Path(click.get_app_dir("tptools")) / "cfg.toml"),
 )
 @clickx.verbose_option(default_logger=logger)  # type: ignore[misc]
 @click.option(
@@ -166,10 +164,6 @@ def runit(
     async def lifespan(plugin_factories: list[PluginFactory]) -> None:
         async with AsyncExitStack() as stack:
             tasks = await setup_plugins(plugin_factories, stack=stack)
-            tpproc = await stack.enter_async_context(tp_proc(clictx))
-            if tpproc is not None:
-                tpproc.__name__ = "tp_proc"
-            tasks.append(tpproc)
 
             async with asyncio.TaskGroup() as tg:
                 for task in tasks:

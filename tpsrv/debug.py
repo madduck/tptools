@@ -12,15 +12,15 @@ from .util import pass_clictx
 logger = logging.getLogger(__name__)
 
 
-def simulate_reload_tpdata(clictx: CliContext) -> None:
-    """Simulate event that TPData was reloaded"""
-    clictx.itc.fire("tpdata")
+def simulate_reload_tournament(clictx: CliContext) -> None:
+    """Simulate event that tournament was reloaded"""
+    clictx.itc.fire("tournament")
 
 
 @asynccontextmanager
 async def debug_key_press_handler(clictx: CliContext) -> PluginLifespan:
     key_to_cmd = {
-        0x12: KeyAndFunc("^R", simulate_reload_tpdata),
+        0x12: KeyAndFunc("^R", simulate_reload_tournament),
     }
     async with monitor_stdin_for_debug_commands(clictx, key_to_cmd=key_to_cmd) as task:
         yield task

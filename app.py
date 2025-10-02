@@ -27,7 +27,6 @@ from tpsrv.sq_stdout import print_sqdata
 from tpsrv.squoresrv import setup_for_squore
 from tpsrv.stdout import print_tournament
 from tpsrv.tp import make_sqlite_url, tp_source, try_make_engine_for_url
-from tpsrv.tp_proc import tp_proc
 from tpsrv.util import CliContext
 from tptools.util import silence_logger
 
@@ -63,20 +62,19 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         factories: list[PluginFactory] = [
             debug_key_press_handler,
             tp_lifespan,
-            tp_proc,
             setup_for_squore,
         ]
 
-        if not os.getenv("NOTPSTDOUT"):
+        if not os.getenv("NOSTDOUT"):
             tpstdout_lifespan = partial(print_tournament, indent=1)
             factories.append(tpstdout_lifespan)
         else:
-            logger.info("Not printing TPData to stdout as per $NOTPSTDOUT")
-        if not os.getenv("NOTPPOST"):
+            logger.info("Not printing tournament to stdout as per $NOSTDOUT")
+        if not os.getenv("NOPOST"):
             tppost_lifespan = partial(post_tournament, urls=[POSTURL], retries=0)
             factories.append(tppost_lifespan)
         else:
-            logger.info("Not posting TPData to URLs as per $NOTPPOST")
+            logger.info("Not posting tournament to URLs as per $NOPOST")
         if not os.getenv("NOSQSTDOUT"):
             sqstdout_lifespan = partial(print_sqdata, indent=1)
             factories.append(sqstdout_lifespan)

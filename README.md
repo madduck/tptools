@@ -162,12 +162,10 @@ Options:
 Commands:
   debug      Monitor stdin for keypresses to trigger debugging functions
   post       Post raw (TP) JSON data to URLs on change
-  sq-stdout  utput data as sent to Squore to stdout whenever the tournament changes
+  sq-stdout  Output data as sent to Squore to stdout whenever the tournament changes
   squoresrv  Mount endpoints to serve data for Squore
   stdout     Output tournament data as JSON to stdout whenever it changes
   tp         Obtain match and player data from a TP file (or SQLite)
-  tp-post    Post raw (TP) JSON data to URLs on change
-  tp-stdout  Output raw (TP) data as JSON to stdout whenever it changes
 ```
 
 The actual work is done by components/plugins, listed here as "Commands". Note that these commands can be "chained", i.e. multiple commands provided:
@@ -233,8 +231,6 @@ one or more `--url` arguments and will post the data there.
 
 | Command     | Data exported                                                        |
 |-------------|----------------------------------------------------------------------|
-| `tp-stdout` | Raw TP data (not really useful, and quite ugly)                      |
-| `tp-post`   | Raw TP data (not really useful, and quite ugly)                      |
 | `stdout`    | A simple tournament representation (players, draws, courts, matches) |
 | `post`      | A simple tournament representation (players, draws, courts, matches) |
 | `sq-stdout` | A view of the data sent to Squore (see below)                        |

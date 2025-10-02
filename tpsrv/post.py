@@ -12,7 +12,7 @@ import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 from httpx import URL
 
-from tptools.export import Tournament
+from tptools import Tournament
 
 from .util import (
     CliContext,

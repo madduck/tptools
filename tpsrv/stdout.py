@@ -11,8 +11,7 @@ from typing import cast
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 
-from tptools.export import Tournament
-from tptools.export.tournament import MatchStatusSelectionParams
+from tptools import MatchStatusSelectionParams, Tournament
 from tptools.util import nonblocking_write
 
 from .util import CliContext, pass_clictx
@@ -26,7 +25,6 @@ async def tournament_model_dump_json(
     indent: int | None = None,
 ) -> None:
     logger.info("Tournament changed, printing JSON to stdout")
-
     data = tournament.model_dump_json(
         indent=indent,
         context={
@@ -35,7 +33,7 @@ async def tournament_model_dump_json(
             ),
         },
     )
-    nonblocking_write(data, file=sys.stdout)
+    nonblocking_write(data + "\n", file=sys.stdout)
 
 
 @asynccontextmanager
