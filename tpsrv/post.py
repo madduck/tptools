@@ -51,7 +51,7 @@ async def post_tournament(
     callback = partial(post_to_urls, urls=urls, retries=retries)
     updates_gen = cast(
         AsyncGenerator[Tournament],
-        clictx.itc.updates("tournament", yield_immediately=False),
+        clictx.itc.updates("tournament", yield_immediately=True),
     )
     yield react_to_data_update(updates_gen, callback=callback)
 
