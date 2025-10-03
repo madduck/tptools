@@ -136,6 +136,17 @@ tpfile = "%USERPROFILE%\Documents\Tournaments\Demo.tp"
 tppasswd = "ThisIsNotTheRealPassword"
 ```
 
+To create this file initially on Windows:
+
+1. Hit the "Windows"-key to bring up the start menu;
+2. Type "%APPDATA%" and hit the enter key;
+3. In the new explorer window that opens, create a new folder and name it
+   "tptools";
+4. Right-click the start menu, and choose "Run";
+5. Enter: "notepad %APPDATA%\tptools\cfg.toml" and hit the enter key;
+6. When Notepad asks you to create a new file, choose "Yes";
+7. Paste the above into the new file, and save the file.
+
 ## Usage of `tpsrv`
 
 At its core, `tpsrv` is an asynchronous web server designed to serve data on
