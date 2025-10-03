@@ -25,6 +25,14 @@ class BaseModel[T: TPModel | None](
             # thanks to singledispatch, we should never reach this
             raise NotImplementedError("No TPModel to instantiate from")
         return cls.model_validate(tpmodel.model_dump())
+        # TODO: For some reason, mypy doesn't grok `Self` as return type
+        # of this factory function, and spews tons of errors like this:
+        # > tests/conftest.py:67: error: Incompatible return value type
+        # > (got "Self", expected "Draw")  [return-value]
+        # and
+        # > tptools/tournament.py:224: error: Argument 1 to "add_draws" of "Tournament"
+        # > has incompatible type "list[Self]"; expected "Iterable[Draw]"  [arg-type]
+        # I cannot quite figure this out, and hence am adding a TODO…
 
     @from_tp_model.register
     @classmethod
