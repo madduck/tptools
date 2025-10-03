@@ -255,6 +255,9 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     }
 
 
+mmlogger = logging.getLogger(__name__ + ".matchmaker")
+
+
 class TPMatchMaker(ReprMixin):
     def __init__(self) -> None:
         self._unmatched: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
@@ -284,14 +287,14 @@ class TPMatchMaker(ReprMixin):
             if playermatch == other:
                 raise ValueError(f"{other} is already registered")
 
-            logger.debug(f"Found match for {playermatch!r}: {other!r}")
+            mmlogger.debug(f"Found match for {playermatch!r}: {other!r}")
             match = TPMatch(pm1=playermatch, pm2=other)
             self._matches[playermatch.draw, playermatch.matchnr] = match
 
             self._planning_map[match.draw, playermatch.planning] = match
             self._planning_map[match.draw, other.planning] = match
         else:
-            logger.debug(f"No pair yet for {playermatch!r}, we will keep looking")
+            mmlogger.debug(f"No pair yet for {playermatch!r}, we will keep looking")
             self._unmatched[playermatch.draw, playermatch.matchnr] = playermatch
 
         return None
@@ -327,7 +330,7 @@ class TPMatchMaker(ReprMixin):
                     srcpm.wn is not None and srcpm.vn is None
                 ):  # pragma: nocover — there is a missed branch here, but I cannot be
                     # bothered.
-                    logger.info(f"Fabricating a PlayerMatch to match single {pm!r}")
+                    mmlogger.info(f"Fabricating a PlayerMatch to match single {pm!r}")
                     self.add_playermatch(
                         pm.model_copy(
                             update={
