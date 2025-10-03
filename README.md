@@ -385,6 +385,20 @@ contributions are expected to keep this up. Use `pytest` to run the test suite.
 
 Note that all code is typed, and typing is part of test-coverage.
 
+### Converting a TP file to SQLite
+
+The Access "database" can only be accessed on Windows, due to its proprietary
+nature. To facilitate development on sensible platforms, `util/tp2sqlite.sh` is
+a utility that uses [mdbtools](https://github.com/mdbtools/mdbtools) to convert
+the TP file into an SQLite database for testing, and can be used as follows:
+
+```
+./util/tp2sqlite ../path/to/tpfile.TP | sqlite3 sensible.sqlite
+```
+
+Forthwith, the generated file (`sensible.sqlite` in this case) can be used
+instead of the TP file as argument to the `tp` subcommand.
+
 ## TODO
 
 In addition to various comments including the word "TODO" in the code, there are
