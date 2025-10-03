@@ -108,7 +108,7 @@ If you get a "Yes", please download and install the [Microsoft Access Database E
 `tptools` is under development and not yet published as an officially available Python software. To install `tptools`, please run the following command:
 
 ```
-> pip install https://github.com/madduck/tptools/archive/refs/heads/main.zip
+pip install https://github.com/madduck/tptools/archive/refs/heads/main.zip
 ```
 
 If you run this command again, it will download the latest version and upgrade any previously installed. Thus, please **also use this command regularly to upgrade your installation of `tptools`**.
@@ -205,7 +205,7 @@ Commands:
 The actual work is done by components/plugins, listed here as "Commands". Note that these commands can be "chained", i.e. multiple commands provided:
 
 ```
-> tpsrv tp integration/anon_tournament.sqlite squoresrv stdout post -u http://tcboard/api/tp
+tpsrv tp integration/anon_tournament.sqlite squoresrv stdout post -u http://tcboard/api/tp
 ```
 
 The `tp` command reads tournament data, normally from TP files, but SQLite is
@@ -404,14 +404,14 @@ be automatically have the appropriate court feed pre-selected.
 To contribute, please ensure you have the appropriate dependencies installed:
 
 ```
-> pip install -e .[dev]
+pip install -e .[dev]
 ```
 
 and then install the Git pre-commit hooks that ensure that any commits conform
 with the coding-style used by this project.
 
 ```
-> pre-commit install
+pre-commit install
 ```
 
 All code (except for the `tpsrv` CLI) is 100% test-covered, and all
