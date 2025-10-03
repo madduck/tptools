@@ -1,7 +1,6 @@
-from tptools.sqlmodels import TPDraw, TPEvent, TPStage
-
 from .basemodel import BaseModel
 from .drawtype import DrawType
+from .sqlmodels import TPDraw, TPEvent, TPStage
 
 
 class Event(BaseModel[TPEvent]):

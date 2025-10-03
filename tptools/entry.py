@@ -1,9 +1,8 @@
 import logging
 
-from tptools.sqlmodels import TPClub, TPCountry, TPEntry, TPPlayer
-
 from .basemodel import BaseModel
 from .draw import Event
+from .sqlmodels import TPClub, TPCountry, TPEntry, TPPlayer
 
 logger = logging.getLogger(__name__)
 

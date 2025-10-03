@@ -4,11 +4,10 @@ from typing import Self, cast
 
 from pydantic import BaseModel
 
-from tptools.mixins import ComparableMixin, ReprMixin, StrMixin
-
 from .court import Court
 from .draw import Draw
 from .entry import Entry
+from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Slot, SlotType
 from .sqlmodels import TPEntry
 from .tpmatch import TPMatch, TPMatchStatus
