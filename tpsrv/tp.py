@@ -10,7 +10,12 @@ from typing import Never
 import click
 from click_async_plugins import PluginLifespan, plugin
 from sqlalchemy import URL, Engine
-from sqlalchemy.exc import DatabaseError, DBAPIError, NoSuchModuleError
+from sqlalchemy.exc import (
+    DatabaseError,
+    DBAPIError,
+    NoSuchModuleError,
+    ProgrammingError,
+)
 from sqlmodel import Session, create_engine, select
 
 from tptools import load_tournament
@@ -142,8 +147,14 @@ async def tp(
         try:
             engine = try_make_engine_for_url(url)
 
-        except NoSuchModuleError as _:
+        except NoSuchModuleError:
             logger.debug(f"No SQLAlchemy module to handle {url}")
+
+        except ProgrammingError as exc:
+            if "Not a valid password" in exc.args[0]:
+                raise click.ClickException(
+                    f"Password needed to access {tp_file}"
+                ) from exc
 
         except (DatabaseError, DBAPIError) as exc:
             logger.debug(f"Cannot open {url}: {exc.args[0]}")
