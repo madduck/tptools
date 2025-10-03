@@ -5,6 +5,28 @@
 > [!NOTE]
 > While TournamentSoftware seems to handle a variety of sports, *`tptools` was developed in the context of squash, and squash only*. Therefore, it is likely highly squash-specific. That said, patches to make it usable across other sports are welcome!
 
+* [Background](#background)
+* [Preparation](#preparation)
+  * [Installing Python for Windows](#installing-python-for-windows)
+  * [Installing the Microsoft Access Database Engine](#installing-the-microsoft-access-database-engine)
+  * [Installing (and upgrading) tptools](#installing-and-upgrading-tptools)
+  * [Configuring the Windows firewall](#configuring-the-windows-firewall)
+* [Configuration](#configuration)
+* [Usage of tpsrv](#usage-of-tpsrv)
+  * [Debugging](#debugging)
+  * [Printing to stdout and POSTing data](#printing-to-stdout-and-posting-data)
+  * [The Squore endpoints](#the-squore-endpoints)
+    * [Players](#players)
+    * [Matches](#matches)
+    * [Feeds](#feeds)
+    * [Settings](#settings)
+* [Contributing](#contributing)
+  * [Converting a TP file to SQLite](#converting-a-tp-file-to-sqlite)
+* [TODO](#todo)
+* [Legalese](#legalese)
+
+## Background
+
 Under the hood, TournamentSoftware is a Microsoft Access "Database" (MDB) stored in a file that has the extension `.TP`, rather than `.mdb`. The mostpart of `tptools` is a collection of classes to make sense of the stored data, and provide usable data structures. These classes are arguably kept simple, and they cover only a small part of the functionality of TournamentSoftware, but they are test-covered, and hopefully make it possible to work with the data in ways better than trying to make sense of the actual data structures stored in the MDB file.
 
 That said, as `tptools` stands on top of the shoulders of giants, and a lot of benefits are implicit because `tptools` uses the following:
