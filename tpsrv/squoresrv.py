@@ -1,6 +1,3 @@
-# needed < 3.14 so that annotations aren't evaluated
-from __future__ import annotations
-
 import json
 import logging
 import pathlib
