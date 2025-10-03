@@ -98,7 +98,7 @@ def make_app(
     show_default=True,
     formats=Formats.TOML,
     # TODO:https://github.com/kdeldycke/click-extra/issues/1356 for str() call
-    default=str(pathlib.Path(click.get_app_dir("tptools")) / "cfg.toml"),
+    default=str(pathlib.Path(click.get_app_dir("tptools", roaming=True)) / "cfg.toml"),
 )
 @clickx.verbose_option(default_logger=logger)  # type: ignore[misc]
 @click.option(

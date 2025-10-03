@@ -120,7 +120,7 @@ different port.
 
 ## Configuration
 
-There is a common configuration file for `tptools` to get default settings from. These settings can then be overridden with command-line options. The configuration file must be in [TOML format](https://en.wikipedia.org/wiki/TOML) and live in `$XDG_CONFIG_DIR/tptools/cfg.toml`, which is `%LOCALAPPDATA%\tptools\cfg.toml` on Windows.
+There is a common configuration file for `tptools` to get default settings from. These settings can then be overridden with command-line options. The configuration file must be in [TOML format](https://en.wikipedia.org/wiki/TOML) and live in `$XDG_CONFIG_DIR/tptools/cfg.toml`, which is `%APPDATA%\tptools\cfg.toml` on Windows.
 
 The following is an example of this configuration file:
 
