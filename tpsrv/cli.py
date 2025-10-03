@@ -40,19 +40,6 @@ try:
 except ImportError:
     from asyncio import new_event_loop  # type: ignore[assignment,unused-ignore]
 
-for name, level in (
-    ("asyncio", logging.WARNING),
-    ("watchdog", logging.WARNING),
-    ("click_async_plugins.itc", logging.INFO),
-    ("click_extra", logging.INFO),
-    ("tptools.tpload", logging.INFO),
-    ("tptools.matchmaker", logging.DEBUG),
-    ("httpx", logging.WARNING),
-    ("httpcore.connection", logging.INFO),
-    ("httpcore.http11", logging.INFO),
-):
-    silence_logger(name, level=level)
-
 logger = clickx.new_extra_logger(
     format="{asctime} {name} {levelname} {message} ({filename}:{lineno})",
     datefmt="%F %T",
@@ -101,6 +88,7 @@ def make_app(
     default=str(pathlib.Path(click.get_app_dir("tptools", roaming=True)) / "cfg.toml"),
 )
 @clickx.verbose_option(default_logger=logger)  # type: ignore[misc]
+@click.option("--very-debug", is_flag=True, help="Do not silence any debug logging")
 @click.option(
     "--host",
     "-h",
@@ -121,10 +109,25 @@ def make_app(
 @click.pass_context
 def tpsrv(
     ctx: click.Context,
+    very_debug: bool,
     host: str,
     port: int,
 ) -> None:
     """Serve match and player data via HTTP"""
+
+    if not very_debug:
+        for name, level in (
+            ("asyncio", logging.WARNING),
+            ("watchdog", logging.WARNING),
+            ("click_async_plugins.itc", logging.INFO),
+            ("click_extra", logging.INFO),
+            ("tptools.tpload", logging.INFO),
+            ("tptools.matchmaker", logging.DEBUG),
+            ("httpx", logging.WARNING),
+            ("httpcore.connection", logging.INFO),
+            ("httpcore.http11", logging.INFO),
+        ):
+            silence_logger(name, level=level)
 
     # the options will be used in the result_callback function down below
     _ = host, port
@@ -149,9 +152,12 @@ for plugin in PLUGINS:
 def runit(
     clictx: CliContext,
     plugin_factories: list[PluginFactory],
+    very_debug: bool,
     host: str,
     port: int,
 ) -> Never:
+    _ = very_debug
+
     loop = new_event_loop()
     asyncio.set_event_loop(loop)
 

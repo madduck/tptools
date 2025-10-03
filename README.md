@@ -155,6 +155,7 @@ Options:
   -v, --verbose             Increase the default WARNING verbosity by one
                             level for each additional repetition of the
                             option.
+  --very-debug              Do not silence any debug logging
   -h, --host IP             Host to listen on (bind to)  [default: 0.0.0.0]
   -p, --port PORT           Port to listen on  [default: 8000; 1024<=x<=65535]
   --help                    Show this message and exit.
