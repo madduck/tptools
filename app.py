@@ -39,8 +39,7 @@ if not sys.warnoptions:
 for name, level in (
     ("watchfiles.main", logging.WARNING),
     ("uvicorn.error", logging.WARNING),
-    ("tptools.matchmaker", logging.INFO),
-    ("tptools.match", logging.INFO),
+    ("tptools.tpmatch", logging.INFO),
 ):
     silence_logger(name, level=level)
 
