@@ -54,11 +54,12 @@ from tptools.util import dict_value_replace_bool_with_int, silence_logger
 from .util import CliContext, pass_clictx
 
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent
+SQUORE_EXT = PROJECT_ROOT / "ext" / "squore"
 
-SETTINGS_JSON_PATH = (PROJECT_ROOT / "ext" / "Squore.settings.json").relative_to(
+SETTINGS_JSON_PATH = (SQUORE_EXT / "settings.json").relative_to(
     pathlib.Path.cwd(), walk_up=True
 )
-CONFIG_TOML_PATH = (PROJECT_ROOT / "ext" / "Squore.config.toml").relative_to(
+CONFIG_TOML_PATH = (SQUORE_EXT / "config.toml").relative_to(
     pathlib.Path.cwd(), walk_up=True
 )
 DEVMAP_TOML_PATH = pathlib.Path("Squore.dev_court_map.toml")
@@ -398,7 +399,7 @@ squoreapp = FastAPI()
 
 squoreapp.mount(
     "/flags",
-    StaticFiles(directory=PROJECT_ROOT / "flags"),
+    StaticFiles(directory=SQUORE_EXT / "flags"),
     name="flags",
 )
 
