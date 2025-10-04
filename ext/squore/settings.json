@@ -4,6 +4,10 @@
   "FlagsURLs": "http://tc/squore/v1/flags/%1$s",
   "MQTTBrokerURL": "Custom",
   "MQTTBrokerURL_Custom": "mqtt://mqtt",
+  "MQTTPublishJoinerLeaverTopic": "tptools/${Brand}/JoinerLeaver",
+  "MQTTPublishTopicChange": "tptools/${Brand}/${DeviceId}/change",
+  "MQTTPublishTopicMatch": "tptools/${FeedName}/${Brand}/${DeviceId}/match",
+  "MQTTSubscribeTopicChange": "tptools/${Brand}/${DeviceId}/change",
   "MatchTabbed_defaultTab": "Feed",
   "OrientationPreference": [
     "Landscape"
