@@ -1,4 +1,5 @@
 from .basemodel import BaseModel
+from .paramsmodel import ParamsModel
 from .sqlmodels import TPCourt, TPLocation
 
 
@@ -20,3 +21,8 @@ class Court(BaseModel[TPCourt]):
     __str_template__ = "{self.name} ({self.location})"
     __repr_fields__ = ("id", "name", "sortorder?", "location?.name")
     __eq_fields__ = ("sortorder", "name", "location")
+
+
+class CourtSelectionParams(ParamsModel):
+    court: int | None = None
+    only_this_court: bool = False

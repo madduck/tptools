@@ -24,6 +24,7 @@ from yarl import URL
 
 from tptools import (
     Court,
+    CourtSelectionParams,
     Draw,
     Entry,
     MatchStatusSelectionParams,
@@ -32,7 +33,6 @@ from tptools import (
 from tptools.ext.squore import (
     Config,
     ConfigValidator,
-    CourtSelectionParams,
     MatchesFeed,
     SquoreTournament,
 )

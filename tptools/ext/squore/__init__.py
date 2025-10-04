@@ -7,14 +7,13 @@ from .config import (
 from .court import SquoreCourt
 from .draw import SquoreDraw
 from .entry import SquoreEntry
-from .feed import CourtSelectionParams, MatchesFeed, SquoreTournament
+from .feed import MatchesFeed, SquoreTournament
 from .match import SquoreMatch
 from .section import MatchesSection
 
 __all__ = [
     "Config",
     "ConfigValidator",
-    "CourtSelectionParams",
     "MatchesFeed",
     "MatchesSection",
     "PerMatchConfigValidator",

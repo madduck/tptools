@@ -1,7 +1,7 @@
 import pytest
 
+from tptools import CourtSelectionParams
 from tptools.ext.squore.feed import (
-    CourtSelectionParams,
     MatchesFeed,
     SquoreTournament,
 )

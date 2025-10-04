@@ -12,8 +12,8 @@ from pydantic import (
     model_serializer,
 )
 
+from ...court import CourtSelectionParams
 from ...namepolicy import CourtNamePolicy
-from ...paramsmodel import ParamsModel
 from ...tournament import MatchStatusSelectionParams, Tournament
 from .basemodel import SqModel
 from .config import Config
@@ -34,11 +34,6 @@ class SquoreTournament(
     # See https://discord.com/channels/267624335836053506/891788761371906108/1423261501367517275
     # and https://discord.com/channels/267624335836053506/891788761371906108/1423261782981738598
 ): ...
-
-
-class CourtSelectionParams(ParamsModel):
-    court: int | None = None
-    only_this_court: bool = False
 
 
 class MatchesFeed(SqModel):
