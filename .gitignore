@@ -6,6 +6,7 @@ __pycache__
 _version.py
 /.stignore
 /.envrc
+/.direnv
 .coverage
 Squore.dev_court_map.toml
 /dist
