@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 import tomllib
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Mapping
 from contextlib import asynccontextmanager
 from operator import attrgetter
 from typing import Annotated, Any, Never, Sequence, cast
@@ -213,23 +213,35 @@ def get_config(
     return config
 
 
-def get_dev_courtid_map(
+def _flatten_dict(
+    dict_: Mapping[str, Any], parent_key: str = "", separator: str = "."
+) -> dict[str, Any]:
+    # https://stackoverflow.com/posts/6027615/revisions
+    items: list[tuple[str, Any]] = []
+    for key, value in dict_.items():
+        new_key = parent_key + separator + key if parent_key else key
+        if isinstance(value, Mapping):
+            items.extend(_flatten_dict(value, new_key, separator=separator).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+
+
+def get_dev_court_map(
     path: Annotated[pathlib.Path, Depends(get_devmap_path)],
-) -> dict[str, int] | Never:
-    devmap: dict[str, int] = {}
+) -> dict[str, int | str] | Never:
+    devmap: dict[str, int | str] = {}
 
     try:
         with open(path, "rb") as f:
-            # TODO:cache. There should be a file-like class that caches the output,
-            # ideally even the output of a callable on the data, and on every
-            # subsequent access, check the original file's mtime to decide whether
-            # to serve the cache, or relaod.
-            devmap |= tomllib.load(f)
+            devmap = tomllib.load(f)
 
     except FileNotFoundError:
         logger.warning(f"Squore device to court map not found at {path}, ignoring…")
 
-    return devmap
+    # TOML turns a key like 172.21.22.1 into a nested dict {"172":{"21":{"22"…}
+    # so for convenience, flatten this:
+    return _flatten_dict(devmap)
 
 
 def get_tournament(request: Request) -> SquoreTournament | Never:
@@ -282,21 +294,32 @@ def get_players_list(
 
 
 def get_court_for_dev(
-    dev_court_map: Annotated[dict[str, int], Depends(get_dev_courtid_map)],
+    dev_court_map: Annotated[dict[str, int | str], Depends(get_dev_court_map)],
     courts: Annotated[list[Court], Depends(get_courts)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
+    clientip: Annotated[str, Depends(get_remote)],
 ) -> Court | None:
-    courtname = dev_court_map.get(squoredev.device_id) if squoredev.device_id else None
-    if courtname is not None:
-        logger.debug(f"Devive ID {squoredev.device_id} wants feed for {courtname}")
-        for court in courts:
-            if courtname in (court.name, str(court.name), court.id):
-                return court
-    else:
-        logger.debug(
-            f"No court specified in devmap for devive ID {squoredev.device_id}"
-        )
+    courtname = None
+    for identifier in (squoredev.device_id, clientip):
+        if identifier is None:
+            continue
 
+        if (courtname := dev_court_map.get(identifier)) is not None:
+            logger.debug(
+                f"Device ID {squoredev.device_id or '(unknown)'} at IP {clientip} "
+                f"wants feed for {courtname}"
+            )
+            for court in courts:
+                # TODO: can we do better than this to identify the court when we are
+                # given a string that might not be what the current courtnamepolicy
+                # returns, or an ID?
+                if courtname in (court.name, str(court.name), court.id):
+                    return court
+
+    logger.debug(
+        "No court found in devmap for device ID "
+        f"{squoredev.device_id or '(unknown)'}, IP {clientip}"
+    )
     return None
 
 
