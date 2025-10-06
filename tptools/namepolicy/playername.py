@@ -89,7 +89,7 @@ class PlayerNamePolicy(PolicyBase):
 
         return name
 
-    def _format_name(self, lname: str, fname: str) -> str:
+    def _format_name(self, lname: str | None, fname: str) -> str:
         if not lname:
             # fname cannot be None here anymore, but mypy gets confused
             return fname

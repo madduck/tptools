@@ -1,4 +1,5 @@
 from tptools import Entry
+from tptools.entry import Player
 
 
 def test_repr(entry1: Entry) -> None:
@@ -45,3 +46,7 @@ def test_cmp_gt(entry1: Entry, entry2: Entry) -> None:
 
 def test_cmp_ge(entry1: Entry, entry1copy: Entry, entry2: Entry) -> None:
     assert entry1 > entry2 and entry1 >= entry1copy
+
+
+def test_player_no_lastname(player1: Player) -> None:
+    assert player1.model_copy(update={"lastname": None}).name == player1.firstname

@@ -28,14 +28,17 @@ class Country(BaseModel[TPCountry]):
 
 class Player(BaseModel[TPPlayer]):
     id: int
-    lastname: str
     firstname: str
-    club: Club | None
-    country: Country | None
+    lastname: str | None = None
+    club: Club | None = None
+    country: Country | None = None
 
     @property
     def name(self) -> str:
-        return f"{self.firstname} {self.lastname}"
+        if self.lastname:
+            return f"{self.firstname} {self.lastname}"
+        else:
+            return self.firstname
 
     __repr_fields__ = ("name", "club", "country")
     __str_template__ = "{self.name} ({self.club}, {self.country})"
@@ -46,7 +49,7 @@ class Entry(BaseModel[TPEntry]):
     id: int
     event: Event
     player1: Player
-    player2: Player | None
+    player2: Player | None = None
 
     __repr_fields__ = ("event.name", "player1.name", "player2?.name")
     __str_template__ = "{self.player1}{'&'+str(self.player2) if self.player2 else ''}"

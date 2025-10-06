@@ -7,7 +7,7 @@ class Event(BaseModel[TPEvent]):
     id: int
     name: str
     abbreviation: str | None = None
-    gender: int
+    gender: int | None = None
 
     def _repr_name(self) -> str:
         return self.abbreviation if self.abbreviation is not None else self.name

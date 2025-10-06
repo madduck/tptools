@@ -16,9 +16,12 @@ class Court(BaseModel[TPCourt]):
     id: int
     name: str
     sortorder: int | None = None
-    location: Location | None
+    location: Location | None = None
 
-    __str_template__ = "{self.name} ({self.location})"
+    def _add_location_if_exists(self) -> str:
+        return f" ({self.location})" if self.location else ""
+
+    __str_template__ = "{self.name}{self._add_location_if_exists()}"
     __repr_fields__ = ("id", "name", "sortorder?", "location?.name")
     __eq_fields__ = ("sortorder", "name", "location")
 
