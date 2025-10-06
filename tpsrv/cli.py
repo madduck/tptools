@@ -170,17 +170,24 @@ def runit(
         async with AsyncExitStack() as stack:
             tasks = await setup_plugins(plugin_factories, stack=stack)
 
-            async with asyncio.TaskGroup() as tg:
-                for task in tasks:
-                    create_plugin_task(task, create_task_fn=tg.create_task)
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for task in tasks:
+                        create_plugin_task(task, create_task_fn=tg.create_task)
 
-                await server.serve()
+                    try:
+                        await server.serve()
+
+                    except KeyboardInterrupt:
+                        pass
+
+                    raise asyncio.CancelledError
+
+            except asyncio.CancelledError:
+                logger.info("Exiting…")
 
     try:
         loop.run_until_complete(lifespan(plugin_factories))
-
-    except* asyncio.CancelledError:
-        logger.info("Cancelling…")
 
     except* click.ClickException as exc:
         for e in exc.exceptions:

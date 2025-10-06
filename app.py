@@ -56,37 +56,39 @@ POSTURL = URL(os.getenv("POSTURL", "http://localhost:8001/tptools/v1/tournament"
 async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
     clictx = CliContext(api=api, itc=ITC())
 
-    engine = make_engine(TP_FILE, os.getenv("TPUSER", "Admin"), os.getenv("TPPASS", ""))
+    factories: list[PluginFactory] = [
+        debug_key_press_handler,
+        setup_for_squore,
+    ]
 
-    with Session(engine) as session:
-        tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
+    if not os.getenv("NOSTDOUT"):
+        tpstdout_lifespan = partial(print_tournament, indent=1)
+        factories.append(tpstdout_lifespan)
+    else:
+        logger.info("Not printing tournament to stdout as per $NOSTDOUT")
+    if not os.getenv("NOPOST"):
+        tppost_lifespan = partial(post_tournament, urls=[POSTURL], retries=0)
+        factories.append(tppost_lifespan)
+    else:
+        logger.info("Not posting tournament to URLs as per $NOPOST")
+    if not os.getenv("NOSQSTDOUT"):
+        sqstdout_lifespan = partial(print_sqdata, indent=1)
+        factories.append(sqstdout_lifespan)
+    else:
+        logger.info("Not printing TPData to stdout as per $NOSQSTDOUT")
 
-        factories: list[PluginFactory] = [
-            debug_key_press_handler,
-            tp_lifespan,
-            setup_for_squore,
-        ]
+    try:
+        async with AsyncExitStack() as stack:
+            engine = make_engine(
+                TP_FILE, os.getenv("TPUSER", "Admin"), os.getenv("TPPASS", "")
+            )
+            session = stack.enter_context(Session(engine))
+            tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
+            factories.append(tp_lifespan)
 
-        if not os.getenv("NOSTDOUT"):
-            tpstdout_lifespan = partial(print_tournament, indent=1)
-            factories.append(tpstdout_lifespan)
-        else:
-            logger.info("Not printing tournament to stdout as per $NOSTDOUT")
-        if not os.getenv("NOPOST"):
-            tppost_lifespan = partial(post_tournament, urls=[POSTURL], retries=0)
-            factories.append(tppost_lifespan)
-        else:
-            logger.info("Not posting tournament to URLs as per $NOPOST")
-        if not os.getenv("NOSQSTDOUT"):
-            sqstdout_lifespan = partial(print_sqdata, indent=1)
-            factories.append(sqstdout_lifespan)
-        else:
-            logger.info("Not printing TPData to stdout as per $NOSQSTDOUT")
+            tasks = await setup_plugins(factories, stack=stack, clictx=clictx)
 
-        try:
-            async with AsyncExitStack() as stack:
-                tasks = await setup_plugins(factories, stack=stack, clictx=clictx)
-
+            try:
                 async with asyncio.TaskGroup() as tg:
                     plugin_task = partial(
                         create_plugin_task, create_task_fn=tg.create_task
@@ -99,8 +101,17 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
                     yield
                     raise asyncio.CancelledError
 
-        except asyncio.CancelledError:
-            pass
+            except asyncio.CancelledError:
+                logger.info("Exiting…")
+
+    except* RuntimeError:
+        logger.exception("A runtime error occurred")
+
+    except* Exception as exc:
+        import ipdb
+
+        ipdb.set_trace()  # noqa: E402 E702 I001 # fmt: skip
+        _ = exc
 
 
 app = make_app(lifespan=app_lifespan)
