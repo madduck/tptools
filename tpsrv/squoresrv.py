@@ -541,6 +541,7 @@ async def settings(
         settings["feedPostUrls"] = "\n".join(feeds)
 
         if court_for_dev is not None:
+            settings["liveScoreDeviceId_customSuffix"] = f"-{court_for_dev}"
             try:
                 idx, name = courtorder[court_for_dev.id]
                 settings["feedPostUrl"] = idx
