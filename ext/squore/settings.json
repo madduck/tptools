@@ -17,7 +17,7 @@
   "PlayerColorsNewMatchB": "#0066ff",
   "RemoteSettingsURL": "http://tc/squore/v1/settings?cc=${countryCode}&version=${versionCode}&ip=${ipAddress}&device_id=${liveScoreDeviceId}",
   "RemoteSettingsURL_AlwaysShowLoadErrors": true,
-  "RemoteSettingsURL_Default": "http://squore/v1/settings?cc=${countryCode}&version=${versionCode}&ip=${ipAddress}&device_id=${liveScoreDeviceId}",
+  "RemoteSettingsURL_Default": "http://tc/squore/v1/settings?cc=${countryCode}&version=${versionCode}&ip=${ipAddress}&device_id=${liveScoreDeviceId}",
   "StartupAction": "SelectFeedMatch",
   "UseMQTT": true,
   "gameScoresAppearance": "ShowFullScoreOnlyOnDevice",
