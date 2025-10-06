@@ -232,13 +232,6 @@ def get_dev_courtid_map(
     return devmap
 
 
-def get_courtid_for_dev(
-    dev_court_map: Annotated[dict[str, int], Depends(get_dev_courtid_map)],
-    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
-) -> int | None:
-    return dev_court_map.get(squoredev.device_id) if squoredev.device_id else None
-
-
 def get_tournament(request: Request) -> SquoreTournament | Never:
     if (tournament := getattr(request.app.state, "tournament", None)) is None:
         raise HTTPException(
@@ -288,6 +281,25 @@ def get_players_list(
     ]
 
 
+def get_court_for_dev(
+    dev_court_map: Annotated[dict[str, int], Depends(get_dev_courtid_map)],
+    courts: Annotated[list[Court], Depends(get_courts)],
+    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
+) -> Court | None:
+    courtname = dev_court_map.get(squoredev.device_id) if squoredev.device_id else None
+    if courtname is not None:
+        logger.debug(f"Devive ID {squoredev.device_id} wants feed for {courtname}")
+        for court in courts:
+            if courtname in (court.name, str(court.name), court.id):
+                return court
+    else:
+        logger.debug(
+            f"No court specified in devmap for devive ID {squoredev.device_id}"
+        )
+
+    return None
+
+
 def get_matches_feed_dict(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
     config: Annotated[Config, Depends(get_config)],
@@ -300,16 +312,15 @@ def get_matches_feed_dict(
     matchstatusselectionparams: Annotated[
         MatchStatusSelectionParams, Depends(get_matchstatusselectionparams)
     ],
-    court_for_dev: Annotated[int | None, Depends(get_courtid_for_dev)],
+    court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> dict[str, Any]:
     if courtselectionparams.court is None and court_for_dev:
         # I actually don't think this branch will ever enter as the device ID is not
         # sent for matches. Oh well.
-        courtselectionparams.court = court_for_dev
+        courtselectionparams.court = court_for_dev.id
         logger.info(
-            f"Expand section for court ID {court_for_dev} "
-            f"for device {squoredev.device_id}"
+            f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
         )
 
     return MatchesFeed(tournament=tournament, config=config).model_dump(
@@ -484,7 +495,7 @@ async def settings(
     remote: Annotated[str, Depends(get_remote)],
     settings: Annotated[dict[str, Any], Depends(get_settings)],
     court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
-    courtid_for_dev: Annotated[int, Depends(get_courtid_for_dev)],
+    court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
     params: Annotated[SettingsQueryParams, Query()],
 ) -> dict[str, Any]:
@@ -506,9 +517,9 @@ async def settings(
 
         settings["feedPostUrls"] = "\n".join(feeds)
 
-        if courtid_for_dev is not None:
+        if court_for_dev is not None:
             try:
-                idx, name = courtorder[courtid_for_dev]
+                idx, name = courtorder[court_for_dev.id]
                 settings["feedPostUrl"] = idx
                 logger.info(
                     f"Pre-selected feed {idx} (court {name}) "
@@ -516,9 +527,7 @@ async def settings(
                 )
 
             except KeyError:
-                logger.warning(
-                    f"There is no feed for a court with ID {courtid_for_dev}"
-                )
+                logger.warning(f"There is no feed for a {court_for_dev!r}")
 
     return settings
 
