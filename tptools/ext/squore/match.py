@@ -28,7 +28,7 @@ class SquoreMatchStruct(PerMatchOverridableConfig, total=False):
     draw: SquoreDrawStruct
     date: str | None
     time: str | None
-    court: str | None
+    court: int | None
     A: SquorePlayerStruct | str
     B: SquorePlayerStruct | str
     status: str
