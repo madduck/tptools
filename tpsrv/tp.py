@@ -84,6 +84,31 @@ async def tp_source(
         yield watcher.reactor_task()
 
 
+def make_engine(
+    tp_file: pathlib.Path,
+    user: str,
+    password: str,
+) -> Engine | None:
+    for url in [
+        make_access_url(tp_file, user=user, password=password),
+        make_sqlite_url(tp_file),
+    ]:
+        try:
+            return try_make_engine_for_url(url)
+
+        except NoSuchModuleError:
+            logger.debug(f"No SQLAlchemy module to handle {url}")
+
+        except ProgrammingError as exc:
+            if "Not a valid password" in exc.args[0]:
+                raise RuntimeError(f"Password needed to access {tp_file}") from exc
+
+        except (DatabaseError, DBAPIError) as exc:
+            logger.debug(f"Cannot open {url}: {exc.args[0]}")
+
+    return None
+
+
 @plugin
 @click.argument(
     "TP_FILE",
@@ -136,28 +161,13 @@ async def tp(
     if not tp_file.exists():
         raise click.ClickException(f"File {tp_file} does not exist")
 
-    engine: Engine | None = None
-    for url in [
-        make_access_url(tp_file, user=user, password=password),
-        make_sqlite_url(tp_file),
-    ]:
-        try:
-            engine = try_make_engine_for_url(url)
+    try:
+        engine = make_engine(tp_file, user, password)
+        if engine is None:
+            raise click.ClickException(f"File {tp_file} cannot be read")
 
-        except NoSuchModuleError:
-            logger.debug(f"No SQLAlchemy module to handle {url}")
-
-        except ProgrammingError as exc:
-            if "Not a valid password" in exc.args[0]:
-                raise click.ClickException(
-                    f"Password needed to access {tp_file}"
-                ) from exc
-
-        except (DatabaseError, DBAPIError) as exc:
-            logger.debug(f"Cannot open {url}: {exc.args[0]}")
-
-    if engine is None:
-        raise click.ClickException(f"File {tp_file} cannot be read")
+    except RuntimeError as exc:
+        raise click.ClickException(exc.args[0]) from exc
 
     with Session(engine) as session:
         async with tp_source(

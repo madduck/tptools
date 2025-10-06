@@ -26,7 +26,7 @@ from tpsrv.post import post_tournament
 from tpsrv.sq_stdout import print_sqdata
 from tpsrv.squoresrv import setup_for_squore
 from tpsrv.stdout import print_tournament
-from tpsrv.tp import make_sqlite_url, tp_source, try_make_engine_for_url
+from tpsrv.tp import make_engine, tp_source
 from tpsrv.util import CliContext
 from tptools.util import silence_logger
 
@@ -45,15 +45,18 @@ for name, level in (
 
 logger = logging.getLogger(__name__)
 
-TP_FILE = pathlib.Path(__file__).parent / "integration" / "anon_tournament.sqlite"
-POSTURL = URL("http://localhost:8001/tptools/v1/tournament")
+if (envfile := os.getenv("TPFILE", None)) is None:
+    TP_FILE = pathlib.Path(__file__).parent / "integration" / "anon_tournament.sqlite"
+else:
+    TP_FILE = pathlib.Path(envfile)
+POSTURL = URL(os.getenv("POSTURL", "http://localhost:8001/tptools/v1/tournament"))
 
 
 @asynccontextmanager
 async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
     clictx = CliContext(api=api, itc=ITC())
 
-    engine = try_make_engine_for_url(make_sqlite_url(TP_FILE))
+    engine = make_engine(TP_FILE, os.getenv("TPUSER", "Admin"), os.getenv("TPPASS", ""))
 
     with Session(engine) as session:
         tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
