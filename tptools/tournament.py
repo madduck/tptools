@@ -1,6 +1,7 @@
 import logging
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
-from typing import Any, Self
+from typing import Any, Self, cast
 
 from pydantic import (
     SerializationInfo,
@@ -121,6 +122,15 @@ class Tournament[
 
     def get_matches_for_draw(self, draw: DrawT) -> Sequence[MatchT]:
         return [m for m in self.matches.values() if m.draw == draw]
+
+    def get_matches_for_court(self, court: CourtT | None) -> Sequence[MatchT]:
+        return [m for m in self.matches.values() if m.court == court]
+
+    def get_matches_by_court(self) -> dict[CourtT | None, list[MatchT]]:
+        ret: dict[CourtT | None, list[MatchT]] = defaultdict(list)
+        for match in self.matches.values():
+            ret[cast(CourtT, match.court)].append(match)
+        return ret
 
     def add_draw(self, draw: DrawT) -> None:
         if draw.id in self.draws:

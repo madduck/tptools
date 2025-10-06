@@ -147,6 +147,21 @@ def test_get_matches_for_draw(
     assert match2 not in tournament2.get_matches_for_draw(match1.draw)
 
 
+def test_get_matches_for_court(
+    tournament2: Tournament, match1: Match, match2: Match
+) -> None:
+    assert match1 in tournament2.get_matches_for_court(match1.court)
+    assert match2 not in tournament2.get_matches_for_court(match1.court)
+
+
+def test_get_matches_by_draw(
+    tournament2: Tournament, match1: Match, match2: Match
+) -> None:
+    mbc = tournament2.get_matches_by_court()
+    assert match1.court in mbc
+    assert match1 in mbc[match1.court]
+
+
 def test_get_draws(
     tournament1: Tournament, tpmatch1: TPMatch, tpmatch2: TPMatch
 ) -> None:
