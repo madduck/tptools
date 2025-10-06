@@ -140,11 +140,11 @@ def test_get_entries(tournament2: Tournament, tpentry1: TPEntry) -> None:
     assert tpentry1 in tournament2.get_entries()
 
 
-def test_get_matches_by_draw(
+def test_get_matches_for_draw(
     tournament2: Tournament, match1: Match, match2: Match
 ) -> None:
-    assert match1 in tournament2.get_matches_by_draw(match1.draw)
-    assert match2 not in tournament2.get_matches_by_draw(match1.draw)
+    assert match1 in tournament2.get_matches_for_draw(match1.draw)
+    assert match2 not in tournament2.get_matches_for_draw(match1.draw)
 
 
 def test_get_draws(

@@ -119,7 +119,7 @@ class Tournament[
     def resolve_match_by_id(self, id: str) -> MatchT:
         return self.matches[id]
 
-    def get_matches_by_draw(self, draw: DrawT) -> Sequence[MatchT]:
+    def get_matches_for_draw(self, draw: DrawT) -> Sequence[MatchT]:
         return [m for m in self.matches.values() if m.draw == draw]
 
     def add_draw(self, draw: DrawT) -> None:
