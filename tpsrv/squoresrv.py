@@ -40,6 +40,7 @@ from tptools.ext.squore import (
 from tptools.namepolicy import (
     ClubNamePolicy,
     CountryNamePolicy,
+    CountryNamePolicyParams,
     CourtNamePolicy,
     CourtNamePolicyParams,
     PairCombinePolicy,
@@ -83,6 +84,7 @@ class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
 
 class MatchesPolicyParams(
     PlayersPolicyParams,
+    CountryNamePolicyParams,
     CourtNamePolicyParams,
     CourtSelectionParams,
     MatchStatusSelectionParams,
@@ -120,6 +122,12 @@ def get_courtselectionparams(
     policyparams: Annotated[MatchesPolicyParams, Query()],
 ) -> CourtSelectionParams:
     return CourtSelectionParams.make_from_parameter_superset(policyparams)
+
+
+def get_countrynamepolicy(
+    policyparams: Annotated[MatchesPolicyParams, Query()],
+) -> CountryNamePolicy:
+    return CountryNamePolicy(**CountryNamePolicyParams.extract_subset(policyparams))
 
 
 def get_clubnamepolicy() -> ClubNamePolicy:
@@ -327,6 +335,7 @@ def get_matches_feed_dict(
     config: Annotated[Config, Depends(get_config)],
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
+    countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     courtselectionparams: Annotated[
@@ -352,7 +361,7 @@ def get_matches_feed_dict(
             "paircombinepolicy": paircombinepolicy,
             "playernamepolicy": playernamepolicy,
             "clubnamepolicy": clubnamepolicy,
-            "countrynamepolicy": CountryNamePolicy(),
+            "countrynamepolicy": countrynamepolicy,
             "courtselectionparams": courtselectionparams,
             "matchstatusselectionparams": matchstatusselectionparams,
         }
