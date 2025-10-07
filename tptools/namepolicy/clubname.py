@@ -12,8 +12,6 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ClubNamePolicy(NamePolicy):
-    def __init__(self) -> None: ...
-
     @overload
     def __call__(self, club: Club) -> str: ...
 
@@ -21,4 +19,8 @@ class ClubNamePolicy(NamePolicy):
     def __call__(self, club: None) -> None: ...
 
     def __call__(self, club: Club | None) -> str | None:
-        return self._apply_regexps(str(club)) if club is not None else None
+        if club is None:
+            return None
+
+        ret = self._apply_regexps(str(club))
+        return ret if ret else None

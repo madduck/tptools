@@ -1,7 +1,10 @@
+from dataclasses import replace
+
 import pytest
 
 from tptools.entry import Club
 from tptools.namepolicy import ClubNamePolicy
+from tptools.namepolicy.policybase import RegexpSubstTuple
 
 
 @pytest.fixture
@@ -19,3 +22,9 @@ def test_passthrough(policy: ClubNamePolicy, club1: Club) -> None:
 
 def test_no_club(policy: ClubNamePolicy) -> None:
     _ = policy(None)
+
+
+def test_regexp_empties_means_none(policy: ClubNamePolicy, club1: Club) -> None:
+    regexp = RegexpSubstTuple(club1.name, "")
+    policy = replace(policy, regexps=[regexp])
+    assert policy(club1) is None
