@@ -4,15 +4,27 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
+from tptools.paramsmodel import ParamsModel
+
 from .policybase import NamePolicy
 
 if TYPE_CHECKING:
     from ..entry import Country
 
 
+class CountryNamePolicyParams(ParamsModel):
+    titlecase: bool = True
+
+
+# TODO: remove redundancy between these two classes
+# It currently seems impossible to do so:
+# - https://github.com/pydantic/pydantic/discussions/12204
+# - https://discuss.python.org/t/dataclasses-asdicttype-type/103448/2
+
+
 @dataclass(frozen=True)
 class CountryNamePolicy(NamePolicy):
-    def __init__(self) -> None: ...
+    titlecase: bool = True
 
     @overload
     def __call__(self, country: Country) -> str: ...
@@ -21,4 +33,8 @@ class CountryNamePolicy(NamePolicy):
     def __call__(self, country: None) -> None: ...
 
     def __call__(self, country: Country | None) -> str | None:
-        return self._apply_regexps(str(country)) if country is not None else None
+        if country is None:
+            return None
+
+        ret = str(country).title() if self.titlecase else str(country)
+        return self._apply_regexps(ret)

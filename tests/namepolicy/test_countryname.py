@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from tptools.entry import Country
@@ -19,3 +21,14 @@ def test_passthrough(policy: CountryNamePolicy, country1: Country) -> None:
 
 def test_no_country(policy: CountryNamePolicy) -> None:
     _ = policy(None)
+
+
+def test_titlecase_default(policy: CountryNamePolicy, country1: Country) -> None:
+    foobar = country1.model_copy(update={"name": "foo bar"})
+    assert policy(foobar) == "Foo Bar"
+
+
+def test_titlecase_disabled(policy: CountryNamePolicy, country1: Country) -> None:
+    foobar = country1.model_copy(update={"name": "foo bar"})
+    policy = replace(policy, titlecase=False)
+    assert policy(foobar) == "foo bar"
