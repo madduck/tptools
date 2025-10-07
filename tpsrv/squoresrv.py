@@ -46,6 +46,7 @@ from tptools.namepolicy import (
     PlayerNamePolicy,
     PlayerNamePolicyParams,
 )
+from tptools.namepolicy.policybase import RegexpSubstTuple
 from tptools.util import dict_value_replace_bool_with_int, silence_logger
 
 from .util import CliContext, pass_clictx
@@ -108,7 +109,10 @@ def get_paircombinepolicy(
 def get_courtnamepolicy(
     policyparams: Annotated[MatchesPolicyParams, Query()],
 ) -> CourtNamePolicy:
-    return CourtNamePolicy(**CourtNamePolicyParams.extract_subset(policyparams))
+    c_to_court_subst = RegexpSubstTuple(r"^[cC]0?(?P<nr>\d+)", r"Court \g<nr>")
+    return CourtNamePolicy(
+        regexps=[c_to_court_subst], **CourtNamePolicyParams.extract_subset(policyparams)
+    )
 
 
 def get_courtselectionparams(
