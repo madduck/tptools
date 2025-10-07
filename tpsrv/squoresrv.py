@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+import re
 import tomllib
 from collections.abc import AsyncGenerator, Mapping
 from contextlib import asynccontextmanager
@@ -119,6 +120,11 @@ def get_courtselectionparams(
     policyparams: Annotated[MatchesPolicyParams, Query()],
 ) -> CourtSelectionParams:
     return CourtSelectionParams.make_from_parameter_superset(policyparams)
+
+
+def get_clubnamepolicy() -> ClubNamePolicy:
+    vereinslos_is_none = RegexpSubstTuple("vereinslos", "", re.IGNORECASE)
+    return ClubNamePolicy(regexps=[vereinslos_is_none])
 
 
 def get_matchstatusselectionparams(
@@ -321,6 +327,7 @@ def get_matches_feed_dict(
     config: Annotated[Config, Depends(get_config)],
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
+    clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     courtselectionparams: Annotated[
         CourtSelectionParams, Depends(get_courtselectionparams)
@@ -344,7 +351,7 @@ def get_matches_feed_dict(
             "courtnamepolicy": courtnamepolicy,
             "paircombinepolicy": paircombinepolicy,
             "playernamepolicy": playernamepolicy,
-            "clubnamepolicy": ClubNamePolicy(),
+            "clubnamepolicy": clubnamepolicy,
             "countrynamepolicy": CountryNamePolicy(),
             "courtselectionparams": courtselectionparams,
             "matchstatusselectionparams": matchstatusselectionparams,
