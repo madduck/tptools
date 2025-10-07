@@ -353,7 +353,7 @@ class Feed(BaseModel):
     Name: str
     FeedMatches: str
     FeedPlayers: str
-    PostResult: str | None
+    PostResult: str
     CourtID: int
 
 
@@ -384,6 +384,7 @@ def get_court_feeds_list(
             }
         )
     )
+    resultsurl = urlbase / ".." / "result"
     for court in sorted(courts):
         params = (
             courtselectionparams.model_dump()
@@ -407,7 +408,7 @@ def get_court_feeds_list(
                 Name=courtnamepolicy(court) or "",
                 FeedPlayers=str(playersurl),
                 FeedMatches=str(matchesurl),
-                PostResult=None,
+                PostResult=str(resultsurl),
                 CourtID=court.id,
             )
         )
