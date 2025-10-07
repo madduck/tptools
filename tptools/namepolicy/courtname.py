@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
 from ..paramsmodel import ParamsModel
-from .policybase import PolicyBase
+from .policybase import NamePolicy
 
 if TYPE_CHECKING:
     from ..court import Court
@@ -23,7 +23,7 @@ class CourtNamePolicyParams(ParamsModel):
 
 
 @dataclass(frozen=True)
-class CourtNamePolicy(PolicyBase):
+class CourtNamePolicy(NamePolicy):
     include_location: bool = False
     no_court_string: str | None = None
 
@@ -40,4 +40,4 @@ class CourtNamePolicy(PolicyBase):
         ret = court.name
         if self.include_location and court.location:
             ret += f" ({court.location})"
-        return ret
+        return self._apply_regexps(ret)

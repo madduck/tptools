@@ -4,14 +4,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
-from .policybase import PolicyBase
+from .policybase import NamePolicy
 
 if TYPE_CHECKING:
     from ..entry import Club
 
 
 @dataclass(frozen=True)
-class ClubNamePolicy(PolicyBase):
+class ClubNamePolicy(NamePolicy):
     def __init__(self) -> None: ...
 
     @overload
@@ -21,4 +21,4 @@ class ClubNamePolicy(PolicyBase):
     def __call__(self, club: None) -> None: ...
 
     def __call__(self, club: Club | None) -> str | None:
-        return str(club) if club is not None else None
+        return self._apply_regexps(str(club)) if club is not None else None

@@ -5,7 +5,7 @@ from ..entry import Player
 from ..paramsmodel import ParamsModel
 from .clubname import ClubNamePolicy
 from .countryname import CountryNamePolicy
-from .policybase import PolicyBase
+from .policybase import NamePolicy
 
 
 class PlayerNamePolicyParams(ParamsModel):
@@ -24,7 +24,7 @@ class PlayerNamePolicyParams(ParamsModel):
 
 
 @dataclass(frozen=True)
-class PlayerNamePolicy(PolicyBase):
+class PlayerNamePolicy(NamePolicy):
     _: KW_ONLY
     fnamemaxlen: int = -1
     namejoinstr: str = " "
@@ -66,7 +66,7 @@ class PlayerNamePolicy(PolicyBase):
         if not (fname or lname):
             raise ValueError("Need at least a first or a last name")
 
-        name = self._format_name(lname, fname)
+        name = self._apply_regexps(self._format_name(lname, fname))
 
         clubnamepolicy = clubnamepolicy or ClubNamePolicy()
         countrynamepolicy = countrynamepolicy or CountryNamePolicy()
