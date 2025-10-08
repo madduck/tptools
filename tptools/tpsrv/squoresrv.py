@@ -1,3 +1,4 @@
+import importlib.resources
 import json
 import logging
 import pathlib
@@ -53,15 +54,6 @@ from tptools.util import dict_value_replace_bool_with_int, silence_logger
 
 from .util import CliContext, pass_clictx
 
-PROJECT_ROOT = pathlib.Path(__file__).parent.parent
-SQUORE_EXT = PROJECT_ROOT / "ext" / "squore"
-
-SETTINGS_JSON_PATH = (SQUORE_EXT / "settings.json").relative_to(
-    pathlib.Path.cwd(), walk_up=True
-)
-CONFIG_TOML_PATH = (SQUORE_EXT / "config.toml").relative_to(
-    pathlib.Path.cwd(), walk_up=True
-)
 DEVMAP_TOML_PATH = pathlib.Path("Squore.dev_court_map.toml")
 SQUORE_PATH_VERSION = "v1"
 API_MOUNTPOINT = "/squore"
@@ -438,12 +430,6 @@ def get_court_feeds_list(
 
 squoreapp = FastAPI()
 
-squoreapp.mount(
-    "/flags",
-    StaticFiles(directory=SQUORE_EXT / "flags"),
-    name="flags",
-)
-
 
 @squoreapp.get("/matches")
 async def matches(
@@ -585,37 +571,49 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
 async def setup_for_squore(
     clictx: CliContext,
     api_mount_point: str = API_MOUNTPOINT,
-    settings_json: pathlib.Path = SETTINGS_JSON_PATH,
-    config_toml: pathlib.Path = CONFIG_TOML_PATH,
+    settings_json: pathlib.Path | None = None,
+    config_toml: pathlib.Path | None = None,
     devmap_toml: pathlib.Path = DEVMAP_TOML_PATH,
 ) -> PluginLifespan:
     api_path = "/".join((api_mount_point, SQUORE_PATH_VERSION))
 
     logger.debug("Starting squoresrv configuration…")
-    if settings_json.exists():
+
+    with importlib.resources.path("tptools", "ext", "squore", "assets") as assets_path:
+        if settings_json is None:
+            settings_json = assets_path / "settings.json"
         logger.info(f"Serving app settings from {settings_json}")
-    if config_toml.exists():
+        if config_toml is None:
+            config_toml = assets_path / "config.toml"
         logger.info(f"Reading tournament & match config from {config_toml}")
-    if devmap_toml.exists():
-        logger.info(f"Reading device to court map from {devmap_toml}")
-    squoreapp.state.squore = {
-        "settings": settings_json,
-        "config": config_toml,
-        "devmap": devmap_toml,
-    }
-    clictx.api.mount(path=api_path, app=squoreapp, name="squore")
-    clictx.api.include_router(deprecated_routes, prefix=api_mount_point)
-    logger.info(f"Configured the app to serve to Squore from {api_path}")
 
-    async def callback(tournament: Tournament) -> None:
-        logger.info("Received new tournament data, making MatchesFeed")
-        squoreapp.state.tournament = (
-            sqt := SquoreTournament.from_tournament(tournament)
+        if devmap_toml.exists():
+            logger.info(f"Reading device to court map from {devmap_toml}")
+
+        squoreapp.state.squore = {
+            "settings": settings_json,
+            "config": config_toml,
+            "devmap": devmap_toml,
+        }
+        squoreapp.mount(
+            "/flags",
+            StaticFiles(directory=assets_path / "flags"),
+            name="flags",
         )
-        clictx.itc.set("sqtournament", sqt)
 
-    updates_gen = cast(AsyncGenerator[Tournament], clictx.itc.updates("tournament"))
-    yield react_to_data_update(updates_gen, callback=callback)
+        clictx.api.mount(path=api_path, app=squoreapp, name="squore")
+        clictx.api.include_router(deprecated_routes, prefix=api_mount_point)
+        logger.info(f"Configured the app to serve to Squore from {api_path}")
+
+        async def callback(tournament: Tournament) -> None:
+            logger.info("Received new tournament data, making MatchesFeed")
+            squoreapp.state.tournament = (
+                sqt := SquoreTournament.from_tournament(tournament)
+            )
+            clictx.itc.set("sqtournament", sqt)
+
+        updates_gen = cast(AsyncGenerator[Tournament], clictx.itc.updates("tournament"))
+        yield react_to_data_update(updates_gen, callback=callback)
 
 
 @plugin
@@ -630,16 +628,12 @@ async def setup_for_squore(
     "--settings-json",
     metavar="PATH",
     type=click.Path(path_type=pathlib.Path),
-    default=SETTINGS_JSON_PATH,
-    show_default=True,
     help="Path of file to serve when Squore requests app settings",
 )
 @click.option(
     "--config-toml",
     metavar="PATH",
     type=click.Path(path_type=pathlib.Path),
-    default=CONFIG_TOML_PATH,
-    show_default=True,
     help="Path of file to use for Squore tournament & match config",
 )
 @click.option(
@@ -654,8 +648,8 @@ async def setup_for_squore(
 async def squoresrv(
     clictx: CliContext,
     api_mount_point: str,
-    settings_json: pathlib.Path,
-    config_toml: pathlib.Path,
+    settings_json: pathlib.Path | None,
+    config_toml: pathlib.Path | None,
     devmap_toml: pathlib.Path,
 ) -> PluginLifespan:
     """Mount endpoints to serve data for Squore"""

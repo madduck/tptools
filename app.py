@@ -18,16 +18,16 @@ from fastapi import FastAPI
 from httpx import URL
 from sqlmodel import Session
 
-from tpsrv.cli import (
+from tptools.tpsrv.cli import (
     make_app,
 )
-from tpsrv.debug import debug_key_press_handler
-from tpsrv.post import post_tournament
-from tpsrv.sq_stdout import print_sqdata
-from tpsrv.squoresrv import setup_for_squore
-from tpsrv.stdout import print_tournament
-from tpsrv.tp import make_engine, tp_source
-from tpsrv.util import CliContext
+from tptools.tpsrv.debug import debug_key_press_handler
+from tptools.tpsrv.post import post_tournament
+from tptools.tpsrv.sq_stdout import print_sqdata
+from tptools.tpsrv.squoresrv import setup_for_squore
+from tptools.tpsrv.stdout import print_tournament
+from tptools.tpsrv.tp import make_engine, tp_source
+from tptools.tpsrv.util import CliContext
 from tptools.util import silence_logger
 
 logging.getLogger().setLevel(logging.DEBUG)

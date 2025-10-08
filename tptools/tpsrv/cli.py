@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import importlib.resources
 import logging
 import pathlib
 from contextlib import AsyncExitStack
@@ -56,10 +57,13 @@ def make_app(
     app.state.changeevent = asyncio.Event()
 
     def favicon() -> FileResponse:
-        return FileResponse(
-            pathlib.Path(__file__).parent.parent / "assets" / "favicon.ico",
-            media_type="image/png",
-        )
+        with importlib.resources.path(
+            "tptools", "tpsrv", "assets", "favicon.ico"
+        ) as favicon:
+            return FileResponse(
+                favicon,
+                media_type="image/png",
+            )
 
     app.get("/favicon.ico")(favicon)
 

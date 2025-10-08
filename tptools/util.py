@@ -10,8 +10,6 @@ from typing import Any, Never, TextIO
 from dateutil.parser import parse as date_parser
 from sqlalchemy import Dialect, Integer, TypeDecorator
 
-PACKAGE = pathlib.Path(__file__).parent.parent.name
-
 
 def is_truish(value: Any) -> bool:
     if not value:
