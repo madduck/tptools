@@ -296,30 +296,19 @@ def get_players_list(
 def get_court_for_dev(
     dev_court_map: Annotated[dict[str, int | str], Depends(get_dev_court_map)],
     courts: Annotated[list[Court], Depends(get_courts)],
-    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
     clientip: Annotated[str, Depends(get_remote)],
 ) -> Court | None:
     courtname = None
-    for identifier in (squoredev.device_id, clientip):
-        if identifier is None:
-            continue
+    if (courtname := dev_court_map.get(clientip)) is not None:
+        logger.debug(f"Device at IP {clientip} wants feed for {courtname}")
+        for court in courts:
+            # TODO: can we do better than this to identify the court when we are
+            # given a string that might not be what the current courtnamepolicy
+            # returns, or an ID?
+            if courtname in (court.name, str(court.name), court.id):
+                return court
 
-        if (courtname := dev_court_map.get(identifier)) is not None:
-            logger.debug(
-                f"Device ID {squoredev.device_id or '(unknown)'} at IP {clientip} "
-                f"wants feed for {courtname}"
-            )
-            for court in courts:
-                # TODO: can we do better than this to identify the court when we are
-                # given a string that might not be what the current courtnamepolicy
-                # returns, or an ID?
-                if courtname in (court.name, str(court.name), court.id):
-                    return court
-
-    logger.debug(
-        "No court found in devmap for device ID "
-        f"{squoredev.device_id or '(unknown)'}, IP {clientip}"
-    )
+    logger.debug("No court found in devmap for device with IP {clientip}")
     return None
 
 
