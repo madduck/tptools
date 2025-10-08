@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, ClassVar, TypedDict
+from typing import TYPE_CHECKING, Any, ClassVar, NotRequired, TypedDict
 
 from pydantic import SerializationInfo, TypeAdapter, model_serializer
 
@@ -13,8 +13,8 @@ from tptools.namepolicy import (
 
 class SquorePlayerStruct(TypedDict):
     name: str
-    club: str | None
-    country: str | None
+    club: NotRequired[str | None]
+    country: NotRequired[str | None]
 
 
 SquorePlayerStructValidator = TypeAdapter(SquorePlayerStruct)
@@ -59,7 +59,13 @@ class SquoreEntry(Entry):
             raise ValueError(f"No player name discernable from {self}")
 
         return SquorePlayerStructValidator.validate_python(
-            {"name": name, "club": club, "country": ctry}
+            {
+                k: v
+                for k, v in (("name", name), ("club", club), ("country", ctry))
+                if v is not None
+                # omit None from result while
+                # https://github.com/obbimi/Squore/issues/98
+            }
         )
 
     if TYPE_CHECKING:

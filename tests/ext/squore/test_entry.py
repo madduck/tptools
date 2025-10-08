@@ -4,7 +4,7 @@ from typing import Literal
 import pytest
 from pytest_mock import MockerFixture
 
-from tptools.entry import Club, Country, Player
+from tptools.entry import Club, Country, Entry, Player
 from tptools.ext.squore import SquoreEntry
 
 
@@ -21,7 +21,7 @@ def test_namepolicy_default(
     field: Literal["name"] | Literal["club"] | Literal["country"],
     exp: str,
 ) -> None:
-    assert sqentry.model_dump()[field] == exp
+    assert sqentry.model_dump()[field] == exp  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
 
 @pytest.mark.parametrize(
@@ -37,7 +37,7 @@ def test_doubles_namepolicy_default(
     field: Literal["name"] | Literal["club"] | Literal["country"],
     exp: str,
 ) -> None:
-    assert sqentrydbl.model_dump()[field] == exp
+    assert sqentrydbl.model_dump()[field] == exp  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
 
 @pytest.mark.parametrize(
@@ -58,7 +58,7 @@ def test_namepolicy_application(
     namepolicy = mocker.stub(name="namepolicy")
     namepolicy.return_value = "namepolicy"
     assert (
-        sqentry.model_dump(context={policyname: namepolicy})[field]
+        sqentry.model_dump(context={policyname: namepolicy})[field]  # pyright: ignore[reportTypedDictNotRequiredAccess]
         == namepolicy.return_value
     )
     namepolicy.assert_called_once_with(argfn(sqentry))
@@ -90,7 +90,7 @@ def test_doubles_namepolicy_application(
     paircombinepolicy = mocker.stub(name="paircombinepolicy")
     paircombinepolicy.return_value = "combined"
     assert (
-        sqentrydbl.model_dump(
+        sqentrydbl.model_dump(  # pyright: ignore[reportTypedDictNotRequiredAccess]
             context={
                 policyname: namepolicy,
                 "paircombinepolicy": paircombinepolicy,
@@ -110,3 +110,12 @@ def test_no_name_discernable(mocker: MockerFixture, sqentry: SquoreEntry) -> Non
     namepolicy.return_value = None
     with pytest.raises(ValueError, match="No player name discernable"):
         _ = sqentry.model_dump(context={"playernamepolicy": namepolicy})
+
+
+@pytest.mark.parametrize("field", ["club", "country"])
+def test_none_field_omits_from_struct(
+    player1: Player, entry1: Entry, field: str
+) -> None:
+    setattr(player1, field, None)
+    sqentry = SquoreEntry.from_tp_model(entry1.model_copy(update={"player1": player1}))
+    assert field not in sqentry.model_dump()
