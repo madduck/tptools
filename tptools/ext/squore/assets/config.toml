@@ -6,7 +6,7 @@ shareAction = "PostResult"
 # If shareAction == "PostResult", the URL where to POST the results.
 # Use the special value "me" such that results are posted back to tpsrv.
 # TODO: interaction with MQTT?
-PostResult = "http://tc/squore/v1/result"
+PostResult = "http://tc/tptools/v1/squore/result"
 
 # What to POST to the URL:
 # https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/prefs/PostDataPreference.java

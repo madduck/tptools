@@ -382,6 +382,7 @@ def get_court_feeds_list(
     matchstatusselectionparams: Annotated[
         MatchStatusSelectionParams, Depends(get_matchstatusselectionparams)
     ],
+    config: Annotated[Config, Depends(get_config)],
 ) -> list[Feed]:
     ret: list[Feed] = []
     playerpolicyparams = playernamepolicy.params() | paircombinepolicy.params()
@@ -396,7 +397,7 @@ def get_court_feeds_list(
             }
         )
     )
-    resultsurl = urlbase / ".." / "result"
+    resultsurl = config.get("PostResult", urlbase / ".." / "result")
     for court in sorted(courts):
         params = (
             courtselectionparams.model_dump()
