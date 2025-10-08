@@ -23,7 +23,7 @@ async def debug_key_press_handler(clictx: CliContext) -> PluginLifespan:
     key_to_cmd = {
         0x12: KeyAndFunc("^R", simulate_reload_tournament),
     }
-    puts = partial(nonblocking_write, file=sys.stderr)
+    puts = partial(nonblocking_write, file=sys.stderr, eol="\n")
     async with monitor_stdin_for_debug_commands(
         clictx, key_to_cmd=key_to_cmd, puts=puts
     ) as task:
