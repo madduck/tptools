@@ -57,7 +57,7 @@ def make_app(
 
     def favicon() -> FileResponse:
         return FileResponse(
-            pathlib.Path(__file__).parent.parent.parent / "assets" / "favicon.ico",
+            pathlib.Path(__file__).parent.parent / "assets" / "favicon.ico",
             media_type="image/png",
         )
 
