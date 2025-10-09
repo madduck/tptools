@@ -512,6 +512,7 @@ class SettingsQueryParams(BaseModel):
 
 @squoreapp.get("/settings")
 async def settings(
+    myurl: Annotated[str, Depends(get_url)],
     remote: Annotated[str, Depends(get_remote)],
     settings: Annotated[dict[str, Any], Depends(get_settings)],
     court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
@@ -551,6 +552,9 @@ async def settings(
 
     if court_for_dev is not None:
         settings["liveScoreDeviceId_customSuffix"] = f"-{court_for_dev}"
+
+    settings["RemoteSettingsURL"] = str(myurl)
+    settings["RemoteSettingsURL_Default"] = str(myurl)
 
     logger.debug(
         f"Settings for device {squoredev.device_id or '(no ID)'}: "
