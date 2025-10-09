@@ -550,6 +550,10 @@ async def settings(
             except KeyError:
                 logger.warning(f"There is no feed for a {court_for_dev!r}")
 
+    logger.debug(
+        f"Settings for device {squoredev.device_id or '(no ID)'}: "
+        + json.dumps(settings)
+    )
     return settings
 
 
