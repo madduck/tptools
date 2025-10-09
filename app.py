@@ -46,8 +46,11 @@ for name, level in (
 
 logger = logging.getLogger(__name__)
 
-if (envfile := os.getenv("TPFILE", None)) is None:
+TP_FILE: pathlib.Path | None
+if (envfile := os.getenv("TPFILE", os.getenv("TP_FILE"))) is None:
     TP_FILE = pathlib.Path(__file__).parent / "integration" / "anon_tournament.sqlite"
+elif envfile.lower() in ("", "false", "0", "no"):
+    TP_FILE = None
 else:
     TP_FILE = pathlib.Path(envfile)
 
@@ -114,12 +117,13 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
 
     try:
         async with AsyncExitStack() as stack:
-            engine = make_engine(
-                TP_FILE, os.getenv("TPUSER", "Admin"), os.getenv("TPPASS", "")
-            )
-            session = stack.enter_context(Session(engine))
-            tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
-            factories.append(tp_lifespan)
+            if TP_FILE is not None:
+                engine = make_engine(
+                    TP_FILE, os.getenv("TPUSER", "Admin"), os.getenv("TPPASS", "")
+                )
+                session = stack.enter_context(Session(engine))
+                tp_lifespan = partial(tp_source, tp_file=TP_FILE, session=session)
+                factories.append(tp_lifespan)
 
             tasks = await setup_plugins(factories, stack=stack, clictx=clictx)
 
