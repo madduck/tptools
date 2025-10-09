@@ -538,7 +538,6 @@ async def settings(
         settings["feedPostUrls"] = "\n".join(feeds)
 
         if court_for_dev is not None:
-            settings["liveScoreDeviceId_customSuffix"] = f"-{court_for_dev}"
             try:
                 idx, name = courtorder[court_for_dev.id]
                 settings["feedPostUrl"] = idx
@@ -549,6 +548,9 @@ async def settings(
 
             except KeyError:
                 logger.warning(f"There is no feed for a {court_for_dev!r}")
+
+    if court_for_dev is not None:
+        settings["liveScoreDeviceId_customSuffix"] = f"-{court_for_dev}"
 
     logger.debug(
         f"Settings for device {squoredev.device_id or '(no ID)'}: "
