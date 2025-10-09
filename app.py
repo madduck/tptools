@@ -27,6 +27,7 @@ from tptools.tpsrv.sq_stdout import print_sqdata
 from tptools.tpsrv.squoresrv import setup_for_squore
 from tptools.tpsrv.stdout import print_tournament
 from tptools.tpsrv.tp import make_engine, tp_source
+from tptools.tpsrv.tp_recv import setup_to_receive_tournament_post
 from tptools.tpsrv.util import CliContext
 from tptools.util import silence_logger
 
@@ -49,7 +50,53 @@ if (envfile := os.getenv("TPFILE", None)) is None:
     TP_FILE = pathlib.Path(__file__).parent / "integration" / "anon_tournament.sqlite"
 else:
     TP_FILE = pathlib.Path(envfile)
-POSTURL = URL(os.getenv("POSTURL", "http://localhost:8001/tptools/v1/tournament"))
+
+POSTURLS = [
+    URL(os.getenv("POSTURL_TPTOOLS") or "http://localhost:8000/tptools/v1/tournament"),
+    URL(os.getenv("POSTURL_TCBOARD") or "http://localhost:8001/tptools/v1/tournament"),
+]
+
+
+def _maybe_do_stdout(factories: list[PluginFactory]) -> None:
+    if os.getenv("DOSTDOUT"):
+        tpstdout_lifespan = partial(print_tournament, indent=1)
+        factories.append(tpstdout_lifespan)
+    else:
+        logger.info(
+            "Not printing tournament to stdout, set DOSTDOUT=1 if you want that"
+        )
+
+
+def _maybe_do_post(factories: list[PluginFactory]) -> None:
+    if os.getenv("NOPOST"):
+        logger.info("Not posting tournament to URLs as per $NOPOST")
+
+    elif POSTURLS:
+        urls = [url for url in POSTURLS if url and url.scheme.startswith("http")]
+        logger.info(f"Posting to URLs: {','.join(str(u) for u in urls)}")
+        tppost_lifespan = partial(
+            post_tournament,
+            urls=[url for url in POSTURLS if url and url.scheme.startswith("http")],
+            retries=0,
+        )
+        factories.append(tppost_lifespan)
+    else:
+        logger.info("Not posting tournament anywhere, no URLs configured")
+
+
+def _maybe_do_sqstdout(factories: list[PluginFactory]) -> None:
+    if not os.getenv("NOSQSTDOUT"):
+        sqstdout_lifespan = partial(print_sqdata, indent=1)
+        factories.append(sqstdout_lifespan)
+    else:
+        logger.info("Not printing TPData to stdout as per $NOSQSTDOUT")
+
+
+def _maybe_do_recv(factories: list[PluginFactory]) -> None:
+    if not os.getenv("NORECV"):
+        factories.append(setup_to_receive_tournament_post)
+    else:
+        logger.info("Not setting up to receive tournament via POST as per $NORECV")
 
 
 @asynccontextmanager
@@ -60,22 +107,10 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         debug_key_press_handler,
         setup_for_squore,
     ]
-
-    if not os.getenv("NOSTDOUT"):
-        tpstdout_lifespan = partial(print_tournament, indent=1)
-        factories.append(tpstdout_lifespan)
-    else:
-        logger.info("Not printing tournament to stdout as per $NOSTDOUT")
-    if not os.getenv("NOPOST"):
-        tppost_lifespan = partial(post_tournament, urls=[POSTURL], retries=0)
-        factories.append(tppost_lifespan)
-    else:
-        logger.info("Not posting tournament to URLs as per $NOPOST")
-    if not os.getenv("NOSQSTDOUT"):
-        sqstdout_lifespan = partial(print_sqdata, indent=1)
-        factories.append(sqstdout_lifespan)
-    else:
-        logger.info("Not printing TPData to stdout as per $NOSQSTDOUT")
+    _maybe_do_stdout(factories)
+    _maybe_do_post(factories)
+    _maybe_do_sqstdout(factories)
+    _maybe_do_recv(factories)
 
     try:
         async with AsyncExitStack() as stack:

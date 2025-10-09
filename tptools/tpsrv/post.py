@@ -13,6 +13,7 @@ from tptools import Tournament
 
 from .util import (
     CliContext,
+    PostData,
     pass_clictx,
     post_data,
     validate_urls,
@@ -22,17 +23,19 @@ logger = logging.getLogger(__name__)
 
 
 async def post_to_urls(
-    tournament: Tournament, urls: list[URL], *, retries: int = 1
+    tournament: Tournament, urls: list[URL], cookie: int, *, retries: int = 1
 ) -> None:
     logger.info(f"Tournament changed, posting to {len(urls)} URLs")
 
     def log_done_task(task: asyncio.Task[None]) -> None:
         logger.debug(f"Task done: {task}")
 
+    data = PostData(cookie=cookie, data=tournament)
+
     async with asyncio.TaskGroup() as tg:
         for url in urls:
             task = tg.create_task(
-                post_data(url, tournament, retries=retries),
+                post_data(url, data, retries=retries),
                 name=f"Posting Tournament to {url}",
             )
             logger.debug(f"Task for posting to {url}: {task}")
@@ -45,7 +48,7 @@ async def post_to_urls(
 async def post_tournament(
     clictx: CliContext, urls: list[URL], retries: int
 ) -> PluginLifespan:
-    callback = partial(post_to_urls, urls=urls, retries=retries)
+    callback = partial(post_to_urls, urls=urls, retries=retries, cookie=hash(clictx))
     updates_gen = cast(
         AsyncGenerator[Tournament],
         clictx.itc.updates("tournament", yield_immediately=True),

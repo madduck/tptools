@@ -28,6 +28,7 @@ from .util import CliContext, pass_clictx
 PLUGINS = [
     "debug",
     "tp",
+    "tp_recv",
     "stdout",
     "post",
     "squoresrv",

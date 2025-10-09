@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 class CliContext(_CliContext):
     api: FastAPI
 
+    def __hash__(self) -> int:
+        return hash(self.api)
+
 
 pass_clictx = click.make_pass_decorator(CliContext)
 
@@ -52,9 +55,14 @@ def validate_urls(
     return ret
 
 
-async def post_data(
+class PostData[T: BaseModel](BaseModel):
+    cookie: int
+    data: T
+
+
+async def post_data[T: BaseModel](
     url: URL,
-    data: BaseModel,
+    data: PostData[T],
     *,
     retries: int = 3,
     sleep: float = 1,
