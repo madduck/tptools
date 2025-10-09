@@ -398,19 +398,21 @@ def get_court_feeds_list(
         )
     )
     resultsurl = config.get("PostResult", urlbase / ".." / "result")
+
+    courtparams = (
+        courtselectionparams.model_dump()
+        | matchstatusselectionparams.model_dump()
+        | courtnamepolicy.params()
+        | playerpolicyparams
+    )
+    logger.error(courtselectionparams)
     for court in sorted(courts):
-        params = (
-            courtselectionparams.model_dump()
-            | matchstatusselectionparams.model_dump()
-            | courtnamepolicy.params()
-            | playerpolicyparams
-            | {"court": court.id}
-        )
+        courtparams["court"] = court.id
+
         matchesurl = (urlbase / ".." / "matches").with_query(
             **{
                 k: v
-                for k, v in dict_value_replace_bool_with_int(params).items()
-                # TODO: utility function?
+                for k, v in dict_value_replace_bool_with_int(courtparams).items()
                 if v is not None
             }
         )
