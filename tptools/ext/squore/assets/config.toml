@@ -27,7 +27,7 @@ hideCompletedMatchesFromFeed = true
 Placeholder_Match = "${time} ${FirstOfList:~${A}~${A.name}~} - ${FirstOfList:~${B}~${B.name}~} (Match #${matchnr}, ${draw.event}::${draw.stage}::${draw.name}) : ${result}"
 
 skipMatchSettings = true
-useHandInHandOutScoring = true
+useHandInHandOutScoring = false
 numberOfPointsToWinGame = 11
 numberOfGamesToWinMatch = 3
 timerPauseBetweenGames = 90
