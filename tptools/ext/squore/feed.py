@@ -125,7 +125,7 @@ class MatchesFeed(SqModel):
         name = self.name
         for matchcourt in matches_by_court.keys():
             if matchcourt is not None and matchcourt.id == courtselectionparams.court:
-                name = f"{name} ({courtnamepolicy(matchcourt)})"
+                name = f"{name} {courtnamepolicy(matchcourt)}"
                 break
 
         ret = {
