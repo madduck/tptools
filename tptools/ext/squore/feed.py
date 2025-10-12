@@ -14,7 +14,7 @@ from pydantic import (
 
 from ...court import CourtSelectionParams
 from ...namepolicy import CourtNamePolicy
-from ...tournament import MatchSelectionParams, Tournament
+from ...tournament import MatchSelectionParams, NumMatchesParams, Tournament
 from .basemodel import SqModel
 from .config import Config
 from .court import SquoreCourt
@@ -80,6 +80,7 @@ class MatchesFeed(SqModel):
         matches_by_court: dict[SquoreCourt | None, list[SquoreMatch]],
         courtnamepolicy: CourtNamePolicy,
         courtselectionparams: CourtSelectionParams,
+        nummatchesparams: NumMatchesParams,
     ) -> list[MatchesSection]:
         sections = []
         for matchcourt, sqmatches in matches_by_court.items():
@@ -94,7 +95,11 @@ class MatchesFeed(SqModel):
             courtname = courtnamepolicy(matchcourt)
             sections.append(
                 MatchesSection(
-                    name=str(courtname), expanded=thiscourt, matches=sqmatches
+                    name=str(courtname),
+                    expanded=thiscourt,
+                    matches=sqmatches
+                    if nummatchesparams.max_matches_per_court is None
+                    else sqmatches[: nummatchesparams.max_matches_per_court],
                 )
             )
 
@@ -104,6 +109,9 @@ class MatchesFeed(SqModel):
     def _model_serializer(self, info: SerializationInfo) -> dict[str, Any]:
         matchselectionparams = self.get_params_from_info(
             info, "matchselectionparams", MatchSelectionParams()
+        )
+        nummatchesparams = self.get_params_from_info(
+            info, "nummatchesparams", NumMatchesParams()
         )
         matches = self.tournament.get_matches(
             **dict(matchselectionparams),
@@ -120,6 +128,7 @@ class MatchesFeed(SqModel):
             matches_by_court,
             courtnamepolicy=courtnamepolicy,
             courtselectionparams=courtselectionparams,
+            nummatchesparams=nummatchesparams,
         )
         name = self.name
         for matchcourt in matches_by_court.keys():

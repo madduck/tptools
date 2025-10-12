@@ -5,6 +5,7 @@ from tptools.ext.squore.feed import (
     MatchesFeed,
     SquoreTournament,
 )
+from tptools.tournament import NumMatchesParams
 
 from .conftest import MatchesFeedFactoryType
 
@@ -44,6 +45,17 @@ def test_matches_feed(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
     assert "name" in dump
     assert dump.get("config") == {}
     assert dump.get("nummatches") == 2
+
+
+def test_matches_feed_max_num(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
+    mf = MatchesFeedFactory()
+    dump = mf.model_dump(
+        context={"nummatchesparams": NumMatchesParams(max_matches_per_court=0)}
+        # TODO: ugly, as test data only has one match for one of each of two courts, but
+        # the logic should be the same.
+    )
+    assert "name" in dump
+    assert dump.get("nummatches") == 0
 
 
 def test_matches_feed_with_config(MatchesFeedFactory: MatchesFeedFactoryType) -> None:

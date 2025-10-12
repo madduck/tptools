@@ -50,6 +50,7 @@ from tptools.namepolicy import (
     PlayerNamePolicyParams,
 )
 from tptools.namepolicy.policybase import RegexpSubstTuple
+from tptools.tournament import NumMatchesParams
 from tptools.util import dict_value_replace_bool_with_int, silence_logger
 
 from .util import CliContext, pass_clictx
@@ -131,6 +132,12 @@ def get_matchselectionparams(
     policyparams: Annotated[MatchesPolicyParams, Query()],
 ) -> MatchSelectionParams:
     return MatchSelectionParams.make_from_parameter_superset(policyparams)
+
+
+def get_nummatchesparams(
+    policyparams: Annotated[NumMatchesParams, Query()],
+) -> NumMatchesParams:
+    return NumMatchesParams.make_from_parameter_superset(policyparams)
 
 
 def get_remote(request: Request) -> str | None:
@@ -336,6 +343,7 @@ def get_matches_feed_dict(
     matchselectionparams: Annotated[
         MatchSelectionParams, Depends(get_matchselectionparams)
     ],
+    nummatchesparams: Annotated[NumMatchesParams, Depends(get_nummatchesparams)],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> dict[str, Any]:
@@ -356,6 +364,7 @@ def get_matches_feed_dict(
             "countrynamepolicy": countrynamepolicy,
             "courtselectionparams": courtselectionparams,
             "matchselectionparams": matchselectionparams,
+            "nummatchesparams": nummatchesparams,
         }
     )
 
@@ -382,6 +391,7 @@ def get_court_feeds_list(
     matchselectionparams: Annotated[
         MatchSelectionParams, Depends(get_matchselectionparams)
     ],
+    nummatchesparams: Annotated[NumMatchesParams, Depends(get_nummatchesparams)],
     config: Annotated[Config, Depends(get_config)],
 ) -> list[Feed]:
     ret: list[Feed] = []
@@ -402,6 +412,7 @@ def get_court_feeds_list(
     courtparams = (
         courtselectionparams.model_dump()
         | matchselectionparams.model_dump()
+        | nummatchesparams.model_dump()
         | courtnamepolicy.params()
         | playerpolicyparams
     )
