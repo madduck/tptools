@@ -17,6 +17,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.status import (
+    HTTP_307_TEMPORARY_REDIRECT,
     HTTP_308_PERMANENT_REDIRECT,
     HTTP_404_NOT_FOUND,
     HTTP_424_FAILED_DEPENDENCY,
@@ -516,11 +517,23 @@ async def feeds(
         f"Returning {len(court_feeds)} feeds in response to "
         f"request from remote {remote} ({policyparams})"
     )
+    # TODO: ability to inject the same base params as for the @post('/init') handler
     return court_feeds
 
 
 class SettingsQueryParams(BaseModel):
     include_feeds: bool = True
+
+
+@squoreapp.get("/init")
+async def init(
+    myurl: Annotated[URL, Depends(get_url)],
+) -> RedirectResponse:
+    redirect_url = (
+        myurl / ".." / "settings" % {"only_this_court": 1, "max_matches_per_court": 2}
+    )
+    # TODO: these belong in a configuration file
+    return RedirectResponse(str(redirect_url), HTTP_307_TEMPORARY_REDIRECT)
 
 
 @squoreapp.get("/settings")
