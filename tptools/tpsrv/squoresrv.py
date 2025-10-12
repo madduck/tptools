@@ -148,6 +148,8 @@ def get_remote(request: Request) -> str | None:
 
 
 def get_url(request: Request) -> URL:
+    # Prefer to work with yarl.URL over starlette.datastructures.URL, so must go via
+    # str():
     return URL(str(request.url))
 
 
@@ -538,7 +540,7 @@ async def init(
 
 @squoreapp.get("/settings")
 async def settings(
-    myurl: Annotated[str, Depends(get_url)],
+    myurl: Annotated[URL, Depends(get_url)],
     remote: Annotated[str, Depends(get_remote)],
     settings: Annotated[dict[str, Any], Depends(get_settings)],
     court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
