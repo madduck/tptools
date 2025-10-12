@@ -1,16 +1,8 @@
 import logging
 from collections import defaultdict
-from typing import (
-    Any,
-    Iterable,
-    cast,
-)
+from typing import Any, Iterable, cast
 
-from pydantic import (
-    Field,
-    SerializationInfo,
-    model_serializer,
-)
+from pydantic import Field, SerializationInfo, model_serializer
 
 from ...court import CourtSelectionParams
 from ...namepolicy import CourtNamePolicy
