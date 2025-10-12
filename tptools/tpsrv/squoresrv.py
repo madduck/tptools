@@ -351,13 +351,10 @@ def get_matches_feed_dict(
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> dict[str, Any]:
     if courtselectionparams.court is None and court_for_dev:
-        # I actually don't think this branch will ever enter as the device ID is not
-        # sent for matches. Oh well.
         courtselectionparams.court = court_for_dev.id
         logger.info(
             f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
         )
-
     return MatchesFeed(tournament=tournament, config=config).model_dump(
         context={
             "courtnamepolicy": courtnamepolicy,
