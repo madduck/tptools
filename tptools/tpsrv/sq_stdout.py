@@ -8,7 +8,7 @@ from typing import cast
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 
-from tptools import MatchStatusSelectionParams
+from tptools import MatchSelectionParams
 from tptools.ext.squore import Config, MatchesFeed, SquoreTournament
 from tptools.namepolicy import PlayerNamePolicy
 from tptools.util import nonblocking_write
@@ -27,9 +27,7 @@ async def matches_feed_json(
     data = MatchesFeed(tournament=tournament, config=Config()).model_dump_json(
         indent=indent,
         context={
-            "matchstatusselectionparams": MatchStatusSelectionParams(
-                include_not_ready=True
-            ),
+            "matchselectionparams": MatchSelectionParams(include_not_ready=True),
             "playernamepolicy": PlayerNamePolicy(),
         },
     )

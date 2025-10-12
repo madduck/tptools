@@ -29,7 +29,7 @@ from tptools import (
     CourtSelectionParams,
     Draw,
     Entry,
-    MatchStatusSelectionParams,
+    MatchSelectionParams,
     Tournament,
 )
 from tptools.ext.squore import (
@@ -79,7 +79,7 @@ class MatchesPolicyParams(
     CountryNamePolicyParams,
     CourtNamePolicyParams,
     CourtSelectionParams,
-    MatchStatusSelectionParams,
+    MatchSelectionParams,
 ): ...
 
 
@@ -127,10 +127,10 @@ def get_clubnamepolicy() -> ClubNamePolicy:
     return ClubNamePolicy(regexps=[vereinslos_is_none])
 
 
-def get_matchstatusselectionparams(
+def get_matchselectionparams(
     policyparams: Annotated[MatchesPolicyParams, Query()],
-) -> MatchStatusSelectionParams:
-    return MatchStatusSelectionParams.make_from_parameter_superset(policyparams)
+) -> MatchSelectionParams:
+    return MatchSelectionParams.make_from_parameter_superset(policyparams)
 
 
 def get_remote(request: Request) -> str | None:
@@ -333,8 +333,8 @@ def get_matches_feed_dict(
     courtselectionparams: Annotated[
         CourtSelectionParams, Depends(get_courtselectionparams)
     ],
-    matchstatusselectionparams: Annotated[
-        MatchStatusSelectionParams, Depends(get_matchstatusselectionparams)
+    matchselectionparams: Annotated[
+        MatchSelectionParams, Depends(get_matchselectionparams)
     ],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
@@ -355,7 +355,7 @@ def get_matches_feed_dict(
             "clubnamepolicy": clubnamepolicy,
             "countrynamepolicy": countrynamepolicy,
             "courtselectionparams": courtselectionparams,
-            "matchstatusselectionparams": matchstatusselectionparams,
+            "matchselectionparams": matchselectionparams,
         }
     )
 
@@ -379,8 +379,8 @@ def get_court_feeds_list(
     courtselectionparams: Annotated[
         CourtSelectionParams, Depends(get_courtselectionparams)
     ],
-    matchstatusselectionparams: Annotated[
-        MatchStatusSelectionParams, Depends(get_matchstatusselectionparams)
+    matchselectionparams: Annotated[
+        MatchSelectionParams, Depends(get_matchselectionparams)
     ],
     config: Annotated[Config, Depends(get_config)],
 ) -> list[Feed]:
@@ -401,7 +401,7 @@ def get_court_feeds_list(
 
     courtparams = (
         courtselectionparams.model_dump()
-        | matchstatusselectionparams.model_dump()
+        | matchselectionparams.model_dump()
         | courtnamepolicy.params()
         | playerpolicyparams
     )

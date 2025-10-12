@@ -22,7 +22,7 @@ from .tpmatch import TPMatchStatus as MatchStatus
 logger = logging.getLogger(__name__)
 
 
-class MatchStatusSelectionParams(ParamsModel):
+class MatchSelectionParams(ParamsModel):
     include_played: bool = False
     include_not_ready: bool = False
 
@@ -79,7 +79,7 @@ class Tournament[
         return len(self.matches)
 
     @staticmethod
-    def _params_to_status_set(params: MatchStatusSelectionParams) -> set[MatchStatus]:
+    def _params_to_status_set(params: MatchSelectionParams) -> set[MatchStatus]:
         accepted_statuses = set(MatchStatus)
         if not params.include_played:
             accepted_statuses.remove(MatchStatus.PLAYED)
@@ -96,7 +96,7 @@ class Tournament[
         # TODO: remove redundancy with MatchStatusSelectionParams above
     ) -> dict[str, MatchT]:
         accepted_statuses = Tournament._params_to_status_set(
-            MatchStatusSelectionParams(
+            MatchSelectionParams(
                 include_not_ready=include_not_ready, include_played=include_played
             )
         )
@@ -173,8 +173,8 @@ class Tournament[
         self,
         info: SerializationInfo,
     ) -> dict[str, Any]:
-        matchstatusselectionparams = BaseModel.get_params_from_info(
-            info, "matchstatusselectionparams", MatchStatusSelectionParams()
+        matchselectionparams = BaseModel.get_params_from_info(
+            info, "matchselectionparams", MatchSelectionParams()
         )
         return {
             "name": self.name,
@@ -182,7 +182,7 @@ class Tournament[
             "draws": self.draws,
             "courts": self.courts,
             "entries": self.entries,
-            "matches": self.select_matches(**dict(matchstatusselectionparams)),
+            "matches": self.select_matches(**dict(matchselectionparams)),
         }
 
     @classmethod

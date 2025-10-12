@@ -8,7 +8,7 @@ from typing import cast
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 
-from tptools import MatchStatusSelectionParams, Tournament
+from tptools import MatchSelectionParams, Tournament
 from tptools.util import nonblocking_write
 
 from .util import CliContext, pass_clictx
@@ -25,9 +25,7 @@ async def tournament_model_dump_json(
     data = tournament.model_dump_json(
         indent=indent,
         context={
-            "matchstatusselectionparams": MatchStatusSelectionParams(
-                include_not_ready=True
-            ),
+            "matchselectionparams": MatchSelectionParams(include_not_ready=True),
         },
     )
     nonblocking_write(data + "\n", file=sys.stdout)

@@ -14,7 +14,7 @@ from pydantic import (
 
 from ...court import CourtSelectionParams
 from ...namepolicy import CourtNamePolicy
-from ...tournament import MatchStatusSelectionParams, Tournament
+from ...tournament import MatchSelectionParams, Tournament
 from .basemodel import SqModel
 from .config import Config
 from .court import SquoreCourt
@@ -102,11 +102,11 @@ class MatchesFeed(SqModel):
 
     @model_serializer(mode="plain")
     def _model_serializer(self, info: SerializationInfo) -> dict[str, Any]:
-        matchstatusselectionparams = self.get_params_from_info(
-            info, "matchstatusselectionparams", MatchStatusSelectionParams()
+        matchselectionparams = self.get_params_from_info(
+            info, "matchselectionparams", MatchSelectionParams()
         )
         matches = self.tournament.get_matches(
-            **dict(matchstatusselectionparams),
+            **dict(matchselectionparams),
         )
         matches_by_court = self._get_matches_by_court(matches)
 
