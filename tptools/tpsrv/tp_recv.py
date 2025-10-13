@@ -51,6 +51,9 @@ async def setup_to_receive_tournament_post(
     yield None
 
 
+# TODO: option to load data initially from a remote endpoint
+
+
 @plugin
 @click.option(
     "--api-mount-point",
