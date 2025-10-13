@@ -453,7 +453,6 @@ def get_court_feeds_list(
         | courtnamepolicy.params()
         | playerpolicyparams
     )
-    logger.error(courtselectionparams)
     for court in sorted(courts):
         courtparams["court"] = court.id
 
