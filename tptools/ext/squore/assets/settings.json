@@ -37,5 +37,6 @@
   "useTossFeature": "DoNotUse",
   "switchToPlayerListIfMatchListOfFeedIsEmpty": "DoNotUse",
   "matchList": "",
-  "showTips": false
+  "showTips": false,
+  "endGameSuggestion": "Automatic"
 }
