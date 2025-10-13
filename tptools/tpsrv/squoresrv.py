@@ -52,7 +52,7 @@ from tptools.namepolicy import (
 )
 from tptools.namepolicy.policybase import RegexpSubstTuple
 from tptools.tournament import NumMatchesParams
-from tptools.util import dict_value_replace_bool_with_int, silence_logger
+from tptools.util import normalise_dict_values_for_query_string, silence_logger
 
 from .util import CliContext, pass_clictx
 
@@ -397,7 +397,7 @@ def get_court_feeds_list(
     ret: list[Feed] = []
     playerpolicyparams = playernamepolicy.params() | paircombinepolicy.params()
     playersurl = (urlbase / ".." / "players").with_query(
-        **dict_value_replace_bool_with_int(
+        **normalise_dict_values_for_query_string(
             playerpolicyparams
             | {
                 "lnamefirst": True,
@@ -421,11 +421,7 @@ def get_court_feeds_list(
         courtparams["court"] = court.id
 
         matchesurl = (urlbase / ".." / "matches").with_query(
-            **{
-                k: v
-                for k, v in dict_value_replace_bool_with_int(courtparams).items()
-                if v is not None
-            }
+            **normalise_dict_values_for_query_string(courtparams)
         )
 
         ret.append(

@@ -383,11 +383,20 @@ def test_nonblocking_write(
         assert util.nonblocking_write(instr, file=f, eol=eol) == res  # type: ignore[arg-type]
 
 
-def test_dict_value_replace_bool_with_int() -> None:
-    dct = {"int": 42, "str": "string", "float": 3.14}
-    bools = {"true": True, "false": False}
-    res = util.dict_value_replace_bool_with_int(dct | bools)
-
-    assert res.pop("true") == 1
-    assert res.pop("false") == 0
-    assert res == dct
+@pytest.mark.parametrize(
+    "inp, present, exp",
+    [
+        (None, False, None),
+        (42, True, 42),
+        (3.14, True, 3.14),
+        ("str", True, "str"),
+        (True, True, 1),
+        (False, True, 0),
+    ],
+)
+def test_dict_value_replace_bool_with_int(inp: Any, present: bool, exp: Any) -> None:
+    res = util.normalise_dict_values_for_query_string({"value": inp})
+    if present:
+        assert res.pop("value") == exp
+    else:
+        assert "value" not in res

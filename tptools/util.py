@@ -222,5 +222,7 @@ def nonblocking_write(s: str, /, *, file: TextIO, eol: str | None = None) -> int
     return written
 
 
-def dict_value_replace_bool_with_int(dct: dict[str, Any]) -> dict[str, Any]:
-    return {k: int(v) if isinstance(v, bool) else v for k, v in dct.items()}
+def normalise_dict_values_for_query_string(dct: dict[str, Any]) -> dict[str, Any]:
+    return {
+        k: int(v) if isinstance(v, bool) else v for k, v in dct.items() if v is not None
+    }
