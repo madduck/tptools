@@ -200,6 +200,7 @@ Commands:
   squoresrv  Mount endpoints to serve data for Squore
   stdout     Output tournament data as JSON to stdout whenever it changes
   tp         Obtain match and player data from a TP file (or SQLite)
+  tp-recv    Mount endpoints to receive tournament data from tptools.post
 ```
 
 The actual work is done by components/plugins, listed here as "Commands". Note that these commands can be "chained", i.e. multiple commands provided:
@@ -268,6 +269,26 @@ one or more `--url` arguments and will post the data there.
 | `stdout`    | A simple tournament representation (players, draws, courts, matches) |
 | `post`      | A simple tournament representation (players, draws, courts, matches) |
 | `sq-stdout` | A view of the data sent to Squore (see below)                        |
+
+### Forwarding TP data
+
+If you prefer to work mostly on another machine than the one running
+TournamentSoftware, you can run another instance of `tptools` on a second
+machine with the `tp-recv` plugin, and `post` the data there from the Windows
+host:
+
+```
+tpsrv post http://secondhost/tptools/v1/tournament
+```
+
+and then on the second host, run:
+
+```
+tpsrv tp-recv squoresrv post -u http://tcboard/tptools/v1/tournament
+```
+
+Try not to get `tpsrv` to post to itself, although there is a check in place to
+prevent the infinite loop this would cause.
 
 ### The Squore endpoints
 
