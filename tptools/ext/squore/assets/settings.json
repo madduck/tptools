@@ -34,5 +34,6 @@
   "useOfficialAnnouncementsFeature": "DoNotUse",
   "useShareFeature": "Automatic",
   "useTimersFeature": "Automatic",
-  "useTossFeature": "DoNotUse"
+  "useTossFeature": "DoNotUse",
+  "switchToPlayerListIfMatchListOfFeedIsEmpty": "DoNotUse"
 }
