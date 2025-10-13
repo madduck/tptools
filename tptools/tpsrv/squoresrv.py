@@ -605,7 +605,7 @@ async def settings(
                 settings["feedPostUrl"] = idx
                 logger.info(
                     f"Pre-selected feed {idx} (court {name}) "
-                    f"for device {squoredev.device_id}"
+                    f"for device {squoredev.device_id or '(no device ID)'}"
                 )
 
             except KeyError:
