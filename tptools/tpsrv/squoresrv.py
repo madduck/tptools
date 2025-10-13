@@ -594,6 +594,7 @@ async def settings(
                 f"Name={courtfeed.Section} {courtfeed.Name}\n"
                 f"FeedPlayers={courtfeed.FeedPlayers}\n"
                 f"FeedMatches={courtfeed.FeedMatches}\n"
+                f"PostResult={courtfeed.PostResult}\n"
             )
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
