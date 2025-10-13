@@ -36,5 +36,6 @@
   "useTimersFeature": "Automatic",
   "useTossFeature": "DoNotUse",
   "switchToPlayerListIfMatchListOfFeedIsEmpty": "DoNotUse",
-  "matchList": ""
+  "matchList": "",
+  "showTips": false
 }
