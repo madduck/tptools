@@ -333,6 +333,12 @@ def get_players_list(
     ]
 
 
+def _normalise_court_name_for_matching(courtname: str) -> str:
+    return re.sub(
+        r"c(?:ourt *)?0*", "c", courtname, count=0, flags=re.IGNORECASE
+    ).lower()
+
+
 def get_court_for_dev(
     dev_court_map: Annotated[dict[str, int | str], Depends(get_dev_court_map)],
     courts: Annotated[list[Court], Depends(get_courts)],
@@ -345,7 +351,14 @@ def get_court_for_dev(
             # TODO: can we do better than this to identify the court when we are
             # given a string that might not be what the current courtnamepolicy
             # returns, or an ID?
-            if courtname in (court.name, str(court.name), court.id):
+            if isinstance(courtname, int):
+                if courtname == court.id:
+                    return court
+
+            elif _normalise_court_name_for_matching(courtname) in (
+                _normalise_court_name_for_matching(court.name),
+                _normalise_court_name_for_matching(str(court.name)),
+            ):
                 return court
 
     logger.debug("No court found in devmap for device with IP {clientip}")
