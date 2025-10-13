@@ -361,7 +361,7 @@ def get_court_for_dev(
             ):
                 return court
 
-    logger.debug("No court found in devmap for device with IP {clientip}")
+    logger.debug(f"No court found in devmap for device with IP {clientip}")
     return None
 
 
