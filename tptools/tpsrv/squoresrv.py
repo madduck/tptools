@@ -73,6 +73,11 @@ class SquoreDevQueryParams(BaseModel):
     device_id: str | None = None
 
 
+class MatchFeedQueryParams(BaseModel):
+    only_this_court: bool | None = None
+    max_matches_per_court: int | None = None
+
+
 class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
 
 
@@ -139,6 +144,21 @@ def get_nummatchesparams(
     policyparams: Annotated[NumMatchesParams, Query()],
 ) -> NumMatchesParams:
     return NumMatchesParams.make_from_parameter_superset(policyparams)
+
+
+def get_matchfeedqueryparams(
+    request: Request,
+) -> MatchFeedQueryParams:
+    try:
+        return cast(
+            MatchFeedQueryParams, request.app.state.squore["matchfeedqueryparams"]
+        )
+
+    except (AttributeError, KeyError) as err:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="App state does not include squore.matchfeedqueryparams",
+        ) from err
 
 
 def get_remote(request: Request) -> str | None:
@@ -391,6 +411,9 @@ def get_court_feeds_list(
     matchselectionparams: Annotated[
         MatchSelectionParams, Depends(get_matchselectionparams)
     ],
+    matchfeedqueryparams: Annotated[
+        MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
+    ],
     nummatchesparams: Annotated[NumMatchesParams, Depends(get_nummatchesparams)],
     config: Annotated[Config, Depends(get_config)],
 ) -> list[Feed]:
@@ -410,7 +433,8 @@ def get_court_feeds_list(
     resultsurl = config.get("PostResult", urlbase / ".." / "result")
 
     courtparams = (
-        courtselectionparams.model_dump()
+        matchfeedqueryparams.model_dump()
+        | courtselectionparams.model_dump()
         | matchselectionparams.model_dump()
         | nummatchesparams.model_dump()
         | courtnamepolicy.params()
@@ -512,7 +536,6 @@ async def feeds(
         f"Returning {len(court_feeds)} feeds in response to "
         f"request from remote {remote} ({policyparams})"
     )
-    # TODO: ability to inject the same base params as for the @post('/init') handler
     return court_feeds
 
 
@@ -523,11 +546,16 @@ class SettingsQueryParams(BaseModel):
 @squoreapp.get("/init")
 async def init(
     myurl: Annotated[URL, Depends(get_url)],
+    matchfeedqueryparams: Annotated[
+        MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
+    ],
 ) -> RedirectResponse:
     redirect_url = (
-        myurl / ".." / "settings" % {"only_this_court": 1, "max_matches_per_court": 2}
+        myurl
+        / ".."
+        / "settings"
+        % normalise_dict_values_for_query_string(matchfeedqueryparams.model_dump())
     )
-    # TODO: these belong in a configuration file
     return RedirectResponse(str(redirect_url), HTTP_307_TEMPORARY_REDIRECT)
 
 
@@ -602,6 +630,8 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
 @asynccontextmanager
 async def setup_for_squore(
     clictx: CliContext,
+    only_this_court: bool = False,
+    max_matches_per_court: int | None = None,
     api_mount_point: str = API_MOUNTPOINT,
     settings_json: pathlib.Path | None = None,
     config_toml: pathlib.Path | None = None,
@@ -626,6 +656,10 @@ async def setup_for_squore(
             "settings": settings_json,
             "config": config_toml,
             "devmap": devmap_toml,
+            "matchfeedqueryparams": MatchFeedQueryParams(
+                only_this_court=only_this_court,
+                max_matches_per_court=max_matches_per_court,
+            ),
         }
         squoreapp.mount(
             "/flags",
@@ -649,6 +683,19 @@ async def setup_for_squore(
 
 
 @plugin
+@click.option(
+    "--only-this-court",
+    "-o",
+    is_flag=True,
+    help="Configure clients to only show matches for the selected court",
+)
+@click.option(
+    "--max-matches-per-court",
+    "-m",
+    type=click.IntRange(min=1),
+    default=None,
+    help="Limit the number of matches to include in a court feed",
+)
 @click.option(
     "--api-mount-point",
     metavar="MOUNTPOINT",
@@ -679,6 +726,8 @@ async def setup_for_squore(
 @pass_clictx
 async def squoresrv(
     clictx: CliContext,
+    only_this_court: bool,
+    max_matches_per_court: int | None,
     api_mount_point: str,
     settings_json: pathlib.Path | None,
     config_toml: pathlib.Path | None,
@@ -687,6 +736,12 @@ async def squoresrv(
     """Mount endpoints to serve data for Squore"""
 
     async with setup_for_squore(
-        clictx, api_mount_point, settings_json, config_toml, devmap_toml
+        clictx,
+        only_this_court,
+        max_matches_per_court,
+        api_mount_point,
+        settings_json,
+        config_toml,
+        devmap_toml,
     ) as task:
         yield task

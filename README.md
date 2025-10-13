@@ -277,18 +277,22 @@ Usage: tpsrv squoresrv [OPTIONS]
   Mount endpoints to serve data for Squore
 
 Options:
-  --api-mount-point MOUNTPOINT  API mount point for Squore endpoints
-                                [default: /squore]
-  --settings-json PATH          Path of file to serve when Squore requests app
-                                settings  [default:
-                                ../../ext/Squore.settings.json]
-  --config-toml PATH            Path of file to use for Squore tournament &
-                                match config  [default:
-                                ../../ext/Squore.config.toml]
-  --devmap-toml PATH            Path of file to use for device to court
-                                mapping  [default: Squore.dev_court_map.toml]
-  --help                        Show this message and exit.
-```
+  -o, --only-this-court           Configure clients to only show matches for
+                                  the selected court
+  -m, --max-matches-per-court INTEGER RANGE
+                                  Limit the number of matches to include in a
+                                  court feed  [x>=1]
+  --api-mount-point MOUNTPOINT    API mount point for Squore endpoints
+                                  [default: /squore]
+  --settings-json PATH            Path of file to serve when Squore requests
+                                  app settings
+  --config-toml PATH              Path of file to use for Squore tournament &
+                                  match config
+  --devmap-toml PATH              Path of file to use for device to court
+                                  mapping  [default:
+                                  Squore.dev_court_map.toml]
+  --help                          Show this message and exit.
+  ```
 
 When the `squoresrv` command is invoked, a couple of endpoints are mounted under
 `/squore/v1` (the first part can be modified with `--api-mount-point`). The entire API is documented (thanks to FastAPI) at
