@@ -39,8 +39,8 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     ]
     __str_template__ = (
         "{self.id} {self.status}"
-        "{(' at '+self.time.isoformat()) if self.time else ''}"
         "{(' on '+str(self.court)) if self.court else ''}"
+        "{(self.time.strftime(' @ %H:%M')) if self.time else ''}"
     )
     __eq_fields__ = (
         "id",

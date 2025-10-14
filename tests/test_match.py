@@ -13,7 +13,7 @@ def test_repr(match1: Match) -> None:
 
 
 def test_str(match1: Match) -> None:
-    assert str(match1) == "1-14 ready at 2025-06-01T11:30:00 on C01 (Sports4You)"
+    assert str(match1) == "1-14 ready on C01 (Sports4You) @ 11:30"
 
 
 def test_cmp_eq(match1: Match, match1copy: Match) -> None:
