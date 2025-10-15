@@ -268,7 +268,7 @@ def _flatten_dict(
     return dict(items)
 
 
-def get_dev_court_map(
+def get_dev_map(
     path: Annotated[pathlib.Path, Depends(get_devmap_path)],
 ) -> dict[str, int | str] | Never:
     devmap: dict[str, int | str] = {}
@@ -341,13 +341,13 @@ def _normalise_court_name_for_matching(courtname: str) -> str:
 
 
 def get_court_for_dev(
-    dev_court_map: Annotated[dict[str, int | str], Depends(get_dev_court_map)],
+    dev_map: Annotated[dict[str, int | str], Depends(get_dev_map)],
     courts: Annotated[list[Court], Depends(get_courts)],
     clientip: Annotated[str, Depends(get_remote)],
 ) -> Court | None:
     courtname = None
-    if (courtname := dev_court_map.get(clientip)) is not None:
-        logger.debug(f"Device at IP {clientip} wants feed for {courtname}")
+    if (courtname := dev_map.get(clientip)) is not None:
+        logger.debug(f"Device at IP {clientip} might want feed for {courtname}")
         for court in courts:
             # TODO: can we do better than this to identify the court when we are
             # given a string that might not be what the current courtnamepolicy
@@ -363,6 +363,21 @@ def get_court_for_dev(
                 return court
 
     logger.debug(f"No court found in devmap for device with IP {clientip}")
+    return None
+
+
+def get_mirror_for_dev(
+    dev_map: Annotated[dict[str, int | str], Depends(get_dev_map)],
+    clientip: Annotated[str, Depends(get_remote)],
+) -> str | None:
+    othername = None
+    if (othername := dev_map.get(clientip)) is not None and re.fullmatch(
+        r"\w{6}-\d+-.+", othername := str(othername)
+    ):
+        logger.debug(f"Device at IP {clientip} want to be mirror for {othername}")
+        return othername  # type: ignore[return-value]
+
+    logger.debug(f"No mirror device found in devmap for device with IP {clientip}")
     return None
 
 
@@ -587,6 +602,7 @@ async def settings(
     settings: Annotated[dict[str, Any], Depends(get_settings)],
     court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
+    mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
     params: Annotated[SettingsQueryParams, Query()],
 ) -> dict[str, Any]:
@@ -595,6 +611,26 @@ async def settings(
         f"for device {squoredev.device_id or '(no ID)'} "
         f"(ip={squoredev.ip}, cc={squoredev.cc}, v={squoredev.version})"
     )
+
+    settings["RemoteSettingsURL"] = str(myurl)
+    settings["RemoteSettingsURL_Default"] = str(myurl)
+
+    if mirror_for_dev is not None:
+        logger.info(f"Client at {remote} set up to MQTT-mirror device {mirror_for_dev}")
+        return settings | {
+            "useShareFeature": "DoNotUse",
+            "useVibrationNotificationInTimer": False,
+            "autoSuggestToPostResult": False,
+            "showDetailsAtEndOfGamEAutomatically": True,
+            "feedPostUrls": None,
+            "postEveryChangeToSupportLiveScore": False,
+            "StartupAction": "Settings",
+            "BackKeyBehaviour": "PressTwiceToExit",
+            "hapticFeedbackOnGameEnd": False,
+            "hapticFeedbackPerPoint": False,
+            "MQTTOtherDeviceId": mirror_for_dev,
+        }
+
     if params.include_feeds:
         feeds: list[str] = []
         courtorder: dict[int, tuple[int, str]] = {}
@@ -628,9 +664,6 @@ async def settings(
             f"{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
         )
         settings["liveScoreDeviceId_customSuffix"] = f"-{courtname}"
-
-    settings["RemoteSettingsURL"] = str(myurl)
-    settings["RemoteSettingsURL_Default"] = str(myurl)
 
     # logger.debug(
     #     f"Settings for device {squoredev.device_id or '(no ID)'}: "

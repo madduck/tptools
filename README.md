@@ -387,6 +387,12 @@ LHNGLO = "C3"
 
 Presence of this file will mean that Squore automatically expands the court corresponding to a device when the list of matches is being shown.
 
+In addition, it is possible to specify other devices by ID, causing the Squore tablet at the IP to be set up as a mirror (using MQTT) for the given device:
+
+```
+172.21.22.35 = "T7HJ8X-1-C6"
+```
+
 #### Feeds
 
 By calling the `/feeds` endpoing, you can retrieve a list of feeds as expected by
