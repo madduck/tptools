@@ -618,10 +618,10 @@ async def settings(
     settings["RemoteSettingsURL"] = str(myurl)
     settings["RemoteSettingsURL_Default"] = str(myurl)
 
-    logger.debug(
-        f"Settings for device {squoredev.device_id or '(no ID)'}: "
-        + json.dumps(settings)
-    )
+    # logger.debug(
+    #     f"Settings for device {squoredev.device_id or '(no ID)'}: "
+    #     + json.dumps(settings)
+    # )
     return settings
 
 

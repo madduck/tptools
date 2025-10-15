@@ -39,5 +39,6 @@
   "matchList": "",
   "showTips": false,
   "endGameSuggestion": "Automatic",
-  "hideCompletedMatchesFromFeed": true
+  "hideCompletedMatchesFromFeed": true,
+  "savePasswords": true
 }
