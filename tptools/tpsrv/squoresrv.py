@@ -613,7 +613,12 @@ async def settings(
                 logger.warning(f"There is no feed for a {court_for_dev!r}")
 
     if court_for_dev is not None:
-        settings["liveScoreDeviceId_customSuffix"] = f"-{court_for_dev}"
+        c = court_for_dev
+        courtname = (
+            f"{c.location.id if c.location else 0}-"
+            f"{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
+        )
+        settings["liveScoreDeviceId_customSuffix"] = f"-{courtname}"
 
     settings["RemoteSettingsURL"] = str(myurl)
     settings["RemoteSettingsURL_Default"] = str(myurl)
