@@ -38,5 +38,6 @@
   "switchToPlayerListIfMatchListOfFeedIsEmpty": "DoNotUse",
   "matchList": "",
   "showTips": false,
-  "endGameSuggestion": "Automatic"
+  "endGameSuggestion": "Automatic",
+  "hideCompletedMatchesFromFeed": true
 }
