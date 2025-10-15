@@ -112,6 +112,11 @@ def country1(tpcountry1: TPCountry) -> Country:
 
 
 @pytest.fixture
+def country2(tpcountry2: TPCountry) -> Country:
+    return Country.from_tp_model(tpcountry2)
+
+
+@pytest.fixture
 def tpplayer1(tpclub1: TPClub, tpcountry2: TPCountry) -> TPPlayer:
     return TPPlayer(
         id=1, firstname="Martin", lastname="Krafft", club=tpclub1, country=tpcountry2

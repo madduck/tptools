@@ -32,3 +32,15 @@ def test_titlecase_disabled(policy: CountryNamePolicy, country1: Country) -> Non
     foobar = country1.model_copy(update={"name": "foo bar"})
     policy = replace(policy, titlecase=False)
     assert policy(foobar) == "foo bar"
+
+
+def test_code_instead_of_name(policy: CountryNamePolicy, country1: Country) -> None:
+    policy = replace(policy, use_country_code=True)
+    assert policy(country1) == "NL"
+
+
+def test_code_instead_of_name_uses_name_when_code_absent(
+    policy: CountryNamePolicy, country2: Country
+) -> None:
+    policy = replace(policy, use_country_code=True)
+    assert policy(country2) == "Deutschland"

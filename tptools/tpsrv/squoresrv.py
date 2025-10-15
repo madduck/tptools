@@ -1,3 +1,4 @@
+import dataclasses
 import importlib.resources
 import json
 import logging
@@ -388,6 +389,13 @@ def get_matches_feed_dict(
         logger.info(
             f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
         )
+    if not countrynamepolicy.use_country_code:
+        logger.warning("Overriding CountryNamePolicy.use_country_code = True")
+
+    countrynamepolicy = dataclasses.replace(
+        countrynamepolicy, use_country_code=True, titlecase=False
+    )
+
     return MatchesFeed(tournament=tournament, config=config).model_dump(
         context={
             "courtnamepolicy": courtnamepolicy,
@@ -452,6 +460,7 @@ def get_court_feeds_list(
         | nummatchesparams.model_dump()
         | courtnamepolicy.params()
         | playerpolicyparams
+        | {"use_country_code": True}
     )
     for court in sorted(courts):
         courtparams["court"] = court.id
@@ -681,7 +690,7 @@ async def setup_for_squore(
         }
         squoreapp.mount(
             "/flags",
-            StaticFiles(directory=assets_path / "flags"),
+            StaticFiles(directory=assets_path / "flags", html=True),
             name="flags",
         )
 
