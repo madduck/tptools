@@ -377,11 +377,11 @@ example](https://github.com/madduck/tptools/blob/main/ext/Squore.config.toml) in
 
 The court parameter must match the exact *ID* of the court used in TournamentSoftware. You can use `/courts` to get a list of courts to determine the IDs.
 
-If there is no court parameter specified, the `/matches` endpoint tries to use a "device to court" map specifiable in a TOML file, which is `./Squore.dev_court_map.toml` by default. This file maps Squore device IDs or IPs to courts, like so:
+If there is no court parameter specified, the `/matches` and `/settings` endpoints try to use a "device to court" map specifiable in a TOML file, which is `./Squore.dev_court_map.toml` by default. This file maps device IPs to courts, like so:
 
 ```
-KQBLPS = "C6"
-LHNGLO = "C3"
+172.21.22.34 = "C6"
+172.21.22.54 = "C3"
 172.21.22.44 = "C2"
 ```
 
