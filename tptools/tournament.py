@@ -172,6 +172,10 @@ class Tournament[
     def resolve_court_by_id(self, id: int) -> CourtT | Never:
         return self.courts[id]
 
+    @classmethod
+    def _model_name(cls) -> str:
+        return ".".join((cls.__module__, cls.__qualname__))
+
     @model_serializer(mode="plain")
     def _model_serializer(
         self,
@@ -182,7 +186,7 @@ class Tournament[
         )
         return {
             "name": self.name,
-            "class": self.__class__.__qualname__,
+            "class": self._model_name(),
             "draws": self.draws,
             "courts": self.courts,
             "entries": self.entries,
