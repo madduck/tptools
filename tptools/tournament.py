@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
-from typing import Any, Self, cast
+from typing import Any, Never, Self, cast
 
 from pydantic import (
     SerializationInfo,
@@ -67,7 +67,7 @@ class Tournament[
     def get_entries(self) -> Sequence[EntryT]:
         return list(self.entries.values())
 
-    def resolve_entry_by_id(self, id: int) -> EntryT:
+    def resolve_entry_by_id(self, id: int) -> EntryT | Never:
         return self.entries[id]
 
     def add_match(self, match: MatchT) -> None:
@@ -121,7 +121,7 @@ class Tournament[
             ).values()
         )
 
-    def resolve_match_by_id(self, id: str) -> MatchT:
+    def resolve_match_by_id(self, id: str) -> MatchT | Never:
         return self.matches[id]
 
     def get_matches_for_draw(self, draw: DrawT) -> Sequence[MatchT]:
@@ -151,7 +151,7 @@ class Tournament[
     def get_draws(self) -> Sequence[DrawT]:
         return list(self.draws.values())
 
-    def resolve_draw_by_id(self, id: int) -> DrawT:
+    def resolve_draw_by_id(self, id: int) -> DrawT | Never:
         return self.draws[id]
 
     def add_court(self, court: CourtT) -> None:
@@ -169,7 +169,7 @@ class Tournament[
     def get_courts(self) -> Sequence[CourtT]:
         return list(self.courts.values())
 
-    def resolve_court_by_id(self, id: int) -> CourtT:
+    def resolve_court_by_id(self, id: int) -> CourtT | Never:
         return self.courts[id]
 
     @model_serializer(mode="plain")
