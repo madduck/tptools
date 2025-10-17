@@ -349,8 +349,11 @@ class TPPlayerMatch(TPModel, table=True):
                     if winner is not None:
                         return self.Status.PLAYED
 
-                    elif self.wn == 0 and self.vn == 0:
-                        return self.Status.NOTPLAYED
+                    # elif self.wn == 0 and self.vn == 0:
+                    #     return self.Status.NOTPLAYED
+                    # TODO:This is not a reliable way to determine NOTPLAYED in a group,
+                    # we just had a situation at the 16ED where the software changed
+                    # *some* of the wn/vn fields in a 5-group to 0 (from null).
 
                     else:
                         return self.Status.PENDING
