@@ -4,6 +4,7 @@ from .courtname import CourtNamePolicy, CourtNamePolicyParams
 from .drawname import DrawNamePolicy
 from .paircombine import PairCombinePolicy, PairCombinePolicyParams
 from .playername import PlayerNamePolicy, PlayerNamePolicyParams
+from .policybase import RegexpSubstTuple
 
 __all__ = [
     "ClubNamePolicy",
@@ -16,4 +17,5 @@ __all__ = [
     "PairCombinePolicyParams",
     "PlayerNamePolicy",
     "PlayerNamePolicyParams",
+    "RegexpSubstTuple",
 ]
