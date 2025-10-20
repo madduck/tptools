@@ -464,6 +464,15 @@ the TP file into an SQLite database for testing, and can be used as follows:
 Forthwith, the generated file (`sensible.sqlite` in this case) can be used
 instead of the TP file as argument to the `tp` subcommand.
 
+## Known Problems
+
+### BYEs in Group Draws
+
+There seems to be no way to identify a match with a BYE in the database, and
+make this match's status be `NOTPLAYED`. Instead, the status will be `PENDING`,
+and one has to rely the fact that the match won't have a time and/or court
+assigned, and so hopefully won't show up in the matches feeds.
+
 ## TODO
 
 In addition to various comments including the word "TODO" in the code, there are

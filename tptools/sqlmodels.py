@@ -312,6 +312,7 @@ class TPPlayerMatch(TPModel, table=True):
     wn: int | None = None
     vn: int | None = None
     reversehomeaway: bool = False
+    scorestatus: int = 0
 
     @property
     def van(self) -> tuple[int, int] | tuple[None, None]:
@@ -345,20 +346,20 @@ class TPPlayerMatch(TPModel, table=True):
 
             else:
                 winner = zero_to_none(self.winner)
-                if self.draw.is_group_draw:
-                    if winner is not None:
-                        return self.Status.PLAYED
+                if self.scorestatus in (2, 3):
+                    # retired or disqualified
+                    return self.Status.PLAYED
 
-                    # elif self.wn == 0 and self.vn == 0:
-                    #     return self.Status.NOTPLAYED
-                    # TODO:This is not a reliable way to determine NOTPLAYED in a group,
-                    # we just had a situation at the 16ED where the software changed
-                    # *some* of the wn/vn fields in a 5-group to 0 (from null).
+                elif self.scorestatus in (1, 9):
+                    # walkover or notplayed
+                    return self.Status.NOTPLAYED
 
-                    else:
-                        return self.Status.PENDING
+                elif self.draw.is_group_draw and winner is not None:
+                    return self.Status.PLAYED
 
                 elif winner is None:
+                    # TODO:Byes in a group cannot be identified as NOTPLAYED and are
+                    # thus PENDING
                     return self.Status.PENDING
 
                 elif self.entry is None:

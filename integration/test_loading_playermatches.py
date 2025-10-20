@@ -63,10 +63,6 @@ PLAYERMATCH_ID_BY_STATUS = {
         1485,
         1486,
         1501,
-        1584,
-        1585,
-        1586,
-        1588,
         1632,
         1634,
     ],  # }}}
@@ -201,6 +197,10 @@ PLAYERMATCH_ID_BY_STATUS = {
         1577,
         1607,
         1628,
+        1584,  # a bye in a group draw, which cannot be identified
+        1585,  # a bye in a group draw, which cannot be identified
+        1586,  # a bye in a group draw, which cannot be identified
+        1588,  # a bye in a group draw, which cannot be identified
     ],  # }}}
 }
 

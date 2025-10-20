@@ -27,8 +27,8 @@ def expected_status_by_tuple() -> dict[MatchIdTuple, TPMatchStatus]:
         (94, 2): TPMatchStatus.READY,
         (94, 3): TPMatchStatus.PLAYED,
         (95, 1): TPMatchStatus.PLAYED,
-        (95, 2): TPMatchStatus.NOTPLAYED,  # byes in a group
-        (95, 3): TPMatchStatus.NOTPLAYED,  # byes in a group
+        (95, 2): TPMatchStatus.READY,  # byes in a group cannot be identified
+        (95, 3): TPMatchStatus.READY,  # byes in a group cannot be identified
         (96, 1): TPMatchStatus.PLAYED,
         (96, 2): TPMatchStatus.PLAYED,
         (96, 3): TPMatchStatus.PLAYED,
