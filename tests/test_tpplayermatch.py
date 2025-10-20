@@ -255,18 +255,19 @@ def test_status_group(
         pm1.entry = tpentry1
     pm1.wn, pm1.vn = wn, vn
     pm1.winner = winner
+    pm1.scorestatus = scorestatus
     assert pm1.status == status
 
 
 @pytest.mark.xfail
 def test_winner0_is_not_played(pm: TPPlayerMatch) -> None:
     # This requires a custom type. There is no validation for model instances that are
-    # read from the database, and there is no `__post_init__`. We could map the database
-    # column to `winner_` and provide a property that does the `zero_to_none`
-    # translation, but that changes the constructor. Not sure how relevant/problematic
-    # this actually is. But without any layer to turn 0 into None on the way between
-    # assignment and access in the next two lines, this test must fail.
-    # Custom types: https://github.com/fastapi/sqlmodel/discussions/1399
+    # read from the database, and `model_post_init` is also not called. We could map
+    # the database column to `winner_` and provide a property that does the
+    # `zero_to_none` translation, but that changes the constructor. Not sure how
+    # relevant/problematic this actually is. But without any layer to turn 0 into None
+    # on the way between assignment and access in the next two lines, this test must
+    # fail. Custom types: https://github.com/fastapi/sqlmodel/discussions/1399
     pm.winner = 0
     assert pm.winner is None
     # assert pm.status != PlayerMatchStatus.PLAYED
