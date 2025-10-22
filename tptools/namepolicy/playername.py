@@ -1,11 +1,16 @@
-from dataclasses import KW_ONLY, dataclass
-from typing import overload
+# needed < 3.14 so that annotations aren't evaluated
+from __future__ import annotations
 
-from ..entry import Player
+from dataclasses import KW_ONLY, dataclass
+from typing import TYPE_CHECKING, overload
+
 from ..paramsmodel import ParamsModel
 from .clubname import ClubNamePolicy
 from .countryname import CountryNamePolicy
 from .policybase import NamePolicy
+
+if TYPE_CHECKING:
+    from ..entry import Player
 
 
 class PlayerNamePolicyParams(ParamsModel):

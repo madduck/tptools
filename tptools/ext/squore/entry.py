@@ -37,35 +37,15 @@ class SquoreEntry(Entry):
         playernamepolicy = self.get_policy_from_info(
             info, self.PLAYERNAMEPOLICY, PlayerNamePolicy()
         )
-        name = playernamepolicy(self.player1)
-        club = clubnamepolicy(self.player1.club)
-        ctry = countrynamepolicy(self.player1.country)
+        paircombinepolicy = self.get_policy_from_info(
+            info, self.PAIRCOMBINEPOLICY, PairCombinePolicy()
+        )
 
-        if self.player2:
-            paircombinepolicy = self.get_policy_from_info(
-                info, self.PAIRCOMBINEPOLICY, PairCombinePolicy()
-            )
-            name = paircombinepolicy(
-                name, playernamepolicy(self.player2), first_can_be_none=False
-            )
-            club = paircombinepolicy(
-                club, clubnamepolicy(self.player2.club), first_can_be_none=True
-            )
-            ctry = paircombinepolicy(
-                ctry, countrynamepolicy(self.player2.country), first_can_be_none=True
-            )
-
-        if name is None:
-            raise ValueError(f"No player name discernable from {self}")
-
-        return SquorePlayerStructValidator.validate_python(
-            {
-                k: v
-                for k, v in (("name", name), ("club", club), ("country", ctry))
-                if v is not None
-                # omit None from result while
-                # https://github.com/obbimi/Squore/issues/98
-            }
+        return self.make_player_export_struct(
+            clubnamepolicy=clubnamepolicy,
+            countrynamepolicy=countrynamepolicy,
+            playernamepolicy=playernamepolicy,
+            paircombinepolicy=paircombinepolicy,
         )
 
     if TYPE_CHECKING:
