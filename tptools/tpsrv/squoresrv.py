@@ -627,11 +627,11 @@ async def settings(
             "showDetailsAtEndOfGamEAutomatically": True,
             "feedPostUrls": None,
             "postEveryChangeToSupportLiveScore": False,
-            "StartupAction": "Settings",
             "BackKeyBehaviour": "PressTwiceToExit",
             "hapticFeedbackOnGameEnd": False,
             "hapticFeedbackPerPoint": False,
             "MQTTOtherDeviceId": mirror_for_dev,
+            "liveScoreDeviceId_customSuffix": f"-mirror-{mirror_for_dev}",
         }
 
     if params.include_feeds:
