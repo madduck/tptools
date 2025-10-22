@@ -8,6 +8,8 @@
   "MQTTPublishTopicChange": "tptools/${Brand}/${DeviceId}/change",
   "MQTTPublishTopicMatch": "tptools/${FeedName}/${Brand}/${DeviceId}/match",
   "MQTTSubscribeTopicChange": "tptools/${Brand}/${DeviceId}/change",
+  "MQTTPublishTopicDeviceInfo": "tptools/${Brand}/${DeviceId}/deviceInfo",
+  "MQTTPublishDeviceInfo_EveryXSeconds": "5",
   "MatchTabbed_defaultTab": "Feed",
   "OrientationPreference": [
     "Landscape"
