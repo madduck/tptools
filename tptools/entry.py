@@ -69,6 +69,24 @@ class Entry(BaseModel[TPEntry]):
     player1: Player
     player2: Player | None = None
 
+    def get_player_name(
+        self,
+        playernamepolicy: PlayerNamePolicy | None = None,
+        paircombinepolicy: PairCombinePolicy | None = None,
+    ) -> str:
+        playernamepolicy = playernamepolicy or PlayerNamePolicy()
+        paircombinepolicy = paircombinepolicy or PairCombinePolicy()
+
+        name = playernamepolicy(self.player1)
+        if self.player2:
+            name = paircombinepolicy(
+                name, playernamepolicy(self.player2), first_can_be_none=False
+            )
+        if name is None:
+            raise ValueError(f"No player name discernable from {self}")
+
+        return name
+
     def make_player_export_struct(
         self,
         clubnamepolicy: ClubNamePolicy | None = None,
@@ -81,23 +99,18 @@ class Entry(BaseModel[TPEntry]):
         playernamepolicy = playernamepolicy or PlayerNamePolicy()
         paircombinepolicy = paircombinepolicy or PairCombinePolicy()
 
-        name = playernamepolicy(self.player1)
+        name = self.get_player_name(playernamepolicy, paircombinepolicy)
+
         club = clubnamepolicy(self.player1.club)
         ctry = countrynamepolicy(self.player1.country)
 
         if self.player2:
-            name = paircombinepolicy(
-                name, playernamepolicy(self.player2), first_can_be_none=False
-            )
             club = paircombinepolicy(
                 club, clubnamepolicy(self.player2.club), first_can_be_none=True
             )
             ctry = paircombinepolicy(
                 ctry, countrynamepolicy(self.player2.country), first_can_be_none=True
             )
-
-        if name is None:
-            raise ValueError(f"No player name discernable from {self}")
 
         return PlayerExportStructValidator.validate_python(
             {
