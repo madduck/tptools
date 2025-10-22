@@ -24,7 +24,7 @@ postEveryChangeToSupportLiveScore = true
 
 hideCompletedMatchesFromFeed = true
 
-Placeholder_Match = "${time} ${FirstOfList:~${A}~${A.name}~} - ${FirstOfList:~${B}~${B.name}~} (Match #${matchnr}, ${draw.event}::${draw.stage}::${draw.name}) : ${result}"
+Placeholder_Match = "${draw.event} @ ${time} : ${FirstOfList:~${A}~${A.name}~} vs. ${FirstOfList:~${B}~${B.name}~} (${id})"
 
 skipMatchSettings = true
 useHandInHandOutScoring = false
