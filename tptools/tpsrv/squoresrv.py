@@ -40,6 +40,9 @@ from tptools.ext.squore import (
     MatchesFeed,
     SquoreTournament,
 )
+from tptools.ext.squore.court import SquoreCourt
+from tptools.ext.squore.draw import SquoreDraw
+from tptools.ext.squore.entry import SquoreEntry
 from tptools.namepolicy import (
     ClubNamePolicy,
     CountryNamePolicy,
@@ -302,19 +305,19 @@ def get_tournament_name(
 
 def get_courts(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[Court]:
+) -> list[SquoreCourt]:
     return tournament.get_courts()
 
 
 def get_draws(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[Draw]:
+) -> list[SquoreDraw]:
     return tournament.get_draws()
 
 
 def get_entries(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[Entry]:
+) -> list[SquoreEntry]:
     return tournament.get_entries()
 
 
