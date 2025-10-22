@@ -38,6 +38,7 @@ if not sys.warnoptions:
     logging.captureWarnings(True)
 
 for name, level in (
+    ("httpcore", logging.INFO),
     ("watchfiles.main", logging.WARNING),
     ("uvicorn.error", logging.WARNING),
     ("tptools.tpmatch", logging.INFO),
