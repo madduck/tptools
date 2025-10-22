@@ -4,8 +4,9 @@ from typing import Literal
 import pytest
 from pytest_mock import MockerFixture
 
-from tptools.entry import Club, Country, Entry, Player
+from tptools.entry import Club, Country, Player
 from tptools.ext.squore import SquoreEntry
+from tptools.sqlmodels import TPEntry, TPPlayer
 
 
 @pytest.mark.parametrize(
@@ -114,8 +115,9 @@ def test_no_name_discernable(mocker: MockerFixture, sqentry: SquoreEntry) -> Non
 
 @pytest.mark.parametrize("field", ["club", "country"])
 def test_none_field_omits_from_struct(
-    player1: Player, entry1: Entry, field: str
+    tpplayer1: TPPlayer, tpentry1: TPEntry, field: str
 ) -> None:
-    setattr(player1, field, None)
-    sqentry = SquoreEntry.from_tp_model(entry1.model_copy(update={"player1": player1}))
+    player1 = tpplayer1.model_copy(update={field: None})
+    entry1 = tpentry1.model_copy(update={"player1": player1})
+    sqentry = SquoreEntry.from_tp_model(entry1)
     assert field not in sqentry.model_dump()
