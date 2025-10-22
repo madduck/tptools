@@ -8,7 +8,7 @@ import tomllib
 from collections.abc import AsyncGenerator, Mapping
 from contextlib import asynccontextmanager
 from operator import attrgetter
-from typing import Annotated, Any, Never, Sequence, cast
+from typing import Annotated, Any, Never, cast
 from warnings import warn
 
 import click
@@ -302,19 +302,19 @@ def get_tournament_name(
 
 def get_courts(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> Sequence[Court]:
+) -> list[Court]:
     return tournament.get_courts()
 
 
 def get_draws(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> Sequence[Draw]:
+) -> list[Draw]:
     return tournament.get_draws()
 
 
 def get_entries(
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> Sequence[Entry]:
+) -> list[Entry]:
     return tournament.get_entries()
 
 
@@ -322,7 +322,7 @@ def get_players_list(
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
     entries: Annotated[list[Entry], Depends(get_entries)],
-) -> Sequence[dict[str, Any]]:
+) -> list[dict[str, Any]]:
     return [
         e.model_dump(
             context={

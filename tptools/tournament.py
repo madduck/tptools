@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from typing import Any, Never, Self, cast
 
 from pydantic import (
@@ -64,7 +64,7 @@ class Tournament[
     def nentries(self) -> int:
         return len(self.entries)
 
-    def get_entries(self) -> Sequence[EntryT]:
+    def get_entries(self) -> list[EntryT]:
         return list(self.entries.values())
 
     def resolve_entry_by_id(self, id: int) -> EntryT | Never:
@@ -111,7 +111,7 @@ class Tournament[
         include_played: bool = False,
         include_not_ready: bool = True,
         # TODO: remove redundancy with MatchStatusSelectionParams above
-    ) -> Sequence[MatchT]:
+    ) -> list[MatchT]:
         if include_played and include_not_ready:
             return list(self.matches.values())
 
@@ -124,10 +124,10 @@ class Tournament[
     def resolve_match_by_id(self, id: str) -> MatchT | Never:
         return self.matches[id]
 
-    def get_matches_for_draw(self, draw: DrawT) -> Sequence[MatchT]:
+    def get_matches_for_draw(self, draw: DrawT) -> list[MatchT]:
         return [m for m in self.matches.values() if m.draw == draw]
 
-    def get_matches_for_court(self, court: CourtT | None) -> Sequence[MatchT]:
+    def get_matches_for_court(self, court: CourtT | None) -> list[MatchT]:
         return [m for m in self.matches.values() if m.court == court]
 
     def get_matches_by_court(self) -> dict[CourtT | None, list[MatchT]]:
@@ -148,7 +148,7 @@ class Tournament[
     def ndraws(self) -> int:
         return len(self.draws)
 
-    def get_draws(self) -> Sequence[DrawT]:
+    def get_draws(self) -> list[DrawT]:
         return list(self.draws.values())
 
     def resolve_draw_by_id(self, id: int) -> DrawT | Never:
@@ -166,7 +166,7 @@ class Tournament[
     def ncourts(self) -> int:
         return len(self.courts)
 
-    def get_courts(self) -> Sequence[CourtT]:
+    def get_courts(self) -> list[CourtT]:
         return list(self.courts.values())
 
     def resolve_court_by_id(self, id: int) -> CourtT | Never:
