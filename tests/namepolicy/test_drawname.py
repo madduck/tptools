@@ -19,3 +19,8 @@ def test_passthrough(policy: DrawNamePolicy, draw1: Draw) -> None:
 
 def test_no_draw(policy: DrawNamePolicy) -> None:
     _ = policy(None)
+
+
+def test_only_show_event(policy: DrawNamePolicy, draw1: Draw) -> None:
+    dnp = policy.with_(only_show_event=True)
+    assert dnp(draw1) == "Herren 1"

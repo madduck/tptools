@@ -5,8 +5,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, overload
 
-from tptools.paramsmodel import ParamsModel
-
+from ..paramsmodel import ParamsModel
 from .policybase import NamePolicy
 
 if TYPE_CHECKING:
