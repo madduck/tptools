@@ -1,5 +1,3 @@
-import dataclasses
-
 import pytest
 
 from tptools.namepolicy import PairCombinePolicy
@@ -20,7 +18,7 @@ def test_combine(policy: PairCombinePolicy) -> None:
 
 @pytest.mark.parametrize("teamjoinstr", ["", "+"])
 def test_joinstr(teamjoinstr: str, policy: PairCombinePolicy) -> None:
-    policy = dataclasses.replace(policy, teamjoinstr=teamjoinstr)
+    policy = policy.with_(teamjoinstr=teamjoinstr)
     assert policy(NAME1, NAME2) == f"{NAME1}{teamjoinstr}{NAME2}"
 
 
@@ -47,5 +45,5 @@ def test_identical(policy: PairCombinePolicy) -> None:
 
 
 def test_identical_merge_disabled(policy: PairCombinePolicy) -> None:
-    policy = dataclasses.replace(policy, merge_identical=False)
+    policy = policy.with_(merge_identical=False)
     assert policy(NAME1, NAME1) == f"{NAME1}&{NAME1}"

@@ -1,5 +1,3 @@
-import dataclasses
-
 import pytest
 
 from tptools.court import Court
@@ -29,5 +27,5 @@ def test_no_court_string() -> None:
 
 
 def test_court_with_location(policy: CourtNamePolicy, court1: Court) -> None:
-    policy = dataclasses.replace(policy, include_location=True)
+    policy = policy.with_(include_location=True)
     assert policy(court1) == "C01 (Sports4You)"

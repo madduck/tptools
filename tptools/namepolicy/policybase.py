@@ -1,8 +1,8 @@
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
-from typing import Any, Protocol
+from dataclasses import asdict, dataclass, replace
+from typing import Any, Protocol, Self
 
 
 @dataclass(frozen=True)
@@ -12,6 +12,9 @@ class PolicyBase(ABC):
 
     def params(self) -> dict[str, Any]:
         return asdict(self)
+
+    def with_(self, **updates: Any) -> Self:
+        return replace(self, **updates)
 
 
 class PolicyCallable[ReturnT](Protocol):

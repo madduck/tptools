@@ -46,7 +46,7 @@ def test_none(policy: PlayerNamePolicy) -> None:
 def test_shorten(
     policy: PlayerNamePolicy, player1: Player, fnamemaxlen: int, result: str
 ) -> None:
-    policy = dataclasses.replace(policy, fnamemaxlen=fnamemaxlen)
+    policy = policy.with_(fnamemaxlen=fnamemaxlen)
     assert policy(player1) == result
 
 
@@ -64,7 +64,7 @@ def test_no_lname_fnamemaxlen_ignored(
     policy: PlayerNamePolicy, player1: Player
 ) -> None:
     player = player1.model_copy(update={"lastname": None})
-    policy = dataclasses.replace(policy, fnamemaxlen=1)
+    policy = policy.with_(fnamemaxlen=1)
     assert policy(player) == "Martin"
 
 
@@ -89,7 +89,7 @@ def test_empty_fname(policy: PlayerNamePolicy, player1: Player) -> None:
 
 @pytest.mark.parametrize("namejoinstr", [" ", "+", "&", "."])
 def test_joinstr(policy: PlayerNamePolicy, namejoinstr: str, player1: Player) -> None:
-    policy = dataclasses.replace(policy, namejoinstr=namejoinstr)
+    policy = policy.with_(namejoinstr=namejoinstr)
     assert policy(player1) == f"Martin{namejoinstr}Krafft"
 
 
@@ -97,7 +97,7 @@ def test_joinstr(policy: PlayerNamePolicy, namejoinstr: str, player1: Player) ->
 def test_abbrjoinstr(
     policy: PlayerNamePolicy, abbrjoinstr: str, player1: Player
 ) -> None:
-    policy = dataclasses.replace(policy, fnamemaxlen=1, abbrjoinstr=abbrjoinstr)
+    policy = policy.with_(fnamemaxlen=1, abbrjoinstr=abbrjoinstr)
     assert policy(player1) == f"M{abbrjoinstr}Krafft"
 
 
@@ -107,7 +107,7 @@ def test_abbrjoinstr(
 def test_lnamefirst(
     policy: PlayerNamePolicy, fnamemaxlen: int, expected: str, player1: Player
 ) -> None:
-    policy = dataclasses.replace(policy, fnamemaxlen=fnamemaxlen, lnamefirst=True)
+    policy = policy.with_(fnamemaxlen=fnamemaxlen, lnamefirst=True)
     assert policy(player1) == expected
 
 

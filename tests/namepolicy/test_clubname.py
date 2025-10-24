@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 import pytest
 
 from tptools.entry import Club
@@ -26,5 +24,5 @@ def test_no_club(policy: ClubNamePolicy) -> None:
 
 def test_regexp_empties_means_none(policy: ClubNamePolicy, club1: Club) -> None:
     regexp = RegexpSubstTuple(club1.name, "")
-    policy = replace(policy, regexps=[regexp])
+    policy = policy.with_(regexps=[regexp])
     assert policy(club1) is None
