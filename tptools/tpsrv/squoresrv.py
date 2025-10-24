@@ -646,7 +646,7 @@ async def settings(
             )
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
-        settings["feedPostUrls"] = "\n".join(feeds)
+        settings["feedPostUrls"] = ("\n".join(feeds)).strip()
 
         if court_for_dev is not None:
             try:
