@@ -242,7 +242,7 @@ def get_settings(
                     settings[setting] = _relative_to_absolute_urls(
                         settings[setting], myurl
                     )
-
+            settings.pop("_COMMENT", None)
             return settings
 
     except FileNotFoundError as err:
