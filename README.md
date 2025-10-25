@@ -66,25 +66,43 @@ To use `tptools`, you must prepare your Windows machine running TournamentSoftwa
 
 ### Installing Python for Windows
 
-`tptools` is written in Python, and thus you need to get Python running on Windows first. We need Python 3.13 or higher. The official installer can be downloaded from [Python.org](https://www.python.org/downloads/windows/) or installed via the Microsoft Store.
+`tptools` is written in Python, and thus you need to get Python running on Windows first. We need Python 3.13 or higher.
 
-If installing from Python.org, please ensure to add `Python.exe` to the `PATH`:
+The official installer can be downloaded from [Python.org](https://www.python.org/downloads/windows/).
+
+> [!WARNING]
+> Python is also available from the Microsoft Store. However, their installation
+> fails to properly set up e.g. the PATH lookup, and if you find yourself unable
+> to run `tpsrv` despite installing it all, you will need to adjust your lookup
+> path. It is thus **recommended to use the Python.org installer** instead.
+
+When installing from Python.org, you are given the option to add `Python.exe` to the `PATH`. Please **make sure you tick this box**:
 
 ![Screenshot of Python Installer](https://github.com/madduck/tptools/blob/main/assets/screenshots/win-install-python.png?raw=true)
 
 Subsequently, please verify that you have a working Python installation, by opening the Command Prompt or PowerShell to run:
 
 ```
-> python -c "print('It seems to work')"
-It seems to work
+python -c "print('It seems to work')"
 ```
 
-Finally, you almost certainly need to upgrade `pip`, the "Package installer for Python", another good way to verify your installation is working:
+This should print "It seems to work", in which case you are all set to move on.
+
+Finally, it is a good idea to upgrade `pip`, the "Package installer for Python", another good way to verify your installation is working:
 
 ```
-> python.exe -m pip install --upgrade pip
-[…]
-> pip --version
+python.exe -m pip install --upgrade pip
+```
+
+and then you can run:
+
+```
+pip --version
+```
+
+and get something like
+
+```
 pip 25.0.1 from C:\Users\martin\AppData\Local\Programs\Python\Python313\Lib\site-packages\pip (python 3.13)
 ```
 
