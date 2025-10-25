@@ -88,6 +88,20 @@ Finally, you almost certainly need to upgrade `pip`, the "Package installer for 
 pip 25.0.1 from C:\Users\martin\AppData\Local\Programs\Python\Python313\Lib\site-packages\pip (python 3.13)
 ```
 
+### Disabling the Windows path size limit
+
+Depending on your situation, the Windows path size limit may prevent the
+installation of Python packages with longer names. This limit can be disabled
+with the following command, which has to be run in Windows PowerShell:
+
+```
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+```
+
+Alternatively, you can download [this registry patch](https://github.com/madduck/tptools/blob/main/assets/DisableWindowsPathSizeLimit.reg?raw=true) and double-click it in Windows Explorer, confirming the warnings until you get a confirmation.
+
+Note that both approaches require administrator rights. Such is Windows.
+
 ### Installing the Microsoft Access Database Engine
 
 I know way too little about Microsoft Windows or all their other stuff to make sense of how things are supposed to work, nor do I care. I run Windows in a virtual machine on top of Linux, with the sole purpose to run TournamentSoftware. I do not have Microsoft Office installed, and I think I read somewhere that the following is only necessary if you also do not have this software locally available.
