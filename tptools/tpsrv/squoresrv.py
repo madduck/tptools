@@ -215,8 +215,18 @@ def get_devmap_path(request: Request) -> pathlib.Path | Never:
         ) from err
 
 
+def _relative_to_absolute_urls(urls_per_line: str, myurl: URL) -> str:
+    urls: list[str] = []
+    for urlstr in urls_per_line.splitlines():
+        if URL(urlstr).is_absolute():
+            continue
+        urls.append(str(myurl.with_path(urlstr, encoded=True)))
+    return "\n".join(urls)
+
+
 def get_settings(
     path: Annotated[pathlib.Path, Depends(get_settings_path)],
+    myurl: Annotated[URL, Depends(get_url)],
 ) -> dict[str, Any] | Never:
     try:
         with open(path, "rb") as f:
@@ -224,7 +234,16 @@ def get_settings(
             # ideally even the output of a callable on the data, and on every
             # subsequent access, check the original file's mtime to decide whether
             # to serve the cache, or relaod.
-            return cast(dict[str, Any], json.load(f))
+
+            settings: dict[str, Any] = json.load(f)
+
+            for setting in ("FlagsURLs",):
+                if setting in settings:
+                    settings[setting] = _relative_to_absolute_urls(
+                        settings[setting], myurl
+                    )
+
+            return settings
 
     except FileNotFoundError as err:
         raise HTTPException(
@@ -235,6 +254,7 @@ def get_settings(
 
 def get_config(
     path: Annotated[pathlib.Path, Depends(get_config_path)],
+    myurl: Annotated[URL, Depends(get_url)],
 ) -> Config | Never:
     config: Config = {}
 
@@ -258,6 +278,10 @@ def get_config(
                     status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Invalid key in config file {path}: {key}",
                 )
+
+    for setting in ("PostResult",):
+        if setting in config:
+            config[setting] = _relative_to_absolute_urls(config[setting], myurl)
 
     return config
 

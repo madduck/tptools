@@ -1,7 +1,7 @@
 {
   "BackKeyBehaviour": "UndoScore",
   "FCMEnabled": false,
-  "FlagsURLs": "http://tc/squore/v1/flags/%1$s.png",
+  "FlagsURLs": "/squore/v1/flags/%1$s.png",
   "MQTTBrokerURL": "Custom",
   "MQTTBrokerURL_Custom": "mqtt://mqtt",
   "MQTTPublishJoinerLeaverTopic": "tptools/${Brand}/JoinerLeaver",
