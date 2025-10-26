@@ -660,6 +660,7 @@ async def settings(
             "hapticFeedbackOnGameEnd": False,
             "hapticFeedbackPerPoint": False,
             "MQTTOtherDeviceId": mirror_for_dev,
+            "MQTTDisableInputWhenSlave": True,
             "liveScoreDeviceId_customSuffix": f"-mirror-{mirror_for_dev}",
         }
 
