@@ -617,12 +617,11 @@ async def init(
     matchfeedqueryparams: Annotated[
         MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
     ],
+    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> RedirectResponse:
+    params = matchfeedqueryparams.model_dump() | squoredev.model_dump()
     redirect_url = (
-        myurl
-        / ".."
-        / "settings"
-        % normalise_dict_values_for_query_string(matchfeedqueryparams.model_dump())
+        myurl / ".." / "settings" % normalise_dict_values_for_query_string(params)
     )
     return RedirectResponse(str(redirect_url), HTTP_307_TEMPORARY_REDIRECT)
 
