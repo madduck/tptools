@@ -406,7 +406,7 @@ def get_mirror_for_dev(
     if (othername := dev_map.get(clientip)) is not None and re.fullmatch(
         r"\w{6}-\d+-.+", othername := str(othername)
     ):
-        logger.debug(f"Device at IP {clientip} want to be mirror for {othername}")
+        logger.debug(f"Device at IP {clientip} wants to be mirror for {othername}")
         return othername  # type: ignore[return-value]
 
     logger.debug(f"No mirror device found in devmap for device with IP {clientip}")

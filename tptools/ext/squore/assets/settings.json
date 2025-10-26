@@ -24,7 +24,7 @@
     "the device map as a mirror of another Squore instance, it will enforce a",
     "a couple other settings. Please have a look at the code for more",
     "information:",
-    "https: //github.com/madduck/tptools/blob/main/tptools/tpsrv/squoresrv.py#L652)"
+    "https://github.com/madduck/tptools/blob/main/tptools/tpsrv/squoresrv.py#L653)"
   ],
   "BackKeyBehaviour": "UndoScore",
   "FCMEnabled": false,
