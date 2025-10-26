@@ -648,6 +648,7 @@ async def settings(
 
     if mirror_for_dev is not None:
         logger.info(f"Client at {remote} set up to MQTT-mirror device {mirror_for_dev}")
+        settings.pop("StartupAction", None)
         return settings | {
             "useShareFeature": "DoNotUse",
             "useVibrationNotificationInTimer": False,
