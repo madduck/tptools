@@ -128,6 +128,18 @@ def test_call(
     assert event_set.called == fire
 
 
+def test_explicit_fire(
+    watcher_with_mocked_handler: FileWatcher,
+    mocker: MockerFixture,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    event_set = mocker.patch("threading.Event.set")
+    monkeypatch.setattr(watcher_with_mocked_handler._event, "set", event_set)
+    assert not event_set.called
+    watcher_with_mocked_handler().fire()
+    assert event_set.called
+
+
 @pytest.mark.asyncio
 async def test_context_manager_without_call(
     watcher_with_mocked_handler: FileWatcher,

@@ -145,6 +145,9 @@ class FileWatcher(AbstractAsyncContextManager[StateType]):
             if (state_update := await callback()) is not None:
                 self._state.update(state_update)
 
+    def fire(self) -> None:
+        self._event.set()
+
     async def reactor_task(self) -> None:
         while True:
             try:
