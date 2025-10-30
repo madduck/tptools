@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 class MatchSelectionParams(ParamsModel):
-    include_played: bool = False
-    include_not_ready: bool = False
+    include_played: bool = True
+    include_not_ready: bool = True
 
 
 class NumMatchesParams(ParamsModel):

@@ -37,12 +37,12 @@ def test_repr_empty_noname() -> None:
 def test_repr(tournament1: Tournament) -> None:
     assert (
         repr(tournament1)
-        == "Tournament(name='Test 1', nentries=4, ndraws=2, ncourts=2, nmatches=2)"
+        == "Tournament(name='Test 1', nentries=4, ndraws=2, ncourts=2, nmatches=3)"
     )
 
 
 def test_str(tournament1: Tournament) -> None:
-    assert str(tournament1) == "Test 1 (4 entries, 2 draws, 2 courts, 2 matches)"
+    assert str(tournament1) == "Test 1 (4 entries, 2 draws, 2 courts, 3 matches)"
 
 
 def test_eq(tournament1: Tournament, tournament1copy: Tournament) -> None:

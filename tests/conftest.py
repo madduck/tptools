@@ -358,6 +358,11 @@ def pm2(
     )
 
 
+@pytest.fixture
+def pm_won(pm1: TPPlayerMatch) -> TPPlayerMatch:
+    return pm1.model_copy(update={"id": 521, "matchnr": 52, "winner": 1})
+
+
 pm1copy = pm1
 
 
@@ -414,6 +419,15 @@ def tpmatch2(
 
 
 @pytest.fixture
+def tpmatch_played(
+    TPMatchFactory: TPMatchFactoryType,
+    pm_won: TPPlayerMatch,
+    tpentry2: TPEntry,
+) -> TPMatch:
+    return TPMatchFactory(pm_won, tpentry2, lldiff=2)
+
+
+@pytest.fixture
 def match1(tpmatch1: TPMatch) -> Match:
     return Match.from_tpmatch(tpmatch1)
 
@@ -421,6 +435,11 @@ def match1(tpmatch1: TPMatch) -> Match:
 @pytest.fixture
 def match2(tpmatch2: TPMatch) -> Match:
     return Match.from_tpmatch(tpmatch2)
+
+
+@pytest.fixture
+def match_played(tpmatch_played: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch_played)
 
 
 match1copy = match1
@@ -443,6 +462,7 @@ def match_pending(tpmatch_pending: TPMatch) -> Match:
 def tournament1(
     match1: Match,
     match2: Match,
+    match_played: Match,
     entry1: Entry,
     entry2: Entry,
     entry12: Entry,
@@ -457,6 +477,7 @@ def tournament1(
     )
     t.add_match(match1)
     t.add_match(match2)
+    t.add_match(match_played)
     t.add_entry(entry1)
     t.add_entry(entry2)
     t.add_entry(entry21)
