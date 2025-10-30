@@ -62,18 +62,16 @@ POSTURLS = [
 
 
 def _maybe_do_stdout(factories: list[PluginFactory]) -> None:
-    if os.getenv("DOSTDOUT"):
+    if "DOSTDOUT" not in os.environ:
+        logger.info("Not printing tournament to stdout, set DOSTDOUT if you want that")
+    else:
         tpstdout_lifespan = partial(print_tournament, indent=1)
         factories.append(tpstdout_lifespan)
-    else:
-        logger.info(
-            "Not printing tournament to stdout, set DOSTDOUT=1 if you want that"
-        )
 
 
 def _maybe_do_post(factories: list[PluginFactory]) -> None:
-    if os.getenv("NOPOST"):
-        logger.info("Not posting tournament to URLs as per $NOPOST")
+    if "NOPOST" in os.environ:
+        logger.info("Not posting tournament to URLs as per NOPOST")
 
     elif POSTURLS:
         urls = [url for url in POSTURLS if url and url.scheme.startswith("http")]
@@ -89,18 +87,18 @@ def _maybe_do_post(factories: list[PluginFactory]) -> None:
 
 
 def _maybe_do_sqstdout(factories: list[PluginFactory]) -> None:
-    if not os.getenv("NOSQSTDOUT"):
+    if "NOSQSTDOUT" in os.environ:
+        logger.info("Not printing Squore data to stdout as per $NOSQSTDOUT")
+    else:
         sqstdout_lifespan = partial(print_sqdata, indent=1)
         factories.append(sqstdout_lifespan)
-    else:
-        logger.info("Not printing TPData to stdout as per $NOSQSTDOUT")
 
 
 def _maybe_do_recv(factories: list[PluginFactory]) -> None:
-    if not os.getenv("NORECV"):
-        factories.append(setup_to_receive_tournament_post)
-    else:
+    if "NORECV" in os.environ:
         logger.info("Not setting up to receive tournament via POST as per $NORECV")
+    else:
+        factories.append(setup_to_receive_tournament_post)
 
 
 @asynccontextmanager
