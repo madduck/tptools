@@ -11,12 +11,15 @@ from httpx import URL, AsyncClient, HTTPError, InvalidURL
 from httpx import codes as status_codes
 from pydantic import BaseModel
 
+from ..filewatcher import FileWatcher
+
 logger = logging.getLogger(__name__)
 
 
 @dataclass()
 class CliContext(_CliContext):
     api: FastAPI
+    watcher: FileWatcher | None = None
 
     def __hash__(self) -> int:
         return hash(self.api)

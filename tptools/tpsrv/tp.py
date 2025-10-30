@@ -78,6 +78,7 @@ async def tp_source(
             raise click.ClickException(err.args[0]) from err
 
     watcher = FileWatcher(tp_file, fire_once_asap=not no_fire_on_startup)
+    clictx.watcher = watcher
     watcher.register_callback(callback)
     async with watcher():
         logger.info(f"Starting FileWatcher reactor for {tp_file}")

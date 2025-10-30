@@ -3,19 +3,22 @@ import sys
 from contextlib import asynccontextmanager
 from functools import partial
 
-from click_async_plugins import CliContext, PluginLifespan, plugin
+from click_async_plugins import PluginLifespan, plugin
 from click_async_plugins.debug import KeyAndFunc, monitor_stdin_for_debug_commands
 
 from tptools.util import nonblocking_write
 
-from .util import pass_clictx
+from .util import CliContext, pass_clictx
 
 logger = logging.getLogger(__name__)
 
 
 def simulate_reload_tournament(clictx: CliContext) -> None:
-    """Simulate event that tournament was reloaded"""
-    clictx.itc.fire("tournament")
+    """Simulate event that the tournament was modified or reloaded"""
+    if clictx.watcher is not None:
+        clictx.watcher.fire()
+    else:
+        clictx.itc.fire("tournament")
 
 
 @asynccontextmanager
