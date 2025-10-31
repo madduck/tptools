@@ -219,14 +219,10 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             str(self.pm2.planning) if self.pm2.planning is not None else None,
         )
 
-    def _pm_eq_sort(self) -> tuple[TPPlayerMatch, TPPlayerMatch]:
-        ret = sorted((self.pm1, self.pm2))
-        return ret[0], ret[1]
-
     def _status_repr(self) -> str:
         return self.status.name.lower()
 
-    __eq_fields__ = (_pm_eq_sort,)
+    __eq_fields__ = ("pm1", "pm2")
     __str_template__ = (
         "{self.id} [{self.draw.name}] "
         "[{self._van_repr()} → {self._planning_repr()} → {self._wnvn_repr()}] "
