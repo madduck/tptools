@@ -400,3 +400,30 @@ def test_dict_value_replace_bool_with_int(inp: Any, present: bool, exp: Any) -> 
         assert res.pop("value") == exp
     else:
         assert "value" not in res
+
+
+@pytest.mark.parametrize(
+    "scores, exp",
+    [
+        (None, ""),
+        ([], ""),
+        ([(1, 2), (3, 4), (5, 6)], "1-2,3-4,5-6"),
+    ],
+)
+def test_scores_to_string(scores: util.ScoresType | None, exp: str) -> None:
+    assert util.scores_to_string(scores) == exp
+
+
+@pytest.mark.parametrize("scores", [(None), ([])])
+def test_scores_to_string_nullstr(scores: util.ScoresType) -> None:
+    assert util.scores_to_string(scores, nullstr="-") == "-"
+
+
+def test_scores_to_string_pointsep() -> None:
+    assert (
+        util.scores_to_string([(1, 2), (3, 4), (5, 6)], pointsep="p") == "1p2,3p4,5p6"
+    )
+
+
+def test_scores_to_string_gamesep() -> None:
+    assert util.scores_to_string([(1, 2), (3, 4), (5, 6)], gamesep="g") == "1-2g3-4g5-6"

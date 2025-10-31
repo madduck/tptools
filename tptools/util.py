@@ -226,3 +226,19 @@ def normalise_dict_values_for_query_string(dct: dict[str, Any]) -> dict[str, Any
     return {
         k: int(v) if isinstance(v, bool) else v for k, v in dct.items() if v is not None
     }
+
+
+type ScoreType = tuple[int, int]
+type ScoresType = list[ScoreType]
+
+
+def scores_to_string(
+    scores: ScoresType | None,
+    *,
+    nullstr: str = "",
+    pointsep: str = "-",
+    gamesep: str = ",",
+) -> str:
+    if scores is None or len(scores) == 0:
+        return nullstr
+    return gamesep.join([pointsep.join([str(s) for s in g]) for g in scores])
