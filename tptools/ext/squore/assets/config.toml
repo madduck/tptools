@@ -31,7 +31,7 @@ skipMatchSettings = true
 useHandInHandOutScoring = false
 numberOfPointsToWinGame = 11
 numberOfGamesToWinMatch = 3
-timerPauseBetweenGames = 90
+timerPauseBetweenGames = 120
 
 # For the available values, see
 # https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/model/TieBreakFormat.java
