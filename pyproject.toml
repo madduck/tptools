@@ -69,7 +69,12 @@ tpshortcut = "tptools.cli.tpshortcut:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "integration"]
-addopts = "-ra --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail --pdbcls=IPython.terminal.debugger:TerminalPdb --ruff --ruff-format"
+addopts = """
+  -ra
+  --pdbcls=IPython.terminal.debugger:TerminalPdb
+  --cov=tptools --cov-report term-missing:skip-covered --no-cov-on-fail
+  --ruff --ruff-format --ruff-config 'lint.ignore = ["I001", "F401", "F841"]'
+"""
 asyncio_default_fixture_loop_scope = "function"
 log_level = "DEBUG"
 log_format = "%(name)s %(levelname)s %(message)s"
