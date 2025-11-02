@@ -35,9 +35,15 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 if not sys.warnoptions:
     warnings.simplefilter("default")
+    warnings.filterwarnings(
+        "ignore",
+        message="The frame locals reference is no longer cached",
+        category=DeprecationWarning,
+    )
     logging.captureWarnings(True)
 
 for name, level in (
+    ("asyncio", logging.INFO),
     ("httpcore", logging.INFO),
     ("watchfiles.main", logging.WARNING),
     ("uvicorn.error", logging.WARNING),
