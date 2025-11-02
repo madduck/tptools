@@ -20,4 +20,4 @@ if [ -n "$files" ] && [ $reset -eq 0 ]; then
 fi
 
 (sleep 0.5 && touch conftest.py) &
-exec inotify-hookable -q -t 500 -w . -i '\a\..+\z' -i '__pycache__' -C ".+\.py\$=pytest $pytest_args $files"
+exec inotify-hookable -q -t 500 -w . -i '\a\..+\z' -i '__pycache__' -C ".+\.(py|toml)\$=pytest $pytest_args $files"
