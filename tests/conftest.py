@@ -284,6 +284,8 @@ def TPPlayerMatchFactory(tpdraw1: TPDraw) -> TPPlayerMatchFactoryType:
         defaults = {
             "id": kwargs.get("planning", 1),
             "draw": tpdraw1,
+            "starttime": None,
+            "endtime": None,
         } | dict.fromkeys([f"team{a}set{g}" for a in (2, 1) for g in range(1, 6)], 0)
         return TPPlayerMatch(**defaults | kwargs)
 
