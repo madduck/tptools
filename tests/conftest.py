@@ -471,8 +471,13 @@ def match2(tpmatch2: TPMatch) -> Match:
 
 
 @pytest.fixture
-def match_played(tpmatch_played: TPMatch) -> Match:
-    return Match.from_tpmatch(tpmatch_played)
+def match_won_by_A(tpmatch_won_by_A: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch_won_by_A)
+
+
+@pytest.fixture
+def match_won_by_B(tpmatch_won_by_B: TPMatch) -> Match:
+    return Match.from_tpmatch(tpmatch_won_by_B)
 
 
 match1copy = match1
@@ -495,7 +500,7 @@ def match_pending(tpmatch_pending: TPMatch) -> Match:
 def tournament1(
     match1: Match,
     match2: Match,
-    match_played: Match,
+    match_won_by_B: Match,
     entry1: Entry,
     entry2: Entry,
     entry12: Entry,
@@ -510,7 +515,7 @@ def tournament1(
     )
     t.add_match(match1)
     t.add_match(match2)
-    t.add_match(match_played)
+    t.add_match(match_won_by_B)
     t.add_entry(entry1)
     t.add_entry(entry2)
     t.add_entry(entry21)

@@ -8,7 +8,7 @@ def test_repr(match1: Match) -> None:
         "court=Court(id=1, name='C01', location.name='Sports4You'), "
         "A=Entry(event.name='Herren 1', player1.name='Martin Krafft'), "
         "B=Entry(event.name='Herren 1', player1.name='Iddo Hoeve'), "
-        "status=ready)"
+        "status=ready, winner=None, scores=-)"
     )
 
 

@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Self, cast
+from typing import Literal, Self, cast
 
 from pydantic import BaseModel
 
@@ -11,6 +11,7 @@ from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Slot, SlotType
 from .sqlmodels import TPEntry
 from .tpmatch import TPMatch, TPMatchStatus
+from .util import ScoresType, scores_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     A: EntryT | str
     B: EntryT | str
     status: TPMatchStatus
+    winner: Literal["A"] | Literal["B"] | None = None
+    scores: ScoresType = []
 
     __repr_fields__ = [
         "id",
@@ -36,6 +39,8 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
         "A",
         "B",
         ("status", TPMatch._status_repr, False),
+        "winner",
+        ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     ]
     __str_template__ = (
         "{self.id} {self.status}"
@@ -73,6 +78,10 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
             "B": slot_to_player(tpmatch.slot2),
         }
 
+        winner: Literal["A"] | Literal["B"] | None = None
+        if tpmatch.winner is not None:
+            winner = "A" if tpmatch.pm1.winner == 1 else "B"
+
         return cls(
             id=tpmatch.id,
             matchnr=tpmatch.matchnr,
@@ -80,5 +89,7 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
             time=tpmatch.time,
             court=CourtClass.from_tp_model(tpmatch.court) if tpmatch.court else None,
             status=tpmatch.status,
+            winner=winner,
+            scores=tpmatch.scores,
             **players,
         )

@@ -1,6 +1,7 @@
 import logging
 from typing import (
     Any,
+    Literal,
     Self,
     cast,
 )
@@ -14,6 +15,7 @@ from pydantic import (
 
 from ...match import Match
 from ...tpmatch import TPMatch
+from ...util import ScoresType
 from .config import PerMatchOverridableConfig
 from .court import SquoreCourt
 from .draw import SquoreDraw, SquoreDrawStruct
@@ -31,6 +33,8 @@ class SquoreMatchStruct(PerMatchOverridableConfig, total=False):
     court: int | None
     A: SquorePlayerStruct | str
     B: SquorePlayerStruct | str
+    winner: Literal["A"] | Literal["B"] | None
+    scores: ScoresType
     status: str
     config: PerMatchOverridableConfig
 
