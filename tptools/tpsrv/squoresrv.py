@@ -366,10 +366,16 @@ def get_players_list(
     ]
 
 
-def _normalise_court_name_for_matching(courtname: str) -> str:
-    return re.sub(
-        r"c(?:ourt *)?0*", "c", courtname, count=0, flags=re.IGNORECASE
-    ).lower()
+def _normalise_court_name_for_matching(courtname: str) -> tuple[int | None, str] | None:
+    m = re.match(
+        r"(?:-?(?P<loc>\d+)-)?c(?:ourt *)?0*(?P<court>\d+)",
+        courtname,
+        flags=re.IGNORECASE,
+    )
+    if m:
+        return int(loc) if (loc := m["loc"]) is not None else None, m["court"]
+    else:
+        return None
 
 
 def get_court_for_dev(
@@ -388,11 +394,30 @@ def get_court_for_dev(
                 if courtname == court.id:
                     return court
 
-            elif _normalise_court_name_for_matching(courtname) in (
-                _normalise_court_name_for_matching(court.name),
-                _normalise_court_name_for_matching(str(court.name)),
-            ):
-                return court
+            else:
+                term = _normalise_court_name_for_matching(courtname)
+                if term is not None:
+                    comps = (
+                        []
+                        if court.location is None
+                        else [
+                            f"{court.location.id}-{court.name}",
+                            f"{court.location.id}-{court}",
+                        ]
+                    )
+
+                    for comparename in (
+                        *comps,
+                        court.name,
+                        str(court),
+                    ):
+                        comp = _normalise_court_name_for_matching(comparename)
+                        if (
+                            comp is not None
+                            and (term[0] is None and term[1] == comp[1])
+                            or (term == comp)
+                        ):
+                            return court
 
     logger.debug(f"No court found in devmap for device with IP {clientip}")
     return None
