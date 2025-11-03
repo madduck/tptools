@@ -16,7 +16,8 @@ def test_repr(tpmatch1: TPMatch) -> None:
         "TPMatch(id='1-14', draw.name='Baum', matchnr=14, "
         "time=datetime(2025, 6, 1, 11, 30), court='Sports4You, C01', "
         "slot1.name='Martin Krafft', slot2.name='Iddo Hoeve', "
-        "planning=3001/5, van=4001/2, wnvn=2001/3,2005/7, status=ready, scores=-)"
+        "planning=3001/5, van=4001/2, wnvn=2001/3,2005/7, status=ready, "
+        "starttime=None, endtime=None, scores=-)"
     )
 
 

@@ -189,6 +189,14 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         return self.pm1.get_scores()
 
     @property
+    def starttime(self) -> datetime | None:
+        return self.pm1.starttime
+
+    @property
+    def endtime(self) -> datetime | None:
+        return self.pm1.endtime
+
+    @property
     def van(self) -> tuple[int, int]:
         # Safe to cast since consistency checks above already ensured that
         # van pointers aren't None for Match
@@ -286,6 +294,8 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         ("wnvn", _wnvn_repr, False),
         ("status", _status_repr, False),
         "winner?.name",
+        "starttime",
+        "endtime",
         ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     )
 
