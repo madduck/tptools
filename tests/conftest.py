@@ -398,6 +398,7 @@ def TPMatchFactory() -> TPMatchFactoryType:
             entry = tpentry2.model_copy(update={"event": pm.entry.event})
         else:
             entry = None
+        scores = pm.get_scores(reversed=True)
         pm2 = pm.model_copy(
             update={
                 "entry": entry,
@@ -406,6 +407,11 @@ def TPMatchFactory() -> TPMatchFactoryType:
                 "vn": pm.vn + lldiff if pm.vn is not None else None,
                 "planning": pm.planning + (lldiff if pldiff is None else pldiff),
                 "winner": ((3 - pm.winner) % 3) if pm.winner is not None else None,
+            }
+            | {
+                f"team{a}set{i}": g[a - 1]
+                for a in (1, 2)
+                for i, g in enumerate(scores, 1)
             }
         )
         return TPMatch(pm1=pm, pm2=pm2)
@@ -435,12 +441,23 @@ def tpmatch2(
 
 
 @pytest.fixture
-def tpmatch_played(
+def tpmatch_won_by_A(
     TPMatchFactory: TPMatchFactoryType,
     pm_won: TPPlayerMatch,
     tpentry2: TPEntry,
 ) -> TPMatch:
     return TPMatchFactory(pm_won, tpentry2, lldiff=2)
+
+
+@pytest.fixture
+def tpmatch_won_by_B(
+    TPMatchFactory: TPMatchFactoryType,
+    pm_won: TPPlayerMatch,
+    tpentry2: TPEntry,
+) -> TPMatch:
+    ret = TPMatchFactory(pm_won, tpentry2, lldiff=2)
+    ret.pm1, ret.pm2 = ret.pm2, ret.pm1
+    return ret
 
 
 @pytest.fixture

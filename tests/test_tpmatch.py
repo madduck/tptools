@@ -16,7 +16,7 @@ def test_repr(tpmatch1: TPMatch) -> None:
         "TPMatch(id='1-14', draw.name='Baum', matchnr=14, "
         "time=datetime(2025, 6, 1, 11, 30), court='Sports4You, C01', "
         "slot1.name='Martin Krafft', slot2.name='Iddo Hoeve', "
-        "planning=3001/5, van=4001/2, wnvn=2001/3,2005/7, status=ready)"
+        "planning=3001/5, van=4001/2, wnvn=2001/3,2005/7, status=ready, scores=-)"
     )
 
 
@@ -211,6 +211,18 @@ def test_winner(
     )
     assert m.winner == pm1.entry  # always pm1
     assert m.won_by == wonby
+
+
+def test_winner_and_scores_A(tpmatch_won_by_A: TPMatch) -> None:
+    assert tpmatch_won_by_A.winner == tpmatch_won_by_A.pm1.entry  # always pm1
+    assert tpmatch_won_by_A.scores == [(11, 5), (6, 11), (13, 11), (11, 8)]
+    assert tpmatch_won_by_A.won_by == "A"
+
+
+def test_winner_and_scores_B(tpmatch_won_by_B: TPMatch) -> None:
+    assert tpmatch_won_by_B.winner == tpmatch_won_by_B.pm1.entry  # always pm1
+    assert tpmatch_won_by_B.scores == [(5, 11), (11, 6), (11, 13), (8, 11)]
+    assert tpmatch_won_by_B.won_by == "B"
 
 
 def test_slot_accessor(tpmatch_won_by_A: TPMatch) -> None:

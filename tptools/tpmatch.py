@@ -11,7 +11,13 @@ from pydantic import BaseModel, model_validator
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Bye, Playceholder, Slot, Unknown
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
-from .util import normalise_time, reduce_common_prefix, zero_to_none
+from .util import (
+    ScoresType,
+    normalise_time,
+    reduce_common_prefix,
+    scores_to_string,
+    zero_to_none,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +74,19 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             )
         return self
 
+    def _check_score_consistency(self) -> Self:
+        sc2 = self.pm2.get_scores(reversed=self.pm2.winner == 2)
+        if (
+            (self.pm1.scorestatus or 0) > 0
+            and (self.pm2.scorestatus or 0) == 0
+            and len(sc2) == 0
+        ):
+            return self
+        assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
+            f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
+        )
+        return self
+
     @model_validator(mode="after")
     def _check_consistency(self) -> Self:
         try:
@@ -118,6 +137,7 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
             self._check_winner_consistency()
             self._check_event_consistency()
+            self._check_score_consistency()
 
         except AssertionError as err:
             raise AssertionError(f"Validating {self!r}: {err}") from err
@@ -163,6 +183,10 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
                 return "B"
             case _:
                 return None
+
+    @property
+    def scores(self) -> ScoresType:
+        return self.pm1.get_scores()
 
     @property
     def van(self) -> tuple[int, int]:
@@ -262,6 +286,7 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         ("wnvn", _wnvn_repr, False),
         ("status", _status_repr, False),
         "winner?.name",
+        ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     )
 
     __massage_fields__ = {
