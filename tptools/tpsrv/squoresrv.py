@@ -90,12 +90,22 @@ class MatchFeedQueryParams(BaseModel):
 class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
 
 
+class ReadyMatchSelectionParams(MatchSelectionParams):
+    include_played: bool = False
+    include_not_ready: bool = False
+
+
+class CountryCodeNamePolicyParams(CountryNamePolicyParams):
+    use_country_code: bool = True
+    titlecase: bool = False
+
+
 class MatchesPolicyParams(
     PlayersPolicyParams,
-    CountryNamePolicyParams,
+    CountryCodeNamePolicyParams,
     CourtNamePolicyParams,
     CourtSelectionParams,
-    MatchSelectionParams,
+    ReadyMatchSelectionParams,
 ): ...
 
 
@@ -146,7 +156,8 @@ def get_clubnamepolicy() -> ClubNamePolicy:
 def get_matchselectionparams(
     policyparams: Annotated[MatchesPolicyParams, Query()],
 ) -> MatchSelectionParams:
-    return MatchSelectionParams.make_from_parameter_superset(policyparams)
+    ret = MatchSelectionParams.make_from_parameter_superset(policyparams)
+    return ret
 
 
 def get_nummatchesparams(
@@ -497,6 +508,7 @@ def get_court_feeds_list(
     courts: Annotated[list[Court], Depends(get_courts)],
     playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
+    countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     courtselectionparams: Annotated[
         CourtSelectionParams, Depends(get_courtselectionparams)
@@ -531,8 +543,8 @@ def get_court_feeds_list(
         | matchselectionparams.model_dump()
         | nummatchesparams.model_dump()
         | courtnamepolicy.params()
+        | countrynamepolicy.params()
         | playerpolicyparams
-        | {"use_country_code": True}
     )
     for court in sorted(courts):
         courtparams["court"] = court.id
