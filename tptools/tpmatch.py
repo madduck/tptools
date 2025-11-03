@@ -155,6 +155,16 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         return self.pm1.entry if self.played else None
 
     @property
+    def won_by(self) -> Literal["A"] | Literal["B"] | None:
+        match zero_to_none(self.pm1.winner):
+            case 1:
+                return "A"
+            case 2:
+                return "B"
+            case _:
+                return None
+
+    @property
     def van(self) -> tuple[int, int]:
         # Safe to cast since consistency checks above already ensured that
         # van pointers aren't None for Match
@@ -166,9 +176,20 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
     def _slot(self, idx: Literal[0] | Literal[1]) -> Slot:
         if self._slots is None:
+            # The winner of a match always corresponds to the first of the two
+            # PlayerMatches, so we need to restore order of the slots if player B
+            # won. This seems to be what the winner field encodes, i.e. if winner is 1,2
+            # across the two PlayerMatches, then the first player (A) is the winner,
+            # else B
+            if (self.pm2.winner or 0) < (self.pm1.winner or 0):
+                # only if winners are 2/1 and not if winners are 0/0 or None/None
+                idx = 0 if idx else 1  # invert
             pm = getattr(self, f"pm{idx + 1}")
             return Slot(content=pm.entry or Unknown())
 
+        # … however, when self._slots has been set through set_slots(), then the order
+        # is assumed to be as in the draw. This is because resolve_match_entries()
+        # iterates over the van pointers, which are in order by definition:
         return self._slots[idx]
 
     @property

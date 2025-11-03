@@ -186,15 +186,52 @@ def test_lower_planning_playermatch_first(
     assert m.pm1 == pm1
 
 
-def test_winner(tpmatch1: TPMatch) -> None:
-    pm1 = tpmatch1.pm1.model_copy(update={"winner": 1})
-    pm2 = tpmatch1.pm2.model_copy(update={"winner": 2})
+def test_no_winner(tpmatch1: TPMatch) -> None:
+    assert tpmatch1.winner is None
+    assert tpmatch1.won_by is None
+
+
+@pytest.mark.parametrize(
+    "winnerreversed, pmreversed, wonby",
+    [
+        (True, True, "B"),
+        (True, False, "B"),
+        (False, True, "A"),
+        (False, False, "A"),
+    ],
+)
+def test_winner(
+    tpmatch1: TPMatch, winnerreversed: bool, pmreversed: bool, wonby: str
+) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": 2 if winnerreversed else 1})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 1 if winnerreversed else 2})
+    m = TPMatch(
+        pm1=pm2 if pmreversed else pm1,
+        pm2=pm1 if pmreversed else pm2,
+    )
+    assert m.winner == pm1.entry  # always pm1
+    assert m.won_by == wonby
+
+
+def test_slot_accessor(tpmatch_won_by_A: TPMatch) -> None:
+    assert tpmatch_won_by_A.pm1.winner == 1
+    assert tpmatch_won_by_A.slot1.content == tpmatch_won_by_A.pm1.entry
+    assert tpmatch_won_by_A.pm2.winner == 2
+    assert tpmatch_won_by_A.slot2.content == tpmatch_won_by_A.pm2.entry
+
+
+def test_slot_accessor_reversed(tpmatch_won_by_B: TPMatch) -> None:
+    assert tpmatch_won_by_B.pm1.winner == 2
+    assert tpmatch_won_by_B.slot1.content == tpmatch_won_by_B.pm2.entry
+    assert tpmatch_won_by_B.pm2.winner == 1
+    assert tpmatch_won_by_B.slot2.content == tpmatch_won_by_B.pm1.entry
+
+
+def test_slot_accessor_explicit(slot1: Slot, slot2: Slot, tpmatch1: TPMatch) -> None:
+    pm1 = tpmatch1.pm1.model_copy(update={"winner": 2})
+    pm2 = tpmatch1.pm2.model_copy(update={"winner": 1})
     m = TPMatch(pm1=pm1, pm2=pm2)
-    assert m.winner == pm1.entry
-
-
-def test_winner_pms_reversed(tpmatch1: TPMatch) -> None:
-    pm1 = tpmatch1.pm1.model_copy(update={"winner": 1})
-    pm2 = tpmatch1.pm2.model_copy(update={"winner": 2})
-    m = TPMatch(pm1=pm2, pm2=pm1)
-    assert m.winner == pm1.entry
+    m.set_slots(slot2, slot1)
+    # the order of set_slots() overrides the winner field
+    assert m.slot1 == slot2
+    assert m.slot2 == slot1
