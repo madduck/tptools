@@ -284,7 +284,7 @@ def TPPlayerMatchFactory(tpdraw1: TPDraw) -> TPPlayerMatchFactoryType:
         defaults = {
             "id": kwargs.get("planning", 1),
             "draw": tpdraw1,
-        }
+        } | dict.fromkeys([f"team{a}set{g}" for a in (2, 1) for g in range(1, 6)], 0)
         return TPPlayerMatch(**defaults | kwargs)
 
     return playermatch_maker
@@ -360,7 +360,21 @@ def pm2(
 
 @pytest.fixture
 def pm_won(pm1: TPPlayerMatch) -> TPPlayerMatch:
-    return pm1.model_copy(update={"id": 521, "matchnr": 52, "winner": 1})
+    return pm1.model_copy(
+        update={
+            "id": 521,
+            "matchnr": 52,
+            "winner": 1,
+            "team1set1": 11,
+            "team2set1": 5,
+            "team1set2": 6,
+            "team2set2": 11,
+            "team1set3": 13,
+            "team2set3": 11,
+            "team1set4": 11,
+            "team2set4": 8,
+        }
+    )
 
 
 pm1copy = pm1

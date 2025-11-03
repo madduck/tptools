@@ -17,7 +17,7 @@ def test_repr(pm1: TPPlayerMatch) -> None:
         "entry.players=(TPPlayer(id=1, lastname='Krafft', firstname='Martin', "
         "country.name='Deutschland', club.name='RSC'), None), "
         "time=datetime(2025, 6, 1, 11, 30), court.name='C01', winner=None, "
-        "planning=3001, van=4001/2, wnvn=2001/3, status=pending)"
+        "scores=-, planning=3001, van=4001/2, wnvn=2001/3, status=pending)"
     )
 
 
@@ -102,6 +102,14 @@ def test_scheduled(pm1: TPPlayerMatch) -> None:
 
 def test_unscheduled(pm2: TPPlayerMatch) -> None:
     assert not pm2.scheduled
+
+
+def test_scores(pm_won: TPPlayerMatch) -> None:
+    assert pm_won.scores == [(11, 5), (6, 11), (13, 11), (11, 8)]
+
+
+def test_scores_reversed(pm_won: TPPlayerMatch) -> None:
+    assert pm_won.get_scores(reversed=True) == [(5, 11), (11, 6), (11, 13), (8, 11)]
 
 
 @pytest.mark.parametrize(

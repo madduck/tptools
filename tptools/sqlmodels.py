@@ -9,7 +9,14 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from .drawtype import DrawType
 from .mixins import ComparableMixin, ReprMixin, StrMixin
-from .util import EnumAsInteger, normalise_time, reduce_common_prefix, zero_to_none
+from .util import (
+    EnumAsInteger,
+    ScoresType,
+    normalise_time,
+    reduce_common_prefix,
+    scores_to_string,
+    zero_to_none,
+)
 
 
 class TPModel(ReprMixin, StrMixin, ComparableMixin, SQLModel):
@@ -313,6 +320,28 @@ class TPPlayerMatch(TPModel, table=True):
     vn: int | None = None
     reversehomeaway: bool = False
     scorestatus: int = 0
+    team1set1: int = 0
+    team2set1: int = 0
+    team1set2: int = 0
+    team2set2: int = 0
+    team1set3: int = 0
+    team2set3: int = 0
+    team1set4: int = 0
+    team2set4: int = 0
+    team1set5: int = 0
+    team2set5: int = 0
+
+    @property
+    def scores(self) -> ScoresType:
+        return self.get_scores()
+
+    def get_scores(self, *, reversed: bool = False) -> ScoresType:
+        order = (2, 1) if reversed else (1, 2)
+        return [
+            pair
+            for g in range(1, 6)
+            if (pair := tuple(getattr(self, f"team{a}set{g}") for a in order)) != (0, 0)
+        ]
 
     @property
     def van(self) -> tuple[int, int] | tuple[None, None]:
@@ -402,6 +431,7 @@ class TPPlayerMatch(TPModel, table=True):
         ("time", _time_repr, False),
         "court?.name",
         "winner",
+        ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
         "planning",
         ("van", _van_repr, False),
         ("wnvn", partial(_ll_repr, attr1="wn", attr2="vn"), False),
@@ -415,6 +445,16 @@ class TPPlayerMatch(TPModel, table=True):
         "time",
         "court",
         "winner",
+        "team1set1",
+        "team2set1",
+        "team1set2",
+        "team2set2",
+        "team1set3",
+        "team2set3",
+        "team1set4",
+        "team2set4",
+        "team1set5",
+        "team2set5",
         "planning",
     )
     __cmp_fields__ = (
