@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 from typing import Literal, Self, cast
 
 from pydantic import BaseModel
@@ -22,11 +22,13 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     id: str
     matchnr: int
     draw: DrawT
-    time: datetime.datetime | None
+    time: datetime | None
     court: CourtT | None
     A: EntryT | str
     B: EntryT | str
     status: TPMatchStatus
+    starttime: datetime | None = None
+    endtime: datetime | None = None
     winner: Literal["A"] | Literal["B"] | None = None
     scores: ScoresType = []
 
@@ -39,6 +41,16 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
         "A",
         "B",
         ("status", TPMatch._status_repr, False),
+        (
+            "starttime",
+            lambda s: s.starttime.isoformat() if s.starttime else None,
+            False,
+        ),
+        (
+            "endtime",
+            lambda s: s.endtime.isoformat() if s.endtime else None,
+            False,
+        ),
         "winner",
         ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     ]
@@ -89,6 +101,8 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
             time=tpmatch.time,
             court=CourtClass.from_tp_model(tpmatch.court) if tpmatch.court else None,
             status=tpmatch.status,
+            starttime=tpmatch.starttime,
+            endtime=tpmatch.endtime,
             winner=winner,
             scores=tpmatch.scores,
             **players,

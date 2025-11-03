@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import (
     Any,
     Literal,
@@ -33,6 +34,8 @@ class SquoreMatchStruct(PerMatchOverridableConfig, total=False):
     court: int | None
     A: SquorePlayerStruct | str
     B: SquorePlayerStruct | str
+    starttime: datetime | None
+    endtime: datetime | None
     winner: Literal["A"] | Literal["B"] | None
     scores: ScoresType
     status: str
