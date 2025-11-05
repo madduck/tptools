@@ -172,6 +172,7 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
     @property
     def winner(self) -> TPEntry | None:
+        # TODO:this won't work for group draws, as TP doesn't fill entry for those
         return self.pm1.entry if self.played else None
 
     @property
