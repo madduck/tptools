@@ -109,6 +109,11 @@ class MatchesPolicyParams(
 ): ...
 
 
+class SettingsQueryParams(BaseModel):
+    include_feeds: bool = True
+    kiosk_mode: bool = False
+
+
 def get_squoredevqueryparams(
     squoredev: Annotated[SquoreDevQueryParams, Query()],
 ) -> SquoreDevQueryParams:
@@ -164,6 +169,23 @@ def get_nummatchesparams(
     policyparams: Annotated[NumMatchesParams, Query()],
 ) -> NumMatchesParams:
     return NumMatchesParams.make_from_parameter_superset(policyparams)
+
+
+def get_settingsqueryparams(
+    request: Request, params: Annotated[SettingsQueryParams, Query()]
+) -> SettingsQueryParams:
+    try:
+        from_config = cast(
+            SettingsQueryParams, request.app.state.squore["settingsqueryparams"]
+        )
+        from_query = params.model_dump(exclude_defaults=True)
+        return from_config.model_copy(update=from_query)
+
+    except (AttributeError, KeyError) as err:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="App state does not include squore.settingsqueryparams",
+        ) from err
 
 
 def get_matchfeedqueryparams(
@@ -646,19 +668,22 @@ async def feeds(
     return court_feeds
 
 
-class SettingsQueryParams(BaseModel):
-    include_feeds: bool = True
-
-
 @squoreapp.get("/init")
 async def init(
     myurl: Annotated[URL, Depends(get_url)],
     matchfeedqueryparams: Annotated[
         MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
     ],
+    settingsqueryparams: Annotated[
+        SettingsQueryParams, Depends(get_settingsqueryparams)
+    ],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> RedirectResponse:
-    params = matchfeedqueryparams.model_dump() | squoredev.model_dump()
+    params = (
+        matchfeedqueryparams.model_dump()
+        | squoredev.model_dump()
+        | settingsqueryparams.model_dump()
+    )
     redirect_url = (
         myurl / ".." / "settings" % normalise_dict_values_for_query_string(params)
     )
@@ -716,6 +741,7 @@ async def settings(
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
         settings["feedPostUrls"] = ("\n".join(feeds)).strip()
+        settings["kioskMode"] = params.kiosk_mode
 
         if court_for_dev is not None:
             try:
@@ -762,6 +788,7 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
 @asynccontextmanager
 async def setup_for_squore(
     clictx: CliContext,
+    kiosk_mode: bool = False,
     only_this_court: bool = False,
     max_matches_per_court: int | None = None,
     api_mount_point: str = API_MOUNTPOINT,
@@ -786,6 +813,7 @@ async def setup_for_squore(
             only_this_court=only_this_court,
             max_matches_per_court=max_matches_per_court,
         ),
+        "settingsqueryparams": SettingsQueryParams(kiosk_mode=kiosk_mode),
     }
     squoreapp.mount(
         "/flags",
@@ -809,6 +837,12 @@ async def setup_for_squore(
 
 
 @plugin
+@click.option(
+    "--kiosk-mode",
+    "-k",
+    is_flag=True,
+    help="Configure clients to use kiosk-mode and restrict the UI",
+)
 @click.option(
     "--only-this-court",
     "-o",
@@ -856,6 +890,7 @@ async def setup_for_squore(
 @pass_clictx
 async def squoresrv(
     clictx: CliContext,
+    kiosk_mode: bool,
     only_this_court: bool,
     max_matches_per_court: int | None,
     api_mount_point: str,
@@ -867,6 +902,7 @@ async def squoresrv(
 
     async with setup_for_squore(
         clictx,
+        kiosk_mode,
         only_this_court,
         max_matches_per_court,
         api_mount_point,
