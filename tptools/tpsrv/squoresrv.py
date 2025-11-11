@@ -167,12 +167,14 @@ def get_nummatchesparams(
 
 
 def get_matchfeedqueryparams(
-    request: Request,
+    request: Request, params: Annotated[MatchFeedQueryParams, Query()]
 ) -> MatchFeedQueryParams:
     try:
-        return cast(
+        from_config = cast(
             MatchFeedQueryParams, request.app.state.squore["matchfeedqueryparams"]
         )
+        from_query = params.model_dump(exclude_defaults=True)
+        return from_config.model_copy(update=from_query)
 
     except (AttributeError, KeyError) as err:
         raise HTTPException(
