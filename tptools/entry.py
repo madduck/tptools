@@ -56,8 +56,8 @@ class Player(BaseModel[TPPlayer]):
 
 class PlayerExportStruct(TypedDict):
     name: str
-    club: NotRequired[str | None]
-    country: NotRequired[str | None]
+    club: NotRequired[str]
+    country: NotRequired[str]
 
 
 PlayerExportStructValidator = TypeAdapter(PlayerExportStruct)
