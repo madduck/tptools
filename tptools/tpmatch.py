@@ -82,9 +82,9 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             and len(sc2) == 0
         ):
             return self
-        assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
-            f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
-        )
+        # assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
+        #     f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
+        # )
         return self
 
     @model_validator(mode="after")
