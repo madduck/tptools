@@ -14,13 +14,14 @@ from pydantic import (
     model_serializer,
 )
 
+from ...entry import PlayerExportStruct
 from ...match import Match
 from ...tpmatch import TPMatch
 from ...util import ScoresType
 from .config import PerMatchOverridableConfig
 from .court import SquoreCourt
 from .draw import SquoreDraw, SquoreDrawStruct
-from .entry import SquoreEntry, SquorePlayerStruct
+from .entry import SquoreEntry
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +33,8 @@ class SquoreMatchStruct(PerMatchOverridableConfig, total=False):
     date: str | None
     time: str | None
     court: int | None
-    A: SquorePlayerStruct | str
-    B: SquorePlayerStruct | str
+    A: PlayerExportStruct | str
+    B: PlayerExportStruct | str
     starttime: datetime | None
     endtime: datetime | None
     winner: Literal["A"] | Literal["B"] | None

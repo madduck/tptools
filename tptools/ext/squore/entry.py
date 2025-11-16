@@ -1,23 +1,15 @@
-from typing import TYPE_CHECKING, Any, ClassVar, NotRequired, TypedDict
+from typing import TYPE_CHECKING, Any, ClassVar
 
-from pydantic import SerializationInfo, TypeAdapter, model_serializer
+from pydantic import SerializationInfo, model_serializer
 
 from tptools import Entry
+from tptools.entry import PlayerExportStruct
 from tptools.namepolicy import (
     ClubNamePolicy,
     CountryNamePolicy,
     PairCombinePolicy,
     PlayerNamePolicy,
 )
-
-
-class SquorePlayerStruct(TypedDict):
-    name: str
-    club: NotRequired[str | None]
-    country: NotRequired[str | None]
-
-
-SquorePlayerStructValidator = TypeAdapter(SquorePlayerStruct)
 
 
 class SquoreEntry(Entry):
@@ -27,7 +19,7 @@ class SquoreEntry(Entry):
     PAIRCOMBINEPOLICY: ClassVar[str] = "paircombinepolicy"
 
     @model_serializer(mode="plain")
-    def apply_policies(self, info: SerializationInfo) -> SquorePlayerStruct:
+    def apply_policies(self, info: SerializationInfo) -> PlayerExportStruct:
         clubnamepolicy = self.get_policy_from_info(
             info, self.CLUBNAMEPOLICY, ClubNamePolicy()
         )
@@ -50,4 +42,4 @@ class SquoreEntry(Entry):
 
     if TYPE_CHECKING:
         # Ensure type checkers see the correct return type
-        def model_dump(self, **_: Any) -> SquorePlayerStruct: ...  # type: ignore[override]
+        def model_dump(self, **_: Any) -> PlayerExportStruct: ...  # type: ignore[override]
