@@ -697,8 +697,8 @@ async def settings(
         f"(ip={squoredev.ip}, cc={squoredev.cc}, v={squoredev.version})"
     )
 
-    settings["RemoteSettingsURL"] = str(myurl)
-    settings["RemoteSettingsURL_Default"] = str(myurl)
+    settings["RemoteSettingsURL"] = (initurl := str(myurl / ".." / "init"))
+    settings["RemoteSettingsURL_Default"] = initurl
 
     if mirror_for_dev is not None:
         logger.info(f"Client at {remote} set up to MQTT-mirror device {mirror_for_dev}")
