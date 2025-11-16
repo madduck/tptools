@@ -689,7 +689,7 @@ async def settings(
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
-    params: Annotated[SettingsQueryParams, Query()],
+    settingsqueryparams: Annotated[SettingsQueryParams, Query()],
 ) -> dict[str, Any]:
     logger.info(
         f"App settings request from remote {remote} "
@@ -718,7 +718,7 @@ async def settings(
             "liveScoreDeviceId_customSuffix": f"-mirror-{mirror_for_dev}",
         }
 
-    if params.include_feeds:
+    if settingsqueryparams.include_feeds:
         feeds: list[str] = []
         courtorder: dict[int, tuple[int, str]] = {}
         for idx, courtfeed in enumerate(court_feeds, 0):
@@ -731,7 +731,7 @@ async def settings(
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
         settings["feedPostUrls"] = ("\n".join(feeds)).strip()
-        settings["kioskMode"] = params.kiosk_mode
+        settings["kioskMode"] = settingsqueryparams.kiosk_mode
 
         if court_for_dev is not None:
             try:
