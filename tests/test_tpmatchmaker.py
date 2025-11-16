@@ -270,6 +270,56 @@ def test_resolve_unmatched_fabricate(
     assert len(matchmaker.unmatched) == 0
 
 
+def test_resolve_unmatched_fabricate_scores_reversed(
+    matchmaker: TPMatchMaker,
+    TPPlayerMatchFactory: TPPlayerMatchFactoryType,
+    tpentry1: TPEntry,
+) -> None:
+    common = {
+        "matchnr": 1,
+        "van1": 3001,
+        "van2": 3002,
+    }
+    srcpm1 = TPPlayerMatchFactory(**common | {"planning": 2001, "wn": 1001, "vn": None})
+    srcpm2 = TPPlayerMatchFactory(
+        **common
+        | {
+            "planning": 2002,
+            "wn": 1003,
+            "vn": 1004,
+        }
+    )
+    pm = TPPlayerMatchFactory(
+        matchnr=2,
+        planning=1001,
+        van1=2001,
+        van2=2002,
+        winner=1,
+        team1set1=11,
+        team2set1=5,
+        team1set2=11,
+        team2set2=6,
+        team1set3=7,
+        team2set3=11,
+        team1set4=11,
+        team2set4=8,
+        entry=tpentry1,
+    )
+
+    matchmaker.add_playermatch(srcpm1)
+    matchmaker.add_playermatch(srcpm2)
+    matchmaker.add_playermatch(pm)
+
+    matchmaker.resolve_unmatched()
+
+    m = [m for m in matchmaker.matches if m.id == "1-2"][0]
+
+    assert m.pm1.get_scores() == m.pm2.get_scores(reversed=True)
+
+    assert len(matchmaker.matches) == 2
+    assert len(matchmaker.unmatched) == 0
+
+
 def test_resolve_unmatched_fabricate_1st_round(
     matchmaker: TPMatchMaker,
     pmplayer1: TPPlayerMatch,

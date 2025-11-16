@@ -82,9 +82,9 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             and len(sc2) == 0
         ):
             return self
-        # assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
-        #     f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
-        # )
+        assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
+            f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
+        )
         return self
 
     @model_validator(mode="after")
@@ -384,6 +384,12 @@ class TPMatchMaker(ReprMixin):
                 ):  # pragma: nocover — there is a missed branch here, but I cannot be
                     # bothered.
                     mmlogger.info(f"Fabricating a PlayerMatch to match single {pm!r}")
+
+                    scores = pm.get_scores(reversed=True)
+                    sup: dict[str, int] = {}
+                    for g, sc in enumerate(scores, 1):
+                        sup |= {f"team{t + 1}set{g}": sc[t] for t in range(2)}
+
                     self.add_playermatch(
                         pm.model_copy(
                             update={
@@ -395,6 +401,7 @@ class TPMatchMaker(ReprMixin):
                                 else None,
                                 "entry": None,
                             }
+                            | sup
                         )
                     )
 
