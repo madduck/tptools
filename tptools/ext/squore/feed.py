@@ -77,6 +77,10 @@ class MatchesFeed(SqModel):
         courtnamepolicy: CourtNamePolicy,
         matchfeedparams: MatchFeedParams,
     ) -> list[MatchesSection]:
+        if matchfeedparams.court is None and matchfeedparams.only_this_court:
+            logger.info("Disabling only_this_court for device without assigned court")
+            matchfeedparams.only_this_court = False
+
         sections = []
         for matchcourt, sqmatches in matches_by_court.items():
             if matchcourt is None:
