@@ -697,7 +697,10 @@ async def settings(
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
         settings["feedPostUrls"] = ("\n".join(feeds)).strip()
-        settings["kioskMode"] = commandlineparams.kiosk_mode
+        if commandlineparams.kiosk_mode:
+            settings["kioskMode"] = "MatchesFromSingleFeed_1"
+        else:
+            settings["kioskMode"] = "NotUsed"
 
         if court_for_dev is not None:
             try:
