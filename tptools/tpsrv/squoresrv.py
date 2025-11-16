@@ -56,7 +56,11 @@ from tptools.namepolicy import (
 )
 from tptools.namepolicy.policybase import RegexpSubstTuple
 from tptools.tournament import NumMatchesParams
-from tptools.util import normalise_dict_values_for_query_string, silence_logger
+from tptools.util import (
+    flatten_dict,
+    normalise_dict_values_for_query_string,
+    silence_logger,
+)
 
 from .util import CliContext, pass_clictx
 
@@ -321,20 +325,6 @@ def get_config(
     return config
 
 
-def _flatten_dict(
-    dict_: Mapping[str, Any], parent_key: str = "", separator: str = "."
-) -> dict[str, Any]:
-    # https://stackoverflow.com/posts/6027615/revisions
-    items: list[tuple[str, Any]] = []
-    for key, value in dict_.items():
-        new_key = parent_key + separator + key if parent_key else key
-        if isinstance(value, Mapping):
-            items.extend(_flatten_dict(value, new_key, separator=separator).items())
-        else:
-            items.append((new_key, value))
-    return dict(items)
-
-
 def get_dev_map(
     path: Annotated[pathlib.Path, Depends(get_devmap_path)],
 ) -> dict[str, int | str] | Never:
@@ -349,7 +339,7 @@ def get_dev_map(
 
     # TOML turns a key like 172.21.22.1 into a nested dict {"172":{"21":{"22"…}
     # so for convenience, flatten this:
-    return _flatten_dict(devmap)
+    return flatten_dict(devmap)
 
 
 def get_tournament(request: Request) -> SquoreTournament | Never:

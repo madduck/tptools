@@ -242,3 +242,17 @@ def scores_to_string(
     if scores is None or len(scores) == 0:
         return nullstr
     return gamesep.join([pointsep.join([str(s) for s in g]) for g in scores])
+
+
+def flatten_dict(
+    dict_: Mapping[str, Any], parent_key: str = "", separator: str = "."
+) -> dict[str, Any]:
+    # https://stackoverflow.com/posts/6027615/revisions
+    items: list[tuple[str, Any]] = []
+    for key, value in dict_.items():
+        new_key = parent_key + separator + key if parent_key else key
+        if isinstance(value, Mapping):
+            items.extend(flatten_dict(value, new_key, separator=separator).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)

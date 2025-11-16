@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Mapping
 import logging
 import pathlib
 from contextlib import nullcontext
@@ -427,3 +428,15 @@ def test_scores_to_string_pointsep() -> None:
 
 def test_scores_to_string_gamesep() -> None:
     assert util.scores_to_string([(1, 2), (3, 4), (5, 6)], gamesep="g") == "1-2g3-4g5-6"
+
+
+@pytest.mark.parametrize(
+    "input, sep, exp",
+    [
+        ({"1.2.3.4": "foo"}, ".", {"1.2.3.4": "foo"}),
+        ({"1": {"2.3.4": "foo"}}, ".", {"1.2.3.4": "foo"}),
+        ({"1": {"2": {"3.4": "foo"}}}, ".", {"1.2.3.4": "foo"}),
+    ],
+)
+def test_flatten_dict(input: Mapping[str, Any], sep: str, exp: dict[str, Any]) -> None:
+    assert util.flatten_dict(input, separator=sep) == exp
