@@ -7,7 +7,7 @@ from .config import (
 from .court import SquoreCourt
 from .draw import SquoreDraw
 from .entry import SquoreEntry
-from .feed import MatchesFeed, SquoreTournament
+from .feed import MatchesFeed, MatchFeedParams, SquoreTournament
 from .match import SquoreMatch
 from .section import MatchesSection
 
@@ -16,6 +16,7 @@ __all__ = [
     "ConfigValidator",
     "MatchesFeed",
     "MatchesSection",
+    "MatchFeedParams",
     "PerMatchConfigValidator",
     "PerMatchOverridableConfig",
     "SquoreCourt",

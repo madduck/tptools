@@ -6,7 +6,7 @@ from pydantic import Field, SerializationInfo, model_serializer
 
 from ...court import CourtSelectionParams
 from ...namepolicy import CourtNamePolicy
-from ...tournament import MatchSelectionParams, NumMatchesParams, Tournament
+from ...tournament import MatchSelectionParams, Tournament
 from .basemodel import SqModel
 from .config import Config
 from .court import SquoreCourt
@@ -16,6 +16,10 @@ from .match import SquoreMatch
 from .section import MatchesSection
 
 logger = logging.getLogger(__name__)
+
+
+class MatchFeedParams(CourtSelectionParams):
+    max_matches_per_court: int | None = None
 
 
 class SquoreTournament(
@@ -71,17 +75,16 @@ class MatchesFeed(SqModel):
     def _make_sections_for_courts(
         matches_by_court: dict[SquoreCourt | None, list[SquoreMatch]],
         courtnamepolicy: CourtNamePolicy,
-        courtselectionparams: CourtSelectionParams,
-        nummatchesparams: NumMatchesParams,
+        matchfeedparams: MatchFeedParams,
     ) -> list[MatchesSection]:
         sections = []
         for matchcourt, sqmatches in matches_by_court.items():
             if matchcourt is None:
-                thiscourt = courtselectionparams.court == 0
+                thiscourt = matchfeedparams.court == 0
             else:
-                thiscourt = matchcourt.id == courtselectionparams.court
+                thiscourt = matchcourt.id == matchfeedparams.court
 
-            if courtselectionparams.only_this_court and not thiscourt:
+            if matchfeedparams.only_this_court and not thiscourt:
                 continue
 
             courtname = courtnamepolicy(matchcourt)
@@ -90,8 +93,8 @@ class MatchesFeed(SqModel):
                     name=str(courtname),
                     expanded=thiscourt,
                     matches=sqmatches
-                    if nummatchesparams.max_matches_per_court is None
-                    else sqmatches[: nummatchesparams.max_matches_per_court],
+                    if matchfeedparams.max_matches_per_court is None
+                    else sqmatches[: matchfeedparams.max_matches_per_court],
                 )
             )
 
@@ -102,9 +105,6 @@ class MatchesFeed(SqModel):
         matchselectionparams = self.get_params_from_info(
             info, "matchselectionparams", MatchSelectionParams()
         )
-        nummatchesparams = self.get_params_from_info(
-            info, "nummatchesparams", NumMatchesParams()
-        )
         matches = self.tournament.get_matches(
             **dict(matchselectionparams),
         )
@@ -113,18 +113,17 @@ class MatchesFeed(SqModel):
         courtnamepolicy = self.get_policy_from_info(
             info, "courtnamepolicy", CourtNamePolicy()
         )
-        courtselectionparams = self.get_params_from_info(
-            info, "courtselectionparams", CourtSelectionParams()
+        matchfeedparams = self.get_params_from_info(
+            info, "matchfeedparams", MatchFeedParams()
         )
         sections = self._make_sections_for_courts(
             matches_by_court,
             courtnamepolicy=courtnamepolicy,
-            courtselectionparams=courtselectionparams,
-            nummatchesparams=nummatchesparams,
+            matchfeedparams=matchfeedparams,
         )
         name = self.name
         for matchcourt in matches_by_court.keys():
-            if matchcourt is not None and matchcourt.id == courtselectionparams.court:
+            if matchcourt is not None and matchcourt.id == matchfeedparams.court:
                 name = f"{name} {courtnamepolicy(matchcourt)}"
                 break
 

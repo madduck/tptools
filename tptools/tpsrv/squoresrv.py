@@ -5,7 +5,7 @@ import logging
 import pathlib
 import re
 import tomllib
-from collections.abc import AsyncGenerator, Mapping
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from operator import attrgetter
 from typing import Annotated, Any, Never, cast
@@ -38,6 +38,7 @@ from tptools.ext.squore import (
     Config,
     ConfigValidator,
     MatchesFeed,
+    MatchFeedParams,
     SquoreTournament,
 )
 from tptools.ext.squore.court import SquoreCourt
@@ -55,7 +56,6 @@ from tptools.namepolicy import (
     PlayerNamePolicyParams,
 )
 from tptools.namepolicy.policybase import RegexpSubstTuple
-from tptools.tournament import NumMatchesParams
 from tptools.util import (
     flatten_dict,
     normalise_dict_values_for_query_string,
@@ -86,11 +86,6 @@ class SquoreDevQueryParams(BaseModel):
     device_id: str | None = None
 
 
-class MatchFeedQueryParams(BaseModel):
-    only_this_court: bool | None = None
-    max_matches_per_court: int | None = None
-
-
 class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
 
 
@@ -108,12 +103,11 @@ class MatchesPolicyParams(
     PlayersPolicyParams,
     CountryCodeNamePolicyParams,
     CourtNamePolicyParams,
-    CourtSelectionParams,
     ReadyMatchSelectionParams,
 ): ...
 
 
-class SettingsQueryParams(BaseModel):
+class CommandLineParams(MatchFeedParams):
     include_feeds: bool = True
     kiosk_mode: bool = False
 
@@ -163,49 +157,39 @@ def get_clubnamepolicy() -> ClubNamePolicy:
 
 
 def get_matchselectionparams(
-    policyparams: Annotated[MatchesPolicyParams, Query()],
+    policyparams: Annotated[MatchSelectionParams, Query()],
 ) -> MatchSelectionParams:
     ret = MatchSelectionParams.make_from_parameter_superset(policyparams)
     return ret
 
 
-def get_nummatchesparams(
-    policyparams: Annotated[NumMatchesParams, Query()],
-) -> NumMatchesParams:
-    return NumMatchesParams.make_from_parameter_superset(policyparams)
+def get_matchpolicyparams(
+    policyparams: Annotated[MatchesPolicyParams, Query()],
+) -> MatchesPolicyParams:
+    ret = MatchesPolicyParams.make_from_parameter_superset(policyparams)
+    return ret
 
 
-def get_settingsqueryparams(
-    request: Request, params: Annotated[SettingsQueryParams, Query()]
-) -> SettingsQueryParams:
+def get_matchfeedparams(
+    policyparams: Annotated[MatchFeedParams, Query()],
+) -> MatchFeedParams:
+    return MatchFeedParams.make_from_parameter_superset(policyparams)
+
+
+def get_commandlineparams(
+    request: Request, params: Annotated[CommandLineParams, Query()]
+) -> CommandLineParams:
     try:
-        from_config = cast(
-            SettingsQueryParams, request.app.state.squore["settingsqueryparams"]
+        from_cli = cast(
+            CommandLineParams, request.app.state.squore["commandlineparams"]
         )
         from_query = params.model_dump(exclude_defaults=True)
-        return from_config.model_copy(update=from_query)
+        return from_cli.model_copy(update=from_query)
 
     except (AttributeError, KeyError) as err:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="App state does not include squore.settingsqueryparams",
-        ) from err
-
-
-def get_matchfeedqueryparams(
-    request: Request, params: Annotated[MatchFeedQueryParams, Query()]
-) -> MatchFeedQueryParams:
-    try:
-        from_config = cast(
-            MatchFeedQueryParams, request.app.state.squore["matchfeedqueryparams"]
-        )
-        from_query = params.model_dump(exclude_defaults=True)
-        return from_config.model_copy(update=from_query)
-
-    except (AttributeError, KeyError) as err:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="App state does not include squore.matchfeedqueryparams",
+            detail="App state does not include squore.commandlineparams",
         ) from err
 
 
@@ -471,21 +455,19 @@ def get_matches_feed_dict(
     countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
-    courtselectionparams: Annotated[
-        CourtSelectionParams, Depends(get_courtselectionparams)
-    ],
     matchselectionparams: Annotated[
         MatchSelectionParams, Depends(get_matchselectionparams)
     ],
-    nummatchesparams: Annotated[NumMatchesParams, Depends(get_nummatchesparams)],
+    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> dict[str, Any]:
-    if courtselectionparams.court is None and court_for_dev:
-        courtselectionparams.court = court_for_dev.id
+    if matchfeedparams.court is None and court_for_dev:
+        matchfeedparams.court = court_for_dev.id
         logger.info(
             f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
         )
+
     if not countrynamepolicy.use_country_code:
         logger.warning("Overriding CountryNamePolicy.use_country_code = True")
 
@@ -500,9 +482,8 @@ def get_matches_feed_dict(
             "playernamepolicy": playernamepolicy,
             "clubnamepolicy": clubnamepolicy,
             "countrynamepolicy": countrynamepolicy,
-            "courtselectionparams": courtselectionparams,
             "matchselectionparams": matchselectionparams,
-            "nummatchesparams": nummatchesparams,
+            "matchfeedparams": matchfeedparams,
         }
     )
 
@@ -524,16 +505,10 @@ def get_court_feeds_list(
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
     countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
-    courtselectionparams: Annotated[
-        CourtSelectionParams, Depends(get_courtselectionparams)
-    ],
     matchselectionparams: Annotated[
         MatchSelectionParams, Depends(get_matchselectionparams)
     ],
-    matchfeedqueryparams: Annotated[
-        MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
-    ],
-    nummatchesparams: Annotated[NumMatchesParams, Depends(get_nummatchesparams)],
+    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
     config: Annotated[Config, Depends(get_config)],
 ) -> list[Feed]:
     ret: list[Feed] = []
@@ -552,10 +527,8 @@ def get_court_feeds_list(
     resultsurl = config.get("PostResult", urlbase / ".." / "result")
 
     courtparams = (
-        matchfeedqueryparams.model_dump()
-        | courtselectionparams.model_dump()
-        | matchselectionparams.model_dump()
-        | nummatchesparams.model_dump()
+        matchselectionparams.model_dump()
+        | matchfeedparams.model_dump()
         | courtnamepolicy.params()
         | countrynamepolicy.params()
         | playerpolicyparams
@@ -587,12 +560,14 @@ squoreapp = FastAPI()
 @squoreapp.get("/matches")
 async def matches(
     remote: Annotated[str, Depends(get_remote)],
-    policyparams: Annotated[MatchesPolicyParams, Query()],
+    matchpolicyparams: Annotated[MatchesPolicyParams, Depends(get_matchpolicyparams)],
+    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
     matches_feed: Annotated[dict[str, Any], Depends(get_matches_feed_dict)],
 ) -> dict[str, Any]:
     logger.info(
         f"Returning {matches_feed['nummatches']} matches in response to "
-        f"request from {remote} ({policyparams})"
+        f"request from {remote} "
+        f"(policyparams=({matchpolicyparams}) feedparams=({matchfeedparams}))"
     )
     # we cannot return a MatchesFeed as there is currently no way to pass data into the
     # model_dump context with FastAPI: https://github.com/fastapi/fastapi/pull/13475
@@ -661,19 +636,10 @@ async def feeds(
 @squoreapp.get("/init")
 async def init(
     myurl: Annotated[URL, Depends(get_url)],
-    matchfeedqueryparams: Annotated[
-        MatchFeedQueryParams, Depends(get_matchfeedqueryparams)
-    ],
-    settingsqueryparams: Annotated[
-        SettingsQueryParams, Depends(get_settingsqueryparams)
-    ],
+    commandlineparams: Annotated[CommandLineParams, Depends(get_commandlineparams)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> RedirectResponse:
-    params = (
-        matchfeedqueryparams.model_dump()
-        | squoredev.model_dump()
-        | settingsqueryparams.model_dump()
-    )
+    params = squoredev.model_dump() | commandlineparams.model_dump()
     redirect_url = (
         myurl / ".." / "settings" % normalise_dict_values_for_query_string(params)
     )
@@ -689,7 +655,7 @@ async def settings(
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
-    settingsqueryparams: Annotated[SettingsQueryParams, Query()],
+    commandlineparams: Annotated[CommandLineParams, Query()],
 ) -> dict[str, Any]:
     logger.info(
         f"App settings request from remote {remote} "
@@ -718,7 +684,7 @@ async def settings(
             "liveScoreDeviceId_customSuffix": f"-mirror-{mirror_for_dev}",
         }
 
-    if settingsqueryparams.include_feeds:
+    if commandlineparams.include_feeds:
         feeds: list[str] = []
         courtorder: dict[int, tuple[int, str]] = {}
         for idx, courtfeed in enumerate(court_feeds, 0):
@@ -731,7 +697,7 @@ async def settings(
             courtorder[courtfeed.CourtID] = idx, courtfeed.Name
 
         settings["feedPostUrls"] = ("\n".join(feeds)).strip()
-        settings["kioskMode"] = settingsqueryparams.kiosk_mode
+        settings["kioskMode"] = commandlineparams.kiosk_mode
 
         if court_for_dev is not None:
             try:
@@ -777,10 +743,12 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
 
 @asynccontextmanager
 async def setup_for_squore(
+    *,
     clictx: CliContext,
     kiosk_mode: bool = False,
     only_this_court: bool = False,
     max_matches_per_court: int | None = None,
+    include_feeds: bool = True,
     api_mount_point: str = API_MOUNTPOINT,
     settings_json: pathlib.Path = SETTINGS_JSON_PATH,
     config_toml: pathlib.Path = CONFIG_TOML_PATH,
@@ -799,11 +767,12 @@ async def setup_for_squore(
         "settings": settings_json,
         "config": config_toml,
         "devmap": devmap_toml,
-        "matchfeedqueryparams": MatchFeedQueryParams(
+        "commandlineparams": CommandLineParams(
             only_this_court=only_this_court,
             max_matches_per_court=max_matches_per_court,
+            kiosk_mode=kiosk_mode,
+            include_feeds=include_feeds,
         ),
-        "settingsqueryparams": SettingsQueryParams(kiosk_mode=kiosk_mode),
     }
     squoreapp.mount(
         "/flags",
@@ -847,6 +816,12 @@ async def setup_for_squore(
     help="Limit the number of matches to include in a court feed",
 )
 @click.option(
+    "--no-feeds",
+    "-n",
+    is_flag=True,
+    help="Do not include match feed URLs in settings",
+)
+@click.option(
     "--api-mount-point",
     metavar="MOUNTPOINT",
     default=API_MOUNTPOINT,
@@ -883,6 +858,7 @@ async def squoresrv(
     kiosk_mode: bool,
     only_this_court: bool,
     max_matches_per_court: int | None,
+    no_feeds: bool,
     api_mount_point: str,
     settings_json: pathlib.Path,
     config_toml: pathlib.Path,
@@ -891,13 +867,14 @@ async def squoresrv(
     """Mount endpoints to serve data for Squore"""
 
     async with setup_for_squore(
-        clictx,
-        kiosk_mode,
-        only_this_court,
-        max_matches_per_court,
-        api_mount_point,
-        settings_json,
-        config_toml,
-        devmap_toml,
+        clictx=clictx,
+        kiosk_mode=kiosk_mode,
+        only_this_court=only_this_court,
+        max_matches_per_court=max_matches_per_court,
+        include_feeds=not no_feeds,
+        api_mount_point=api_mount_point,
+        settings_json=settings_json,
+        config_toml=config_toml,
+        devmap_toml=devmap_toml,
     ) as task:
         yield task

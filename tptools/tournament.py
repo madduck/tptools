@@ -27,10 +27,6 @@ class MatchSelectionParams(ParamsModel):
     include_not_ready: bool = True
 
 
-class NumMatchesParams(ParamsModel):
-    max_matches_per_court: int | None = None
-
-
 class Tournament[
     EntryT: Entry = Entry,
     DrawT: Draw = Draw,
