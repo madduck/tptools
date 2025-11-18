@@ -6,6 +6,7 @@ from enum import StrEnum, auto
 from functools import partial
 from typing import Any, Callable, Literal, Self, cast
 
+import tzlocal
 from pydantic import BaseModel, model_validator
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
@@ -20,6 +21,8 @@ from .util import (
 )
 
 logger = logging.getLogger(__name__)
+
+LOCAL_TZ = tzlocal = tzlocal.get_localzone()
 
 
 class TPMatchStatus(StrEnum):
@@ -163,7 +166,11 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
     @property
     def time(self) -> datetime | None:
-        return self.pm1.time
+        return (
+            self.pm1.time.replace(tzinfo=LOCAL_TZ)
+            if self.pm1.time is not None
+            else None
+        )
 
     @property
     def played(self) -> bool:
@@ -191,11 +198,19 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
     @property
     def starttime(self) -> datetime | None:
-        return self.pm1.starttime
+        return (
+            self.pm1.starttime.replace(tzinfo=LOCAL_TZ)
+            if self.pm1.starttime is not None
+            else None
+        )
 
     @property
     def endtime(self) -> datetime | None:
-        return self.pm1.endtime
+        return (
+            self.pm1.endtime.replace(tzinfo=LOCAL_TZ)
+            if self.pm1.endtime is not None
+            else None
+        )
 
     @property
     def van(self) -> tuple[int, int]:
@@ -253,8 +268,13 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
         return ret
 
-    def _time_repr(self) -> str:
-        return repr(self.time).replace("datetime.", "")
+    def _time_repr(self, attr: str) -> str:
+        dtobj = getattr(self, attr)
+        return (
+            repr(dtobj.replace(tzinfo=None)).replace("datetime.", "")
+            if dtobj is not None
+            else repr(None)
+        )
 
     def _van_repr(self) -> str | None:
         return self.pm1._van_repr()
@@ -286,7 +306,7 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         "id",
         "draw.name",
         "matchnr",
-        ("time", _time_repr, False),
+        ("time", partial(_time_repr, attr="time"), False),
         ("court", _court_repr, True),
         "slot1?.name",
         "slot2?.name",
@@ -295,8 +315,8 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         ("wnvn", _wnvn_repr, False),
         ("status", _status_repr, False),
         "winner?.name",
-        "starttime",
-        "endtime",
+        ("starttime", partial(_time_repr, attr="starttime"), False),
+        ("endtime", partial(_time_repr, attr="endtime"), False),
         ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     )
 

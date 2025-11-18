@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from functools import partial
 from typing import Literal, Self, cast
 
 from pydantic import BaseModel
@@ -36,21 +37,13 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
         "id",
         "matchnr",
         "draw",
-        ("time", TPMatch._time_repr, False),
+        ("time", partial(TPMatch._time_repr, attr="time"), False),
         "court",
         "A",
         "B",
         ("status", TPMatch._status_repr, False),
-        (
-            "starttime",
-            lambda s: s.starttime.isoformat() if s.starttime else None,
-            False,
-        ),
-        (
-            "endtime",
-            lambda s: s.endtime.isoformat() if s.endtime else None,
-            False,
-        ),
+        ("starttime", partial(TPMatch._time_repr, attr="starttime"), False),
+        ("endtime", partial(TPMatch._time_repr, attr="endtime"), False),
         "winner",
         ("scores", lambda s: scores_to_string(s.scores, nullstr="-"), False),
     ]

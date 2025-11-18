@@ -13,7 +13,7 @@ write_to = "_version.py"
 
 [project]
 name = "tptools"
-version = "0.6.1"
+version = "0.6.2"
 authors = [{ name = "martin f. krafft", email = "tptools@pobox.madduck.net" }]
 description = "A set of tools to export data from with TournamentSoftware"
 readme = "README.md"
@@ -39,6 +39,7 @@ dependencies = [
   "fastapi",
   "uvicorn",
   "httpx",
+  "tzlocal",
   "asyncinotify; sys_platform == 'linux'",
   "pywin32; sys_platform == 'win32'",
   "sqlalchemy-access; sys_platform == 'win32'",

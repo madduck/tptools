@@ -1,7 +1,7 @@
 import asyncio
-from collections.abc import Mapping
 import logging
 import pathlib
+from collections.abc import Mapping
 from contextlib import nullcontext
 from datetime import datetime
 from enum import IntEnum
