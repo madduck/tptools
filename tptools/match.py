@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
 from functools import partial
-from typing import Literal, Self, cast
+from typing import Annotated, Literal, Self, cast
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel
+import tzlocal
+from pydantic import AfterValidator, BaseModel
 
 from .court import Court
 from .draw import Draw
@@ -16,6 +18,14 @@ from .util import ScoresType, scores_to_string
 
 logger = logging.getLogger(__name__)
 
+TZ_LOCAL = tzlocal.get_localzone()
+
+
+def _ensure_tzaware_time(dt: datetime, tz_local: ZoneInfo = TZ_LOCAL) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=tz_local)
+    return dt
+
 
 class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     ComparableMixin, ReprMixin, StrMixin, BaseModel
@@ -23,13 +33,13 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     id: str
     matchnr: int
     draw: DrawT
-    time: datetime | None
+    time: Annotated[datetime, AfterValidator(_ensure_tzaware_time)] | None
     court: CourtT | None
     A: EntryT | str
     B: EntryT | str
     status: TPMatchStatus
-    starttime: datetime | None = None
-    endtime: datetime | None = None
+    starttime: Annotated[datetime, AfterValidator(_ensure_tzaware_time)] | None
+    endtime: Annotated[datetime, AfterValidator(_ensure_tzaware_time)] | None
     winner: Literal["A"] | Literal["B"] | None = None
     scores: ScoresType = []
 
