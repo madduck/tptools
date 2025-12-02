@@ -64,9 +64,14 @@ elif envfile.lower() in ("", "false", "0", "no"):
 else:
     TP_FILE = pathlib.Path(envfile)
 
+POSTURL_PAIRS = (
+    ("POSTURL_TPTOOLS", "http://localhost:8000/tptools/v1/tournament"),
+    ("POSTURL_TCBOARD", "http://localhost:8001/tptools/v1/tournament"),
+)
 POSTURLS = [
-    URL(os.getenv("POSTURL_TPTOOLS") or "http://localhost:8000/tptools/v1/tournament"),
-    URL(os.getenv("POSTURL_TCBOARD") or "http://localhost:8001/tptools/v1/tournament"),
+    URL(env or dflt)
+    for key, dflt in POSTURL_PAIRS
+    if (env := os.getenv(key)) is None or env.startswith("http")
 ]
 
 
