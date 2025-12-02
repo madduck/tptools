@@ -33,17 +33,20 @@ recvapp = FastAPI()
 
 
 @recvapp.post("/tournament")
-async def receive_tournament(request: Request) -> dict[str, Any]:
+async def receive_tournament(
+    request: Request,
+    peer: Annotated[str, Depends(get_peer)],
+    clictx: Annotated[CliContext, Depends(get_clictx)],
+) -> dict[str, Any]:
     body = await request.body()
     data = PostData[Tournament].model_validate_json(body)
-    clictx: CliContext = request.app.state.clictx
     if data.cookie == hash(clictx):
         raise HTTPException(
             status_code=HTTP_508_LOOP_DETECTED,
             detail="Won't receive my own data",
         )
     tournament = data.data
-    logger.info(f"Received tournament from tptools: {tournament}")
+    logger.info(f"Received tournament from tptools at {peer}: {tournament}")
     clictx.itc.set("tournament", tournament)
     return {"status": f"Received tournament: {tournament}"}
 
