@@ -1,8 +1,8 @@
 import asyncio
+import json
 import logging
 from dataclasses import dataclass
-from json import JSONDecodeError
-from typing import Callable
+from typing import Any, Callable
 
 import click
 from click_async_plugins import CliContext as _CliContext
@@ -63,51 +63,63 @@ class PostData[T: BaseModel](BaseModel):
     data: T
 
 
-async def post_data[T: BaseModel](
+async def http_request(
+    method: str,
     url: URL,
-    data: PostData[T],
     *,
+    data: BaseModel | None = None,
     retries: int = 3,
     sleep: float = 1,
     to_json_fn: Callable[..., str] | None = None,
-) -> None:
-    to_json_fn = to_json_fn or type(data).model_dump_json
-    logger.debug(f"Posting '{data}' to {url}")
+) -> dict[str, Any] | None:
+    request_args = {"method": method, "url": url, "content": None, "headers": {}}
+    if data is not None:
+        to_json_fn = to_json_fn or (
+            type(data).model_dump_json if data is not None else json.dumps
+        )
+        logger.debug(f"Posting JSON of '{data}' to {url}")
+        request_args["content"] = to_json_fn(data)
+        request_args["headers"] = {"Content-Type": "application/json"}
+
     while True:
         try:
             async with AsyncClient() as client:
-                json = to_json_fn(data)
-                resp = await client.post(
-                    url, content=json, headers={"Content-Type": "application/json"}
-                )
-
-                try:
-                    rt = resp.json()
-                except JSONDecodeError:
-                    rt = {}
+                resp = await client.request(**request_args)
+                rt: dict[str, Any] = resp.json()
 
                 if resp.status_code == status_codes.OK:
                     logger.info(
-                        f"Posted '{data}' to {url} "
-                        f"({len(resp.request.content)} bytes): {rt}"
+                        f"{method} request with "
+                        f"{len(resp.request.content)} bytes of data "
+                        f"yielded a response of {len(resp.content)} bytes"
                     )
 
                 else:
-                    logger.error(
-                        f"Posting '{data}' to {url} resulted "
-                        f"in status code {resp.status_code}, {resp.reason_phrase}: "
-                        f"{rt}"
+                    logger.info(
+                        f"{method} request with "
+                        f"{len(resp.request.content)} bytes of data "
+                        f"yielded status {resp.status_code}, {resp.reason_phrase}"
                     )
 
-                break
+                return rt
+
+        except json.JSONDecodeError as err:
+            logger.warning(
+                f"{method} request to {url} yielded an invalid JSON response: {err}."
+            )
+            return None
 
         except HTTPError as err:
             if retries > 0:
                 retries -= 1
-                logger.warning(f"Problem posting to {url}: {err}, retrying…")
+                logger.warning(
+                    f"Problem with {method} request to {url}: {err}, retrying…"
+                )
                 await asyncio.sleep(sleep)
                 continue
 
             else:
-                logger.error(f"Giving up posting to {url}: {err}")
+                logger.error(f"Giving up {method} request to {url}: {err}")
                 break
+
+    return None

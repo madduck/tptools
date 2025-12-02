@@ -3,7 +3,7 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import cast
+from typing import Any, cast
 
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
@@ -14,8 +14,8 @@ from tptools import Tournament
 from .util import (
     CliContext,
     PostData,
+    http_request,
     pass_clictx,
-    post_data,
     validate_urls,
 )
 
@@ -27,7 +27,7 @@ async def post_to_urls(
 ) -> None:
     logger.info(f"Tournament changed, posting to {len(urls)} URLs")
 
-    def log_done_task(task: asyncio.Task[None]) -> None:
+    def log_done_task(task: asyncio.Task[dict[str, Any] | None]) -> None:
         logger.debug(f"Task done: {task}")
 
     data = PostData(cookie=cookie, data=tournament)
@@ -35,7 +35,7 @@ async def post_to_urls(
     async with asyncio.TaskGroup() as tg:
         for url in urls:
             task = tg.create_task(
-                post_data(url, data, retries=retries),
+                http_request(method="POST", url=url, data=data, retries=retries),
                 name=f"Posting Tournament to {url}",
             )
             logger.debug(f"Task for posting to {url}: {task}")
