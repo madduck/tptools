@@ -54,6 +54,36 @@ def get_peer(httpcon: HTTPConnection) -> str:
     )
 
     return f"{host}:{httpcon.client.port}"
+
+
+def validate_url(
+    ctx: click.Context,
+    param: str,
+    value: str | None,
+) -> URL | None:
+    _ = ctx, param
+
+    if value is None:
+        return None
+
+    try:
+        url = URL(value)
+
+    except TypeError as err:
+        raise click.BadParameter(
+            f"URL must be a string, not '{type(value).__name__}': {value}"
+        ) from err
+
+    except InvalidURL as err:  # pragma: nocover TODO: how do I test for this?
+        raise click.BadParameter(f"{value} is invalid: {err}") from err
+
+    else:
+        if not url.is_absolute_url:
+            raise click.BadParameter(f"URL is not absolute: {value}")
+
+        return url
+
+
 def validate_urls(
     ctx: click.Context,
     param: str,
@@ -62,23 +92,7 @@ def validate_urls(
     _ = ctx, param
     ret = []
     for urlstr in value:
-        if urlstr is None:
-            continue
-
-        try:
-            url = URL(urlstr)
-
-        except TypeError as err:
-            raise click.BadParameter(
-                f"URL must be a string, not '{type(urlstr).__name__}': {value}"
-            ) from err
-
-        except InvalidURL as err:  # pragma: nocover TODO: how do I test for this?
-            raise click.BadParameter(f"{urlstr} is invalid: {err}") from err
-
-        else:
-            if not url.is_absolute_url:
-                raise click.BadParameter(f"URL is not absolute: {urlstr}")
+        if (url := validate_url(ctx, param, urlstr)) is not None:
             ret.append(url)
 
     return ret
