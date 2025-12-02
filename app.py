@@ -48,6 +48,9 @@ for name, level in (
     ("watchfiles.main", logging.WARNING),
     ("uvicorn.error", logging.WARNING),
     ("tptools.tpmatch", logging.INFO),
+    ("httpx", logging.WARNING),
+    ("httpcore.connection", logging.INFO),
+    ("httpcore.http11", logging.INFO),
 ):
     silence_logger(name, level=level)
 
