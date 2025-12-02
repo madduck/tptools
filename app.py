@@ -111,6 +111,9 @@ def _maybe_do_sqstdout(factories: list[PluginFactory]) -> None:
 def _maybe_do_recv(factories: list[PluginFactory]) -> None:
     if "NORECV" in os.environ:
         logger.info("Not setting up to receive tournament via POST as per $NORECV")
+    elif (url := os.getenv("POLLURL")) is not None:
+        logger.info(f"Configured to get initial tournament from {url}")
+        factories.append(partial(setup_to_receive_tournament_post, url=URL(url)))
     else:
         factories.append(setup_to_receive_tournament_post)
 

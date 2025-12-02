@@ -2,16 +2,19 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Annotated, Any, Callable, cast
 
 import click
 from click_async_plugins import CliContext as _CliContext
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.requests import HTTPConnection
 from httpx import URL, AsyncClient, HTTPError, InvalidURL
 from httpx import codes as status_codes
 from pydantic import BaseModel
+from starlette.status import HTTP_424_FAILED_DEPENDENCY
 
 from ..filewatcher import FileWatcher
+from ..tournament import Tournament
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,29 @@ class CliContext(_CliContext):
 pass_clictx = click.make_pass_decorator(CliContext)
 
 
+def get_clictx(httpcon: HTTPConnection) -> CliContext:
+    return cast(CliContext, httpcon.app.state.clictx)
+
+
+def get_tournament(clictx: Annotated[CliContext, Depends(get_clictx)]) -> Tournament:
+    if (tournament := clictx.itc.get("tournament")) is None:
+        raise HTTPException(
+            status_code=HTTP_424_FAILED_DEPENDENCY,
+            detail="Tournament not loaded",
+        )
+    return cast(Tournament, tournament)
+
+
+def get_peer(httpcon: HTTPConnection) -> str:
+    if httpcon.client is None:
+        return "(unknown)"
+
+    host = httpcon.headers.get(
+        "X-Forwarded-For",
+        httpcon.client.host,
+    )
+
+    return f"{host}:{httpcon.client.port}"
 def validate_urls(
     ctx: click.Context,
     param: str,
