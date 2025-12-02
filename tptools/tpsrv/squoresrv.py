@@ -157,9 +157,9 @@ def get_clubnamepolicy() -> ClubNamePolicy:
 
 
 def get_matchselectionparams(
-    policyparams: Annotated[MatchSelectionParams, Query()],
-) -> MatchSelectionParams:
-    ret = MatchSelectionParams.make_from_parameter_superset(policyparams)
+    policyparams: Annotated[ReadyMatchSelectionParams, Query()],
+) -> ReadyMatchSelectionParams:
+    ret = ReadyMatchSelectionParams.make_from_parameter_superset(policyparams)
     return ret
 
 
@@ -456,7 +456,7 @@ def get_matches_feed_dict(
     clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     matchselectionparams: Annotated[
-        MatchSelectionParams, Depends(get_matchselectionparams)
+        ReadyMatchSelectionParams, Depends(get_matchselectionparams)
     ],
     matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
@@ -506,7 +506,7 @@ def get_court_feeds_list(
     countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     matchselectionparams: Annotated[
-        MatchSelectionParams, Depends(get_matchselectionparams)
+        ReadyMatchSelectionParams, Depends(get_matchselectionparams)
     ],
     matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
     config: Annotated[Config, Depends(get_config)],
