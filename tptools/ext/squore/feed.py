@@ -18,7 +18,7 @@ from .section import MatchesSection
 logger = logging.getLogger(__name__)
 
 
-class MatchFeedParams(CourtSelectionParams):
+class MatchesInFeedSelectionParams(CourtSelectionParams):
     max_matches_per_court: int | None = None
 
 
@@ -75,20 +75,23 @@ class MatchesFeed(SqModel):
     def _make_sections_for_courts(
         matches_by_court: dict[SquoreCourt | None, list[SquoreMatch]],
         courtnamepolicy: CourtNamePolicy,
-        matchfeedparams: MatchFeedParams,
+        matchesinfeedselectionparams: MatchesInFeedSelectionParams,
     ) -> list[MatchesSection]:
-        if matchfeedparams.court is None and matchfeedparams.only_this_court:
+        if (
+            matchesinfeedselectionparams.court is None
+            and matchesinfeedselectionparams.only_this_court
+        ):
             logger.info("Disabling only_this_court for device without assigned court")
-            matchfeedparams.only_this_court = False
+            matchesinfeedselectionparams.only_this_court = False
 
         sections = []
         for matchcourt, sqmatches in matches_by_court.items():
             if matchcourt is None:
-                thiscourt = matchfeedparams.court == 0
+                thiscourt = matchesinfeedselectionparams.court == 0
             else:
-                thiscourt = matchcourt.id == matchfeedparams.court
+                thiscourt = matchcourt.id == matchesinfeedselectionparams.court
 
-            if matchfeedparams.only_this_court and not thiscourt:
+            if matchesinfeedselectionparams.only_this_court and not thiscourt:
                 continue
 
             courtname = courtnamepolicy(matchcourt)
@@ -97,8 +100,10 @@ class MatchesFeed(SqModel):
                     name=str(courtname),
                     expanded=thiscourt,
                     matches=sqmatches
-                    if matchfeedparams.max_matches_per_court is None
-                    else sqmatches[: matchfeedparams.max_matches_per_court],
+                    if matchesinfeedselectionparams.max_matches_per_court is None
+                    else sqmatches[
+                        : matchesinfeedselectionparams.max_matches_per_court
+                    ],
                 )
             )
 
@@ -117,17 +122,20 @@ class MatchesFeed(SqModel):
         courtnamepolicy = self.get_policy_from_info(
             info, "courtnamepolicy", CourtNamePolicy()
         )
-        matchfeedparams = self.get_params_from_info(
-            info, "matchfeedparams", MatchFeedParams()
+        matchesinfeedselectionparams = self.get_params_from_info(
+            info, "matchesinfeedselectionparams", MatchesInFeedSelectionParams()
         )
         sections = self._make_sections_for_courts(
             matches_by_court,
             courtnamepolicy=courtnamepolicy,
-            matchfeedparams=matchfeedparams,
+            matchesinfeedselectionparams=matchesinfeedselectionparams,
         )
         name = self.name
         for matchcourt in matches_by_court.keys():
-            if matchcourt is not None and matchcourt.id == matchfeedparams.court:
+            if (
+                matchcourt is not None
+                and matchcourt.id == matchesinfeedselectionparams.court
+            ):
                 name = f"{name} {courtnamepolicy(matchcourt)}"
                 break
 

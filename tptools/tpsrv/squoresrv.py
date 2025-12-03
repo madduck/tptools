@@ -1,3 +1,5 @@
+# {{{ Globals
+
 import dataclasses
 import importlib.resources
 import json
@@ -38,7 +40,7 @@ from tptools.ext.squore import (
     Config,
     ConfigValidator,
     MatchesFeed,
-    MatchFeedParams,
+    MatchesInFeedSelectionParams,
     SquoreTournament,
 )
 from tptools.ext.squore.court import SquoreCourt
@@ -73,10 +75,21 @@ DEVMAP_TOML_PATH = pathlib.Path("Squore.dev_court_map.toml")
 SQUORE_PATH_VERSION = "v1"
 API_MOUNTPOINT = "/squore"
 
+# }}}
+
+# {{{ Logging
+
 logger = logging.getLogger(__name__)
 
 
 silence_logger("tptools.ext.squore.feed", level=logging.INFO)
+
+# }}}
+
+# {{{ Dependencies and parameters
+
+
+# {{{ SquoreDevQueryParams
 
 
 class SquoreDevQueryParams(BaseModel):
@@ -86,57 +99,157 @@ class SquoreDevQueryParams(BaseModel):
     device_id: str | None = None
 
 
-class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
-
-
-class ReadyMatchSelectionParams(MatchSelectionParams):
-    include_played: bool = False
-    include_not_ready: bool = False
-
-
-class CountryCodeNamePolicyParams(CountryNamePolicyParams):
-    use_country_code: bool = True
-    titlecase: bool = False
-
-
-class MatchesPolicyParams(
-    PlayersPolicyParams,
-    CountryCodeNamePolicyParams,
-    CourtNamePolicyParams,
-    ReadyMatchSelectionParams,
-): ...
-
-
-class CommandLineParams(MatchFeedParams):
-    include_feeds: bool = True
-    kiosk_mode: bool = False
-
-
 def get_squoredevqueryparams(
     squoredev: Annotated[SquoreDevQueryParams, Query()],
 ) -> SquoreDevQueryParams:
     return squoredev
 
 
+# }}}
+
+# {{{ Player name policies
+
+
+class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
+
+
 def get_playernamepolicy(
-    policyparams: Annotated[PlayersPolicyParams, Query()],
+    policyparams: Annotated[PlayerNamePolicyParams, Query()],
 ) -> PlayerNamePolicy:
     return PlayerNamePolicy(**PlayerNamePolicyParams.extract_subset(policyparams))
 
 
 def get_paircombinepolicy(
-    policyparams: Annotated[PlayersPolicyParams, Query()],
+    policyparams: Annotated[PairCombinePolicyParams, Query()],
 ) -> PairCombinePolicy:
     return PairCombinePolicy(**PairCombinePolicyParams.extract_subset(policyparams))
 
 
+# }}}
+
+# {{{ Court, club, country name policies
+
+
 def get_courtnamepolicy(
-    policyparams: Annotated[MatchesPolicyParams, Query()],
+    policyparams: Annotated[CourtNamePolicyParams, Query()],
 ) -> CourtNamePolicy:
     c_to_court_subst = RegexpSubstTuple(r"^[cC]0?(?P<nr>\d+)", r"Court \g<nr>")
     return CourtNamePolicy(
         regexps=[c_to_court_subst], **CourtNamePolicyParams.extract_subset(policyparams)
     )
+
+
+def get_clubnamepolicy() -> ClubNamePolicy:
+    vereinslos_is_none = RegexpSubstTuple("vereinslos", "", re.IGNORECASE)
+    return ClubNamePolicy(regexps=[vereinslos_is_none])
+
+
+class CountryNamePolicyParamsDefaultsCountryCode(CountryNamePolicyParams):
+    use_country_code: bool = True
+    titlecase: bool = False
+
+
+def get_countrynamepolicy(
+    policyparams: Annotated[CountryNamePolicyParamsDefaultsCountryCode, Query()],
+) -> CountryNamePolicy:
+    return CountryNamePolicy(
+        **CountryNamePolicyParamsDefaultsCountryCode.extract_subset(policyparams)
+    )
+
+
+# }}}
+
+# {{{ Policies combined for the match context
+
+
+class MatchesPolicyParams(
+    PlayersPolicyParams,
+    CountryNamePolicyParamsDefaultsCountryCode,
+    CourtNamePolicyParams,
+): ...
+
+
+def get_matchpolicyparams(
+    policyparams: Annotated[MatchesPolicyParams, Query()],
+) -> MatchesPolicyParams:
+    return MatchesPolicyParams.make_from_parameter_superset(policyparams)
+
+
+# }}}
+
+# {{{ Tournament data dependencies
+
+
+def get_tournament(request: Request) -> SquoreTournament | Never:
+    if (tournament := getattr(request.app.state, "tournament", None)) is None:
+        raise HTTPException(
+            status_code=HTTP_424_FAILED_DEPENDENCY,
+            detail="Tournament not loaded",
+        )
+    return cast(SquoreTournament, tournament)
+
+
+def get_tournament_name(
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> str:
+    return tournament.name or "tptools Tournament"
+
+
+def get_courts(
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> list[SquoreCourt]:
+    return tournament.get_courts()
+
+
+def get_draws(
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> list[SquoreDraw]:
+    return tournament.get_draws()
+
+
+def get_entries(
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+) -> list[SquoreEntry]:
+    return tournament.get_entries()
+
+
+def get_players_list(
+    playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
+    paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
+    entries: Annotated[list[Entry], Depends(get_entries)],
+) -> list[dict[str, Any]]:
+    return [
+        e.model_dump(
+            context={
+                "playernamepolicy": playernamepolicy,
+                "paircombinepolicy": paircombinepolicy,
+            }
+        )
+        for e in sorted(entries, key=attrgetter("player1", "player2"))
+    ]
+
+
+# }}}
+
+# {{{ Match selection (by match status)
+
+
+class MatchSelectionParamsDefaultsOnlyReady(MatchSelectionParams):
+    include_played: bool = False
+    include_not_ready: bool = False
+
+
+def get_matchselectionparams(
+    policyparams: Annotated[MatchSelectionParamsDefaultsOnlyReady, Query()],
+) -> MatchSelectionParamsDefaultsOnlyReady:
+    return MatchSelectionParamsDefaultsOnlyReady.make_from_parameter_superset(
+        policyparams
+    )
+
+
+# }}}
+
+# {{{ Match selection (by court, and count limit)
 
 
 def get_courtselectionparams(
@@ -145,35 +258,20 @@ def get_courtselectionparams(
     return CourtSelectionParams.make_from_parameter_superset(policyparams)
 
 
-def get_countrynamepolicy(
-    policyparams: Annotated[MatchesPolicyParams, Query()],
-) -> CountryNamePolicy:
-    return CountryNamePolicy(**CountryNamePolicyParams.extract_subset(policyparams))
+def get_matchesinfeedselectionparams(
+    policyparams: Annotated[MatchesInFeedSelectionParams, Query()],
+) -> MatchesInFeedSelectionParams:
+    return MatchesInFeedSelectionParams.make_from_parameter_superset(policyparams)
 
 
-def get_clubnamepolicy() -> ClubNamePolicy:
-    vereinslos_is_none = RegexpSubstTuple("vereinslos", "", re.IGNORECASE)
-    return ClubNamePolicy(regexps=[vereinslos_is_none])
+# }}}
+
+# {{{ Command-line params
 
 
-def get_matchselectionparams(
-    policyparams: Annotated[ReadyMatchSelectionParams, Query()],
-) -> ReadyMatchSelectionParams:
-    ret = ReadyMatchSelectionParams.make_from_parameter_superset(policyparams)
-    return ret
-
-
-def get_matchpolicyparams(
-    policyparams: Annotated[MatchesPolicyParams, Query()],
-) -> MatchesPolicyParams:
-    ret = MatchesPolicyParams.make_from_parameter_superset(policyparams)
-    return ret
-
-
-def get_matchfeedparams(
-    policyparams: Annotated[MatchFeedParams, Query()],
-) -> MatchFeedParams:
-    return MatchFeedParams.make_from_parameter_superset(policyparams)
+class CommandLineParams(MatchesInFeedSelectionParams):
+    include_feeds: bool = True
+    kiosk_mode: bool = False
 
 
 def get_commandlineparams(
@@ -193,6 +291,11 @@ def get_commandlineparams(
         ) from err
 
 
+# }}}
+
+# {{{ Request related dependencies
+
+
 def get_remote(request: Request) -> str | None:
     return request.headers.get(
         "X-Forwarded-For", request.client.host if request.client else None
@@ -203,6 +306,11 @@ def get_url(request: Request) -> URL:
     # Prefer to work with yarl.URL over starlette.datastructures.URL, so must go via
     # str():
     return URL(str(request.url))
+
+
+# }}}
+
+# {{{ Setting, config, devmap
 
 
 def get_settings_path(request: Request) -> pathlib.Path | Never:
@@ -326,53 +434,9 @@ def get_dev_map(
     return flatten_dict(devmap)
 
 
-def get_tournament(request: Request) -> SquoreTournament | Never:
-    if (tournament := getattr(request.app.state, "tournament", None)) is None:
-        raise HTTPException(
-            status_code=HTTP_424_FAILED_DEPENDENCY,
-            detail="Tournament not loaded",
-        )
-    return cast(SquoreTournament, tournament)
+# }}}
 
-
-def get_tournament_name(
-    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> str:
-    return tournament.name or "tptools Tournament"
-
-
-def get_courts(
-    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[SquoreCourt]:
-    return tournament.get_courts()
-
-
-def get_draws(
-    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[SquoreDraw]:
-    return tournament.get_draws()
-
-
-def get_entries(
-    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-) -> list[SquoreEntry]:
-    return tournament.get_entries()
-
-
-def get_players_list(
-    playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
-    paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
-    entries: Annotated[list[Entry], Depends(get_entries)],
-) -> list[dict[str, Any]]:
-    return [
-        e.model_dump(
-            context={
-                "playernamepolicy": playernamepolicy,
-                "paircombinepolicy": paircombinepolicy,
-            }
-        )
-        for e in sorted(entries, key=attrgetter("player1", "player2"))
-    ]
+# {{{ Court name to dev/mirror
 
 
 def _normalise_court_name_for_matching(courtname: str) -> tuple[int | None, str] | None:
@@ -447,48 +511,12 @@ def get_mirror_for_dev(
     return None
 
 
-def get_matches_feed_dict(
-    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
-    config: Annotated[Config, Depends(get_config)],
-    playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
-    paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
-    countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
-    clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
-    courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
-    matchselectionparams: Annotated[
-        ReadyMatchSelectionParams, Depends(get_matchselectionparams)
-    ],
-    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
-    court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
-    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
-) -> dict[str, Any]:
-    if matchfeedparams.court is None and court_for_dev:
-        matchfeedparams.court = court_for_dev.id
-        logger.info(
-            f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
-        )
+# }}}
 
-    if not countrynamepolicy.use_country_code:
-        logger.warning("Overriding CountryNamePolicy.use_country_code = True")
-
-    countrynamepolicy = dataclasses.replace(
-        countrynamepolicy, use_country_code=True, titlecase=False
-    )
-
-    return MatchesFeed(tournament=tournament, config=config).model_dump(
-        context={
-            "courtnamepolicy": courtnamepolicy,
-            "paircombinepolicy": paircombinepolicy,
-            "playernamepolicy": playernamepolicy,
-            "clubnamepolicy": clubnamepolicy,
-            "countrynamepolicy": countrynamepolicy,
-            "matchselectionparams": matchselectionparams,
-            "matchfeedparams": matchfeedparams,
-        }
-    )
+# {{{ Per-court feed data
 
 
-class Feed(BaseModel):
+class CourtFeedData(BaseModel):
     Section: str
     Name: str
     FeedMatches: str
@@ -497,7 +525,7 @@ class Feed(BaseModel):
     CourtID: int
 
 
-def get_court_feeds_list(
+def get_feed_data_for_all_courts(
     urlbase: Annotated[URL, Depends(get_url)],
     tournament_name: Annotated[str, Depends(get_tournament_name)],
     courts: Annotated[list[Court], Depends(get_courts)],
@@ -506,12 +534,14 @@ def get_court_feeds_list(
     countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
     courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
     matchselectionparams: Annotated[
-        ReadyMatchSelectionParams, Depends(get_matchselectionparams)
+        MatchSelectionParamsDefaultsOnlyReady, Depends(get_matchselectionparams)
     ],
-    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
+    matchfeedparams: Annotated[
+        MatchesInFeedSelectionParams, Depends(get_matchesinfeedselectionparams)
+    ],
     config: Annotated[Config, Depends(get_config)],
-) -> list[Feed]:
-    ret: list[Feed] = []
+) -> list[CourtFeedData]:
+    ret: list[CourtFeedData] = []
     playerpolicyparams = playernamepolicy.params() | paircombinepolicy.params()
     playersurl = (urlbase / ".." / "players").with_query(
         **normalise_dict_values_for_query_string(
@@ -541,7 +571,7 @@ def get_court_feeds_list(
         )
 
         ret.append(
-            Feed(
+            CourtFeedData(
                 Section=tournament_name,
                 Name=courtnamepolicy(court) or "",
                 FeedPlayers=str(playersurl),
@@ -554,24 +584,85 @@ def get_court_feeds_list(
     return ret
 
 
+# }}}
+
+
+# }}}
+
+
+# {{{ Routes
+
+
 squoreapp = FastAPI()
+
+# {{{ GET /matches
+
+
+def get_matches_feed_dict(
+    tournament: Annotated[SquoreTournament, Depends(get_tournament)],
+    config: Annotated[Config, Depends(get_config)],
+    playernamepolicy: Annotated[PlayerNamePolicy, Depends(get_playernamepolicy)],
+    paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
+    countrynamepolicy: Annotated[CountryNamePolicy, Depends(get_countrynamepolicy)],
+    clubnamepolicy: Annotated[ClubNamePolicy, Depends(get_clubnamepolicy)],
+    courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
+    matchselectionparams: Annotated[
+        MatchSelectionParamsDefaultsOnlyReady, Depends(get_matchselectionparams)
+    ],
+    matchesinfeedselectionparams: Annotated[
+        MatchesInFeedSelectionParams, Depends(get_matchesinfeedselectionparams)
+    ],
+    court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
+    squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
+) -> dict[str, Any]:
+    if matchesinfeedselectionparams.court is None and court_for_dev:
+        matchesinfeedselectionparams.court = court_for_dev.id
+        logger.info(
+            f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
+        )
+
+    if not countrynamepolicy.use_country_code:
+        logger.warning("Overriding CountryNamePolicy.use_country_code = True")
+
+    countrynamepolicy = dataclasses.replace(
+        countrynamepolicy, use_country_code=True, titlecase=False
+    )
+
+    return MatchesFeed(tournament=tournament, config=config).model_dump(
+        context={
+            "courtnamepolicy": courtnamepolicy,
+            "paircombinepolicy": paircombinepolicy,
+            "playernamepolicy": playernamepolicy,
+            "clubnamepolicy": clubnamepolicy,
+            "countrynamepolicy": countrynamepolicy,
+            "matchselectionparams": matchselectionparams,
+            "matchesinfeedselectionparams": matchesinfeedselectionparams,
+        }
+    )
 
 
 @squoreapp.get("/matches")
 async def matches(
     remote: Annotated[str, Depends(get_remote)],
     matchpolicyparams: Annotated[MatchesPolicyParams, Depends(get_matchpolicyparams)],
-    matchfeedparams: Annotated[MatchFeedParams, Depends(get_matchfeedparams)],
-    matches_feed: Annotated[dict[str, Any], Depends(get_matches_feed_dict)],
+    matchfeedparams: Annotated[
+        MatchesInFeedSelectionParams, Depends(get_matchesinfeedselectionparams)
+    ],
+    matches_feed_dict: Annotated[dict[str, Any], Depends(get_matches_feed_dict)],
 ) -> dict[str, Any]:
     logger.info(
-        f"Returning {matches_feed['nummatches']} matches in response to "
+        f"Returning {matches_feed_dict['nummatches']} matches in response to "
         f"request from {remote} "
         f"(policyparams=({matchpolicyparams}) feedparams=({matchfeedparams}))"
     )
     # we cannot return a MatchesFeed as there is currently no way to pass data into the
     # model_dump context with FastAPI: https://github.com/fastapi/fastapi/pull/13475
-    return matches_feed
+    return matches_feed_dict
+
+
+# }}}
+
+# {{{ GET /players
 
 
 @squoreapp.get("/players")
@@ -587,6 +678,11 @@ async def players(
     return PlainTextResponse("\n".join([p["name"] for p in players]))
 
 
+# }}}
+
+# {{{ GET /tournament
+
+
 @squoreapp.get("/tournament")
 async def tournament(
     remote: Annotated[str, Depends(get_remote)],
@@ -594,6 +690,11 @@ async def tournament(
 ) -> SquoreTournament:
     logger.info(f"Returning tournament name in response to request from {remote}")
     return tournament
+
+
+# }}}
+
+# {{{ GET /courts
 
 
 class CourtInfo(BaseModel):
@@ -611,6 +712,11 @@ async def courts(
     return courts
 
 
+# }}}
+
+# {{{ GET /draws
+
+
 @squoreapp.get("/draws")
 async def draws(
     remote: Annotated[str, Depends(get_remote)],
@@ -620,17 +726,27 @@ async def draws(
     return draws
 
 
+# }}}
+
+# {{{ GET /feeds
+
+
 @squoreapp.get("/feeds")
 async def feeds(
     remote: Annotated[str, Depends(get_remote)],
     policyparams: Annotated[MatchesPolicyParams, Query()],
-    court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
-) -> list[Feed]:
+    court_feeds: Annotated[list[CourtFeedData], Depends(get_feed_data_for_all_courts)],
+) -> list[CourtFeedData]:
     logger.info(
         f"Returning {len(court_feeds)} feeds in response to "
         f"request from remote {remote} ({policyparams})"
     )
     return court_feeds
+
+
+# }}}
+
+# {{{ GET /init
 
 
 @squoreapp.get("/init")
@@ -646,12 +762,17 @@ async def init(
     return RedirectResponse(str(redirect_url), HTTP_307_TEMPORARY_REDIRECT)
 
 
+# }}}
+
+# {{{ GET /settings
+
+
 @squoreapp.get("/settings")
 async def settings(
     myurl: Annotated[URL, Depends(get_url)],
     remote: Annotated[str, Depends(get_remote)],
     settings: Annotated[dict[str, Any], Depends(get_settings)],
-    court_feeds: Annotated[list[Feed], Depends(get_court_feeds_list)],
+    court_feeds: Annotated[list[CourtFeedData], Depends(get_feed_data_for_all_courts)],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
@@ -707,7 +828,7 @@ async def settings(
                 idx, name = courtorder[court_for_dev.id]
                 settings["feedPostUrl"] = idx
                 logger.info(
-                    f"Pre-selected feed {idx} (court {name}) "
+                    f"Pre-selected feed {idx} ({name}) "
                     f"for device {squoredev.device_id or '(no device ID)'}"
                 )
 
@@ -729,6 +850,10 @@ async def settings(
     return settings
 
 
+# }}}
+
+# {{{ Deprecated routes
+
 deprecated_routes = APIRouter()
 
 
@@ -742,6 +867,11 @@ def deprecated_feeds(request: Request) -> RedirectResponse:
         stacklevel=2,
     )
     return RedirectResponse(str(url), HTTP_308_PERMANENT_REDIRECT)
+
+
+# }}}
+
+# }}}
 
 
 @asynccontextmanager
@@ -881,3 +1011,6 @@ async def squoresrv(
         devmap_toml=devmap_toml,
     ) as task:
         yield task
+
+
+# vim:fdm=marker:fdl=0

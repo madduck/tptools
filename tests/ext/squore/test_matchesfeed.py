@@ -2,7 +2,7 @@ import pytest
 
 from tptools.ext.squore.feed import (
     MatchesFeed,
-    MatchFeedParams,
+    MatchesInFeedSelectionParams,
     SquoreTournament,
 )
 
@@ -49,7 +49,11 @@ def test_matches_feed(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
 def test_matches_feed_max_num(MatchesFeedFactory: MatchesFeedFactoryType) -> None:
     mf = MatchesFeedFactory()
     dump = mf.model_dump(
-        context={"matchfeedparams": MatchFeedParams(max_matches_per_court=0)}
+        context={
+            "matchesinfeedselectionparams": MatchesInFeedSelectionParams(
+                max_matches_per_court=0
+            )
+        }
         # TODO: ugly, as test data only has one match for one of each of two courts, but
         # the logic should be the same.
     )
@@ -66,7 +70,7 @@ def test_matches_feed_with_config(MatchesFeedFactory: MatchesFeedFactoryType) ->
 def test_tournament_to_matches_feed_court(mf1: MatchesFeed) -> None:
     dump = mf1.model_dump(
         context={
-            "matchfeedparams": MatchFeedParams(court=1),
+            "matchfeedparams": MatchesInFeedSelectionParams(court=1),
         }
     )
     assert dump["nummatches"] == 2
@@ -84,7 +88,9 @@ def test_tournament_to_matches_feed_onlythiscourt(
 ) -> None:
     dump = mf1.model_dump(
         context={
-            "matchfeedparams": MatchFeedParams(court=court, only_this_court=True),
+            "matchesinfeedselectionparams": MatchesInFeedSelectionParams(
+                court=court, only_this_court=True
+            ),
         }
     )
     dump.pop("config")
