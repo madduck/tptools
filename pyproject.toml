@@ -97,7 +97,18 @@ ignore_missing_imports = true
 
 [tool.coverage.run]
 branch = true
-omit = ["tptools/cli/tpshortcut.py"]
+omit = [
+  "tptools/cli/tpshortcut.py",
+  "tptools/tpsrv/cli.py",
+  "tptools/tpsrv/debug.py",
+  "tptools/tpsrv/post.py",
+  "tptools/tpsrv/sq_stdout.py",
+  "tptools/tpsrv/squoresrv.py",
+  "tptools/tpsrv/stdout.py",
+  "tptools/tpsrv/tp.py",
+  "tptools/tpsrv/tp_recv.py",
+  "tptools/tpsrv/util.py",
+]
 
 [tool.coverage.report]
 exclude_also = [
