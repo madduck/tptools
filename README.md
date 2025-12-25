@@ -1,3 +1,5 @@
+[![Style and unit tests badge](https://github.com/madduck/tptools/actions/workflows/0-testing.yml/badge.svg)](https://github.com/madduck/tptools/actions/workflows/0-testing.yml)
+
 # tptools — Tools to export data from TournamentSoftware
 
 `tptools` is a collection of Python tools to facilitate working with [TournamentSoftware](https://www.tournamentsoftware.com/) in the context of squash.
@@ -51,7 +53,7 @@ In addition to simple Python classes, `tptools` provides a command-line utility 
 1. it provides HTTP endpoints, currently only for
    [Squore](https://squore.double-yellow.be/) via the `squoresrv` subcommand;
 
-3. it pushes information about the tournament on every change to all URLs provided to the `post` plugin, as well as the console, if the `stdout` plugin is invoked.
+1. it pushes information about the tournament on every change to all URLs provided to the `post` plugin, as well as the console, if the `stdout` plugin is invoked.
 
 See below for details.
 
