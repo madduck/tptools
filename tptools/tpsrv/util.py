@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from typing import Annotated, Any, Callable, cast
+from typing import Annotated, Any, Callable, TypedDict, cast
 
 import click
 from click_async_plugins import CliContext as _CliContext
@@ -103,6 +103,13 @@ class PostData[T: BaseModel](BaseModel):
     data: T
 
 
+class RequestArgs(TypedDict):
+    method: str
+    url: URL
+    content: str | None
+    headers: dict[str, str]
+
+
 async def http_request(
     method: str,
     url: URL,
@@ -112,7 +119,7 @@ async def http_request(
     sleep: float = 1,
     to_json_fn: Callable[..., str] | None = None,
 ) -> dict[str, Any] | None:
-    request_args = {"method": method, "url": url, "content": None, "headers": {}}
+    request_args = RequestArgs(method=method, url=url, content=None, headers={})
     if data is not None:
         to_json_fn = to_json_fn or (
             type(data).model_dump_json if data is not None else json.dumps
