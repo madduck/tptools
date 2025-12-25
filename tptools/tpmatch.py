@@ -22,7 +22,7 @@ from .util import (
 
 logger = logging.getLogger(__name__)
 
-LOCAL_TZ = tzlocal = tzlocal.get_localzone()
+LOCAL_TZ = tzlocal.get_localzone()
 
 
 class TPMatchStatus(StrEnum):
