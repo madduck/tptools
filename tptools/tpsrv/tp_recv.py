@@ -5,7 +5,6 @@ from typing import Annotated, Any
 import click
 from click_async_plugins import PluginLifespan, plugin
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 from httpx import URL
 from pydantic import ValidationError
 from starlette.status import HTTP_508_LOOP_DETECTED
