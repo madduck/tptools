@@ -16,7 +16,6 @@ from click_async_plugins import (
     plugin_group,
     setup_plugins,
 )
-from click_extra.config import Formats
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, PlainTextResponse
 from starlette.types import StatefulLifespan, StatelessLifespan
@@ -88,7 +87,7 @@ def make_app(
 @clickx.config_option(  # type: ignore[misc]
     strict=True,
     show_default=True,
-    formats=Formats.TOML,
+    formats=clickx.ConfigFormat.TOML,
     # TODO:https://github.com/kdeldycke/click-extra/issues/1356 for str() call
     default=str(pathlib.Path(click.get_app_dir("tptools", roaming=True)) / "cfg.toml"),
 )

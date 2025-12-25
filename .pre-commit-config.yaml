@@ -7,7 +7,7 @@ repos:
       - id: mypy
         additional_dependencies:
           - click
-          - click_extra
+          - click_extra (>= 7)
           - click-async-plugins @ https://github.com/madduck/click-async-plugins/archive/refs/heads/main.zip
           - sqlmodel
           - fastapi
