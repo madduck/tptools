@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -33,5 +33,5 @@ jobs:
       - name: Mypy Check
         uses: jpetrucciani/mypy-check@master
         with:
-          python_version: "3.13"
+          python_version: ${{ matrix.python-version }}
           requirements: ". .[dev]"
