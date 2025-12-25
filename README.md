@@ -235,7 +235,7 @@ Options:
   --help                    Show this message and exit.
 
 Commands:
-  debug      Monitor stdin for keypresses to trigger debugging functions
+  debug      Allow for debug-level interaction with the CLI
   post       Post raw (TP) JSON data to URLs on change
   sq-stdout  Output data as sent to Squore to stdout whenever the tournament changes
   squoresrv  Mount endpoints to serve data for Squore
@@ -524,6 +524,6 @@ a few things left to do:
 
 ## Legalese
 
-`tptools` is © 2024–5 martin f. krafft <tptools@pobox.madduck.net>.
+`tptools` is © 2024–6 martin f. krafft <tptools@pobox.madduck.net>.
 
 It is released under the terms of the MIT Licence.

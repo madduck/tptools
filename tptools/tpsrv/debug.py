@@ -36,7 +36,7 @@ async def debug_key_press_handler(clictx: CliContext) -> PluginLifespan:
 @plugin
 @pass_clictx
 async def debug(clictx: CliContext) -> PluginLifespan:
-    """Output tournament data as JSON to stdout whenever it changes"""
+    """Allow for debug-level interaction with the CLI"""
 
     async with debug_key_press_handler(clictx) as task:
         yield task
