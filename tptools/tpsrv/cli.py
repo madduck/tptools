@@ -84,14 +84,14 @@ def make_app(
 
 
 @plugin_group
-@clickx.config_option(  # type: ignore[misc]
+@clickx.config_option(  # type: ignore[untyped-decorator]
     strict=True,
     show_default=True,
     formats=clickx.ConfigFormat.TOML,
     # TODO:https://github.com/kdeldycke/click-extra/issues/1356 for str() call
     default=str(pathlib.Path(click.get_app_dir("tptools", roaming=True)) / "cfg.toml"),
 )
-@clickx.verbose_option(default_logger=logger)  # type: ignore[misc]
+@clickx.verbose_option(default_logger=logger)  # type: ignore[untyped-decorator]
 @click.option("--very-debug", is_flag=True, help="Do not silence any debug logging")
 @click.option(
     "--host",

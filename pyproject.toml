@@ -54,7 +54,7 @@ dev = [
   "pytest-ruff",
   "click-extra[pytest]",
   "ipdb",
-  "mypy",
+  "mypy (> 1.19)",
   "ruff",
   "pre-commit",
   "coverage",
