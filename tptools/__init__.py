@@ -4,6 +4,7 @@ from .entry import Entry
 from .match import Match
 from .tournament import MatchSelectionParams, Tournament, load_tournament
 from .tpmatch import TPMatchStatus as MatchStatus
+from .util import ScoresType
 
 __all__ = [
     "Court",
@@ -15,6 +16,7 @@ __all__ = [
     "Match",
     "MatchStatus",
     "MatchSelectionParams",
+    "ScoresType",
     "Stage",
     "Tournament",
 ]
