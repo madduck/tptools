@@ -1,5 +1,5 @@
 from .court import Court, CourtSelectionParams
-from .draw import Draw
+from .draw import Draw, Event, Stage
 from .entry import Entry
 from .match import Match
 from .tournament import MatchSelectionParams, Tournament, load_tournament
@@ -10,9 +10,11 @@ __all__ = [
     "CourtSelectionParams",
     "Draw",
     "Entry",
+    "Event",
     "load_tournament",
     "Match",
     "MatchStatus",
     "MatchSelectionParams",
+    "Stage",
     "Tournament",
 ]
