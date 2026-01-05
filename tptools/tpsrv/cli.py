@@ -87,7 +87,7 @@ def make_app(
 @clickx.config_option(  # type: ignore[untyped-decorator]
     strict=True,
     show_default=True,
-    formats=clickx.ConfigFormat.TOML,
+    file_format_patterns=clickx.ConfigFormat.TOML,
     # TODO:https://github.com/kdeldycke/click-extra/issues/1356 for str() call
     default=str(pathlib.Path(click.get_app_dir("tptools", roaming=True)) / "cfg.toml"),
 )
