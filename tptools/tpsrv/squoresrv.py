@@ -274,15 +274,9 @@ class CommandLineParams(MatchesInFeedSelectionParams):
     kiosk_mode: bool = False
 
 
-def get_commandlineparams(
-    request: Request, params: Annotated[CommandLineParams, Query()]
-) -> CommandLineParams:
+def get_commandlineparams(request: Request) -> CommandLineParams:
     try:
-        from_cli = cast(
-            CommandLineParams, request.app.state.squore["commandlineparams"]
-        )
-        from_query = params.model_dump(exclude_defaults=True)
-        return from_cli.model_copy(update=from_query)
+        return cast(CommandLineParams, request.app.state.squore["commandlineparams"])
 
     except (AttributeError, KeyError) as err:
         raise HTTPException(
@@ -536,9 +530,6 @@ def get_feed_data_for_all_courts(
     matchselectionparams: Annotated[
         MatchSelectionParamsDefaultsOnlyReady, Depends(get_matchselectionparams)
     ],
-    matchfeedparams: Annotated[
-        MatchesInFeedSelectionParams, Depends(get_matchesinfeedselectionparams)
-    ],
     config: Annotated[Config, Depends(get_config)],
 ) -> list[CourtFeedData]:
     ret: list[CourtFeedData] = []
@@ -558,7 +549,6 @@ def get_feed_data_for_all_courts(
 
     courtparams = (
         matchselectionparams.model_dump()
-        | matchfeedparams.model_dump()
         | courtnamepolicy.params()
         | countrynamepolicy.params()
         | playerpolicyparams
@@ -614,6 +604,7 @@ def get_matches_feed_dict(
     ],
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
+    commandlineparams: Annotated[CommandLineParams, Depends(get_commandlineparams)],
 ) -> dict[str, Any]:
     if matchesinfeedselectionparams.court is None and court_for_dev:
         matchesinfeedselectionparams.court = court_for_dev.id
@@ -621,11 +612,20 @@ def get_matches_feed_dict(
             f"Expand section for court {court_for_dev} for device {squoredev.device_id}"
         )
 
+    matchesinfeedselectionparams = MatchesInFeedSelectionParams(
+        **commandlineparams.model_dump()
+        | matchesinfeedselectionparams.model_dump(exclude_defaults=True)
+    )
+
     if not countrynamepolicy.use_country_code:
         logger.warning("Overriding CountryNamePolicy.use_country_code = True")
 
     countrynamepolicy = dataclasses.replace(
         countrynamepolicy, use_country_code=True, titlecase=False
+    )
+
+    logger.info(
+        f"Making MatchesFeed ({matchselectionparams}, {matchesinfeedselectionparams})"
     )
 
     return MatchesFeed(tournament=tournament, config=config).model_dump(
@@ -752,12 +752,13 @@ async def feeds(
 @squoreapp.get("/init")
 async def init(
     myurl: Annotated[URL, Depends(get_url)],
-    commandlineparams: Annotated[CommandLineParams, Depends(get_commandlineparams)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
 ) -> RedirectResponse:
-    params = squoredev.model_dump() | commandlineparams.model_dump()
     redirect_url = (
-        myurl / ".." / "settings" % normalise_dict_values_for_query_string(params)
+        myurl
+        / ".."
+        / "settings"
+        % normalise_dict_values_for_query_string(squoredev.model_dump())
     )
     return RedirectResponse(str(redirect_url), HTTP_307_TEMPORARY_REDIRECT)
 
@@ -776,7 +777,7 @@ async def settings(
     court_for_dev: Annotated[Court | None, Depends(get_court_for_dev)],
     mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
-    commandlineparams: Annotated[CommandLineParams, Query()],
+    commandlineparams: Annotated[CommandLineParams, Depends(get_commandlineparams)],
 ) -> dict[str, Any]:
     logger.info(
         f"App settings request from remote {remote} "
