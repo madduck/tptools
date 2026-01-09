@@ -13,7 +13,7 @@ write_to = "_version.py"
 
 [project]
 name = "tptools"
-version = "0.6.6"
+version = "0.6.7"
 authors = [{ name = "martin f. krafft", email = "tptools@pobox.madduck.net" }]
 description = "A set of tools to export data from with TournamentSoftware"
 readme = "README.md"

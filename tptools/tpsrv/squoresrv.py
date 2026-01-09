@@ -31,6 +31,7 @@ from yarl import URL
 from tptools import (
     Court,
     CourtSelectionParams,
+    DeviceCourtMap,
     Draw,
     Entry,
     MatchSelectionParams,
@@ -59,7 +60,6 @@ from tptools.namepolicy import (
 )
 from tptools.namepolicy.policybase import RegexpSubstTuple
 from tptools.util import (
-    flatten_dict,
     normalise_dict_values_for_query_string,
     silence_logger,
 )
@@ -413,19 +413,15 @@ def get_config(
 
 def get_dev_map(
     path: Annotated[pathlib.Path, Depends(get_devmap_path)],
-) -> dict[str, int | str] | Never:
-    devmap: dict[str, int | str] = {}
-
+) -> DeviceCourtMap:
     try:
         with open(path, "rb") as f:
-            devmap = tomllib.load(f)
+            return DeviceCourtMap(f)
 
     except FileNotFoundError:
         logger.warning(f"Squore device to court map not found at {path}, ignoring…")
 
-    # TOML turns a key like 172.21.22.1 into a nested dict {"172":{"21":{"22"…}
-    # so for convenience, flatten this:
-    return flatten_dict(devmap)
+    return DeviceCourtMap()
 
 
 # }}}
@@ -433,73 +429,24 @@ def get_dev_map(
 # {{{ Court name to dev/mirror
 
 
-def _normalise_court_name_for_matching(courtname: str) -> tuple[int | None, str] | None:
-    m = re.match(
-        r"(?:-?(?P<loc>\d+)-)?c(?:ourt *)?0*(?P<court>\d+)",
-        courtname,
-        flags=re.IGNORECASE,
-    )
-    if m:
-        return int(loc) if (loc := m["loc"]) is not None else None, m["court"]
-    else:
-        return None
-
-
 def get_court_for_dev(
-    dev_map: Annotated[dict[str, int | str], Depends(get_dev_map)],
+    dev_map: Annotated[DeviceCourtMap, Depends(get_dev_map)],
     courts: Annotated[list[Court], Depends(get_courts)],
     clientip: Annotated[str, Depends(get_remote)],
 ) -> Court | None:
-    courtname = None
-    if (courtname := dev_map.get(clientip)) is not None:
-        logger.debug(f"Device at IP {clientip} might want feed for {courtname}")
-        for court in courts:
-            # TODO: can we do better than this to identify the court when we are
-            # given a string that might not be what the current courtnamepolicy
-            # returns, or an ID?
-            if isinstance(courtname, int):
-                if courtname == court.id:
-                    return court
-
-            else:
-                term = _normalise_court_name_for_matching(courtname)
-                if term is not None:
-                    comps = (
-                        []
-                        if court.location is None
-                        else [
-                            f"{court.location.id}-{court.name}",
-                            f"{court.location.id}-{court}",
-                        ]
-                    )
-
-                    for comparename in (
-                        *comps,
-                        court.name,
-                        str(court),
-                    ):
-                        comp = _normalise_court_name_for_matching(comparename)
-                        if (
-                            comp is not None
-                            and (term[0] is None and term[1] == comp[1])
-                            or (term == comp)
-                        ):
-                            return court
-
-    logger.debug(f"No court found in devmap for device with IP {clientip}")
-    return None
+    return dev_map.find_court_for_ip(clientip, courts=courts)
 
 
 def get_mirror_for_dev(
-    dev_map: Annotated[dict[str, int | str], Depends(get_dev_map)],
+    dev_map: Annotated[DeviceCourtMap, Depends(get_dev_map)],
     clientip: Annotated[str, Depends(get_remote)],
 ) -> str | None:
     othername = None
-    if (othername := dev_map.get(clientip)) is not None and re.fullmatch(
+    if (othername := dev_map.find_match_for_ip(clientip)) is not None and re.fullmatch(
         r"\w{6}-\d+-.+", othername := str(othername)
     ):
         logger.debug(f"Device at IP {clientip} wants to be mirror for {othername}")
-        return othername  # type: ignore[return-value]
+        return othername
 
     logger.debug(f"No mirror device found in devmap for device with IP {clientip}")
     return None

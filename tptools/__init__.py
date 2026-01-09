@@ -1,4 +1,5 @@
 from .court import Court, CourtSelectionParams
+from .devcourtmap import DeviceCourtMap
 from .draw import Draw, Event, Stage
 from .drawtype import DrawType
 from .entry import Entry, Player
@@ -10,6 +11,7 @@ from .util import ScoresType
 __all__ = [
     "Court",
     "CourtSelectionParams",
+    "DeviceCourtMap",
     "Draw",
     "DrawType",
     "Entry",
