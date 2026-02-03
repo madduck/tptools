@@ -7,12 +7,21 @@ from tptools.devcourtmap import DeviceCourtMap
 
 
 @pytest.fixture
-def tomldevmap() -> BytesIO:
-    devmap = {
-        "192.0.2.1": "C1",
-        "192.0.2.2": "C07",
+def courts(court1: Court, court2: Court) -> dict[str, Court]:
+    return {
+        "court1": court1.model_copy(update={"name": "C1"}),
+        "court2": court2,
+        "court10": Court(id=10, name="C10"),
+        "court11": Court(id=11, name="C11"),
+        "invalid": Court(id=99, name="invalid"),
     }
-    toml = "\n".join([f'{ip} = "{court}"' for ip, court in devmap.items()])
+
+
+@pytest.fixture
+def tomldevmap(courts: dict[str, Court]) -> BytesIO:
+    devmap: dict[str, str | int] = {f"192.0.2.{c.id}": c.name for c in courts.values()}
+    devmap["192.0.2.11"] = 11  # courts can be identified by ID as well as name
+    toml = "\n".join([f"{ip} = {court!r}" for ip, court in devmap.items()])
     return BytesIO(toml.encode())
 
 
@@ -61,7 +70,24 @@ def test_find_match(devcourtmap: DeviceCourtMap, ip: str, text: str | None) -> N
     [("192.0.2.1", "court1"), ("192.0.2.2", "court2"), ("192.0.2.3", "court3")],
 )
 def test_find_court(
-    devcourtmap: DeviceCourtMap, ip: str, court: str, court1: Court, court2: Court
+    devcourtmap: DeviceCourtMap, ip: str, court: str, courts: dict[str, Court]
 ) -> None:
-    cm = {"court1": court1, "court2": court2}
-    assert devcourtmap.find_court_for_ip(ip, cm.values()) == cm.get(court)
+    assert devcourtmap.find_court_for_ip(ip, courts.values()) == courts.get(court)
+
+
+def test_find_court_as_int(
+    devcourtmap: DeviceCourtMap, courts: dict[str, Court]
+) -> None:
+    assert devcourtmap.find_court_for_ip("192.0.2.11", courts.values()) == courts.get(
+        "court11"
+    )
+
+
+def test_find_without_any_courts(devcourtmap: DeviceCourtMap) -> None:
+    assert devcourtmap.find_court_for_ip("192.0.2.11") is None
+
+
+def test_find_abnormal_court_name(
+    devcourtmap: DeviceCourtMap, courts: dict[str, Court]
+) -> None:
+    assert devcourtmap.find_court_for_ip("192.0.2.99", courts.values()) is None
