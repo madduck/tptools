@@ -70,16 +70,16 @@ def test_matches_feed_with_config(MatchesFeedFactory: MatchesFeedFactoryType) ->
 def test_tournament_to_matches_feed_court(mf1: MatchesFeed) -> None:
     dump = mf1.model_dump(
         context={
-            "matchfeedparams": MatchesInFeedSelectionParams(court=1),
+            "matchesinfeedselectionparams": MatchesInFeedSelectionParams(court=1),
         }
     )
-    assert dump["nummatches"] == 2
     found = False
     for key in dump.keys():
         if key.startswith("+"):
             assert not found, "Multiple expanded sections found"
             found = True
             assert key.endswith("C01")
+    assert found, "Section for selected court not expanded"
 
 
 @pytest.mark.parametrize("court, nummatches", [(0, 1), (1, 1), (2, 0)])
