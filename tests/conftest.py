@@ -24,6 +24,11 @@ from tptools.tpmatch import TPMatch
 
 
 @pytest.fixture
+def now() -> datetime:
+    return datetime.now()
+
+
+@pytest.fixture
 def tpevent1() -> TPEvent:
     return TPEvent(id=1, name="Herren 1", abbreviation="H1", gender=2)
 

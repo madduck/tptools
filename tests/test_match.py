@@ -1,3 +1,7 @@
+from datetime import datetime
+
+import pytest
+
 from tptools import Match
 
 
@@ -38,3 +42,11 @@ def test_cmp_gt(match1: Match, match2: Match) -> None:
 
 def test_cmp_ge(match1: Match, match1copy: Match, match2: Match) -> None:
     assert match2 > match1 and match1 >= match1copy
+
+
+@pytest.mark.parametrize("attr", ["time", "starttime", "endtime"])
+def test_match_timestamps_have_timezone(
+    match1: Match, attr: str, now: datetime
+) -> None:
+    m = Match(**match1.model_dump() | {attr: now})
+    assert getattr(m, attr).tzinfo is not None
