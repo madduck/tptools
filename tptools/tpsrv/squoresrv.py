@@ -344,7 +344,9 @@ def _relative_to_absolute_urls(urls_per_line: str, myurl: URL) -> str:
     urls: list[str] = []
     for urlstr in urls_per_line.splitlines():
         if URL(urlstr).is_absolute():
+            urls.append(urlstr)
             continue
+
         urls.append(str(myurl.with_path(urlstr, encoded=True)))
     return "\n".join(urls)
 
