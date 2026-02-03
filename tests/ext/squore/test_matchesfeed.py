@@ -97,3 +97,16 @@ def test_tournament_to_matches_feed_onlythiscourt(
     dump.pop("name")
     assert dump.pop("nummatches") == nummatches
     assert len(dump) == 1
+
+
+def test_only_this_court_disabled_when_no_court(mf1: MatchesFeed) -> None:
+    dump = mf1.model_dump(
+        context={
+            "matchesinfeedselectionparams": MatchesInFeedSelectionParams(
+                court=None, only_this_court=True
+            ),
+        }
+    )
+    dump.pop("config")
+    dump.pop("name")
+    assert len(dump) == 3
