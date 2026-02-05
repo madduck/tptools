@@ -421,7 +421,10 @@ def get_dev_map(
             return DeviceCourtMap(f)
 
     except FileNotFoundError:
-        logger.warning(f"Squore device to court map not found at {path}, ignoring…")
+        logger.warning(
+            f"Squore device to court map not found at {path} "
+            f"(cwd: {pathlib.Path.cwd()}), ignoring…"
+        )
 
     return DeviceCourtMap()
 
@@ -844,7 +847,10 @@ async def setup_for_squore(
     logger.info(f"Serving app settings from {settings_json}")
     logger.info(f"Reading tournament & match config from {config_toml}")
     if devmap_toml.exists():
-        logger.info(f"Reading device to court map from {devmap_toml}")
+        logger.info(
+            f"Reading device to court map from {devmap_toml} "
+            "(cwd: {pathlib.Path.cwd()})"
+        )
 
     squoreapp.state.squore = {
         "settings": settings_json,
