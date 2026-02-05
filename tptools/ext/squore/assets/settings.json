@@ -34,6 +34,7 @@
   "MQTTPublishJoinerLeaverTopic": "tptools/${Brand}/JoinerLeaver",
   "MQTTPublishTopicChange": "tptools/${Brand}/${DeviceId}/change",
   "MQTTPublishTopicMatch": "tptools/${FeedName}/${Brand}/${DeviceId}/match",
+  "MQTTPublishTopicUnloadMatch": "tptools/${FeedName}/${Brand}/${DeviceId}/unloadMatch",
   "MQTTSubscribeTopicChange": "tptools/${Brand}/${DeviceId}/change",
   "MQTTPublishTopicDeviceInfo": "tptools/${Brand}/${DeviceId}/deviceInfo",
   "MQTTPublishDeviceInfo_EveryXSeconds": "5",
