@@ -10,7 +10,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.requests import HTTPConnection
 from httpx import URL, AsyncClient, HTTPError, InvalidURL
 from httpx import codes as status_codes
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from starlette.status import HTTP_424_FAILED_DEPENDENCY
 
 from ..filewatcher import FileWatcher
@@ -170,3 +170,25 @@ async def http_request(
                 break
 
     return None
+
+
+async def bootstrap_from_url(clictx: CliContext, url: URL | None) -> None:
+    if url is None:
+        return
+
+    logger.debug(f"Fetching initial tournament from {url}…")
+    tdata = await http_request("GET", url)
+
+    try:
+        if tdata is not None:
+            tournament = Tournament.model_validate(tdata)
+            logger.info(f"Fetched initial tournament from {url}: {tournament}")
+            clictx.itc.set("tournament", tournament)
+
+        else:
+            logger.warning(f"Failed to fetch initial tournament from {url}")
+
+    except ValidationError as exc:
+        logger.warning(
+            f"Fetched initial tournament from {url} does not validate: {exc}"
+        )

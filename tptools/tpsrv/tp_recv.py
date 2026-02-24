@@ -6,7 +6,6 @@ import click
 from click_async_plugins import PluginLifespan, plugin
 from fastapi import Depends, FastAPI, HTTPException, Request
 from httpx import URL
-from pydantic import ValidationError
 from starlette.status import HTTP_508_LOOP_DETECTED
 
 from tptools import Tournament
@@ -14,10 +13,10 @@ from tptools import Tournament
 from .util import (
     CliContext,
     PostData,
+    bootstrap_from_url,
     get_clictx,
     get_peer,
     get_tournament,
-    http_request,
     pass_clictx,
     validate_url,
 )
@@ -76,27 +75,7 @@ async def setup_to_receive_tournament_post(
     clictx.api.mount(path=api_path, app=recvapp, name="squore")
     logger.info(f"Configured the app to receive tptools data at {api_path}")
 
-    if url is not None:
-        tdata = await http_request("GET", url)
-
-        try:
-            if tdata is not None:
-                tournament = Tournament.model_validate(tdata)
-                logger.info(f"Fetched initial tournament from {url}: {tournament}")
-                clictx.itc.set("tournament", tournament)
-
-            else:
-                logger.warning(f"Failed to fetch initial tournament from {url}")
-
-        except ValidationError as exc:
-            logger.warning(
-                f"Fetched initial tournament from {url} does not validate: {exc}"
-            )
-
-    yield None
-
-
-# TODO: option to load data initially from a remote endpoint
+    yield bootstrap_from_url(clictx, url)
 
 
 @plugin
