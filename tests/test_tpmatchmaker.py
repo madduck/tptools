@@ -191,8 +191,9 @@ def matchmaker_with_triplet(
             nullcontext(
                 {
                     "status": lambda s: s == TPMatchStatus.PENDING,
-                    "slot1": lambda s: str(s).startswith("Winner")
-                    and str(s).endswith("#1"),
+                    "slot1": lambda s: (
+                        str(s).startswith("Winner") and str(s).endswith("#1")
+                    ),
                 }
             ),
         ),
@@ -206,8 +207,9 @@ def matchmaker_with_triplet(
             nullcontext(
                 {
                     "status": lambda s: s == TPMatchStatus.PENDING,
-                    "slot1": lambda s: str(s).startswith("Loser")
-                    and str(s).endswith("#1"),
+                    "slot1": lambda s: (
+                        str(s).startswith("Loser") and str(s).endswith("#1")
+                    ),
                 }
             ),
         ),
