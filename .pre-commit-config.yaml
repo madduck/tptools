@@ -8,7 +8,7 @@ repos:
         additional_dependencies:
           - click
           - click_extra (>= 7)
-          - click-async-plugins @ https://github.com/madduck/click-async-plugins/archive/refs/heads/main.zip
+          - click-async-plugins
           - sqlmodel
           - fastapi
           - starlette
