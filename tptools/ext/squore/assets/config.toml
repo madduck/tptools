@@ -45,3 +45,15 @@ timerPauseBetweenGames = 120
 # https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/model/TieBreakFormat.java
 # TwoClearPoints, SelectOneOrTwo, SelectOneTwoOrThree, SelectOneOrThree, SuddenDeath
 tieBreakFormat = "TwoClearPoints"
+
+emulate_StartOnMatchSelection = false
+emulate_AutoLoadNextMatch = "None"
+
+[emulate_Config]
+LikelihoodPlayerAWinsRallyInGame = [80, 20]
+LikelihoodPlayersMakeAppeal = [4, 2]
+LikelihoodUndoRequiredByRef = 2
+LikelihoodSwitchServeSideOnHandout = 20
+RallyDuration_Average = 20
+RallyDuration_Deviation = 10
+SpeedUpFactor = 30

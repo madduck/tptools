@@ -273,6 +273,7 @@ def get_matchesinfeedselectionparams(
 class CommandLineParams(MatchesInFeedSelectionParams):
     include_feeds: bool = True
     kiosk_mode: bool = False
+    emulate_scoring: bool = False
 
 
 def get_commandlineparams(request: Request) -> CommandLineParams:
@@ -581,6 +582,25 @@ def get_matches_feed_dict(
         f"Making MatchesFeed ({matchselectionparams}, {matchesinfeedselectionparams})"
     )
 
+    if commandlineparams.emulate_scoring:
+        logger.warning("Configuring clients to emulate scoring…")
+
+        config["emulate_StartOnMatchSelection"] = True
+        config["emulate_AutoLoadNextMatch"] = "Next"
+
+        # need to disable hiding completed matches because of
+        # https://github.com/obbimi/Squore/issues/131
+        config["hideCompletedMatchesFromFeed"] = False
+
+    else:
+        config["emulate_StartOnMatchSelection"] = False
+        config["emulate_AutoLoadNextMatch"] = "None"
+        try:
+            del config["emulate_Config"]
+
+        except KeyError:
+            pass
+
     return MatchesFeed(tournament=tournament, config=config).model_dump(
         context={
             "courtnamepolicy": courtnamepolicy,
@@ -876,6 +896,7 @@ async def setup_for_squore(
     settings_json: pathlib.Path = SETTINGS_JSON_PATH,
     config_toml: pathlib.Path = CONFIG_TOML_PATH,
     devmap_toml: pathlib.Path = DEVMAP_TOML_PATH,
+    emulate_scoring: bool = False,
 ) -> PluginLifespan:
     api_path = "/".join((api_mount_point, SQUORE_PATH_VERSION))
 
@@ -900,6 +921,7 @@ async def setup_for_squore(
             max_matches_per_court=max_matches_per_court,
             kiosk_mode=kiosk_mode,
             include_feeds=include_feeds,
+            emulate_scoring=emulate_scoring,
         ),
     }
     squoreapp.mount(
@@ -980,6 +1002,12 @@ async def setup_for_squore(
     show_default=True,
     help="Path of file to use for device to court mapping",
 )
+@click.option(
+    "--emulate-scoring",
+    "-e",
+    is_flag=True,
+    help="Cause connecting clients to emulate scoring (for test purposes)",
+)
 @pass_clictx
 async def squoresrv(
     clictx: CliContext,
@@ -991,6 +1019,7 @@ async def squoresrv(
     settings_json: pathlib.Path,
     config_toml: pathlib.Path,
     devmap_toml: pathlib.Path,
+    emulate_scoring: bool,
 ) -> PluginLifespan:
     """Mount endpoints to serve data for Squore"""
 
@@ -1004,6 +1033,7 @@ async def squoresrv(
         settings_json=settings_json,
         config_toml=config_toml,
         devmap_toml=devmap_toml,
+        emulate_scoring=emulate_scoring,
     ) as task:
         yield task
 

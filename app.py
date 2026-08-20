@@ -29,7 +29,7 @@ from tptools.tpsrv.stdout import print_tournament
 from tptools.tpsrv.tp import make_engine, tp_source
 from tptools.tpsrv.tp_recv import setup_to_receive_tournament_post
 from tptools.tpsrv.util import CliContext
-from tptools.util import silence_logger
+from tptools.util import is_truish, silence_logger
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -125,7 +125,13 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
 
     factories: list[PluginFactory] = [
         debug_key_press_handler,
-        partial(setup_for_squore, only_this_court=True),
+        partial(
+            setup_for_squore,
+            only_this_court=True,
+            emulate_scoring=is_truish(
+                os.getenv("SQEMULATE"),
+            ),
+        ),
     ]
     _maybe_do_stdout(factories)
     _maybe_do_post(factories)

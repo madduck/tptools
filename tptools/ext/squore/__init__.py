@@ -1,6 +1,8 @@
 from .config import (
     Config,
     ConfigValidator,
+    EmulatorConfig,
+    EmulatorConfigValidator,
     PerMatchConfigValidator,
     PerMatchOverridableConfig,
 )
@@ -14,6 +16,8 @@ from .section import MatchesSection
 __all__ = [
     "Config",
     "ConfigValidator",
+    "EmulatorConfig",
+    "EmulatorConfigValidator",
     "MatchesFeed",
     "MatchesSection",
     "MatchesInFeedSelectionParams",
