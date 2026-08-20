@@ -125,7 +125,7 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
 
     factories: list[PluginFactory] = [
         debug_key_press_handler,
-        setup_for_squore,
+        partial(setup_for_squore, only_this_court=True),
     ]
     _maybe_do_stdout(factories)
     _maybe_do_post(factories)
