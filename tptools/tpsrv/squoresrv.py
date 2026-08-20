@@ -791,7 +791,7 @@ async def settings(
     if court_for_dev is not None:
         c = court_for_dev
         courtname = (
-            f"{c.location.id if c.location else 0}-"
+            f"{c.id}@{c.location.id if c.location else 0}-"
             f"{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
         )
         settings["liveScoreDeviceId_customSuffix"] = f"-{courtname}"
