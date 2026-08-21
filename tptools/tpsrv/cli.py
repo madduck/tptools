@@ -41,7 +41,7 @@ try:
 except ImportError:
     from asyncio import new_event_loop  # type: ignore[assignment,unused-ignore]
 
-logger = clickx.new_extra_logger(
+logger = clickx.new_logger(
     format="{asctime} {name} {levelname} {message} ({filename}:{lineno})",
     datefmt="%F %T",
     level=logging.WARNING,

@@ -33,7 +33,7 @@ dependencies = [
   "aiosqlite",
   "watchdog",
   "click",
-  "click-extra (> 7)",
+  "click-extra (> 8)",
   "click-async-plugins",
   "yarl",
   "fastapi",
