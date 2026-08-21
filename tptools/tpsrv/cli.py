@@ -76,6 +76,7 @@ def make_app(
         client = request.headers.get(
             "X-Forwarded-For", request.client.host if request.client else None
         )
+        logger.info(f"Received ping request from {client} …")
         return f"Hello {client}, tpsrv is running!\n"
 
     app.get("/", response_class=PlainTextResponse)(pong)
