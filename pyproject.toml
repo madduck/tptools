@@ -13,9 +13,9 @@ write_to = "_version.py"
 
 [project]
 name = "tptools"
-version = "0.6.8"
+version = "0.6.8.1"
 authors = [{ name = "martin f. krafft", email = "tptools@pobox.madduck.net" }]
-description = "A set of tools to export data from with TournamentSoftware"
+description = "A set of tools to export data from TournamentSoftware"
 readme = "README.md"
 requires-python = ">=3.13"
 classifiers = [

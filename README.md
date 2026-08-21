@@ -146,7 +146,14 @@ If you get a "No", please download and install the [Microsoft Access Database En
 
 ### Installing (and upgrading) `tptools`
 
-`tptools` is under development and not yet published as an officially available Python software. To install `tptools`, please run the following command:
+To install the latest version of `tptools` from PyPi, please run the following command:
+
+```
+pip install tptools
+```
+
+Alternatively, if you'd like to install the current state of development, you
+may use this:
 
 ```
 pip install https://github.com/madduck/tptools/archive/refs/heads/main.zip
