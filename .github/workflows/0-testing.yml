@@ -1,0 +1,44 @@
+name: Style and unit tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  run-tests:
+    name: "Setup and run tests"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
+
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Style and formatting (ruff)
+        run: |
+          ruff check .
+
+      - name: Unit and integration tests (pytest)
+        run: |
+          pytest
+
+      - name: Mypy Check
+        uses: jpetrucciani/mypy-check@master
+        with:
+          python_version: ${{ matrix.python-version }}
+          requirements: ".[dev]"
