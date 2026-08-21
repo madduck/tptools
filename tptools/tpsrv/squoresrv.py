@@ -737,6 +737,9 @@ async def settings(
         f"(ip={squoredev.ip}, cc={squoredev.cc}, v={squoredev.version})"
     )
 
+    # Data herein is included with every PostResult/MQTT packet:
+    settings["customData"] = {}
+
     settings["RemoteSettingsURL"] = (initurl := str(myurl / ".." / "init"))
     settings["RemoteSettingsURL_Default"] = initurl
 
