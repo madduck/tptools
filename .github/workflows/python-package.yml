@@ -3,6 +3,7 @@ name: Test and publish to PyPi
 on:
   push:
     branches: ["main"]
+    tags: ["v*"]
   pull_request:
     branches: ["main"]
 
