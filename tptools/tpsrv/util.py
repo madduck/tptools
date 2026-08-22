@@ -71,7 +71,7 @@ def validate_url(
 
     except TypeError as err:
         raise click.BadParameter(
-            f"URL must be a string, not '{type(value).__name__}': {value}"
+            f"URL must be a string, not '{type(value).__qualname__}': {value}"
         ) from err
 
     except InvalidURL as err:  # pragma: nocover TODO: how do I test for this?
@@ -172,23 +172,28 @@ async def http_request(
     return None
 
 
-async def bootstrap_from_url(clictx: CliContext, url: URL | None) -> None:
-    if url is None:
-        return
-
-    logger.debug(f"Fetching initial tournament from {url}…")
-    tdata = await http_request("GET", url)
-
-    try:
-        if tdata is not None:
-            tournament = Tournament.model_validate(tdata)
-            logger.info(f"Fetched initial tournament from {url}: {tournament}")
-            clictx.itc.set("tournament", tournament)
-
-        else:
-            logger.warning(f"Failed to fetch initial tournament from {url}")
-
-    except ValidationError as exc:
+async def bootstrap_tournament_from_url[T: Tournament](
+    tournament_class: type[T], url: URL
+) -> T | None:
+    logger.debug(f"Fetching initial {tournament_class.__qualname__} from {url}…")
+    if (tdata := await http_request("GET", url)) is None:
         logger.warning(
-            f"Fetched initial tournament from {url} does not validate: {exc}"
+            f"Failed to fetch initial {tournament_class.__qualname__} from {url}"
         )
+
+    else:
+        try:
+            tournament = tournament_class.model_validate(tdata)
+            logger.info(
+                f"Fetched initial {tournament.__class__.__qualname__} "
+                f"from {url}: {tournament}"
+            )
+            return tournament
+
+        except ValidationError as exc:
+            logger.warning(
+                f"Tournament data from {url} does not validate "
+                f"as {tournament_class.__qualname__}: {exc}"
+            )
+
+    return None

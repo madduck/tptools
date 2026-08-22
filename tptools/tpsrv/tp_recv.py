@@ -13,7 +13,7 @@ from tptools import Tournament
 from .util import (
     CliContext,
     PostData,
-    bootstrap_from_url,
+    bootstrap_tournament_from_url,
     get_clictx,
     get_peer,
     get_tournament,
@@ -75,7 +75,15 @@ async def setup_to_receive_tournament_post(
     clictx.api.mount(path=api_path, app=recvapp, name="squore")
     logger.info(f"Configured the app to receive tptools data at {api_path}")
 
-    yield bootstrap_from_url(clictx, url)
+    async def bootstrap_initial_tournament() -> None:
+        clictx.itc.set(
+            "tournament",
+            None
+            if url is None
+            else await bootstrap_tournament_from_url(Tournament, url),
+        )
+
+    yield bootstrap_initial_tournament()
 
 
 @plugin
