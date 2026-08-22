@@ -849,6 +849,8 @@ async def setup_for_squore(
 
     logger.info(f"Serving app settings from {settings_json}")
     logger.info(f"Reading tournament & match config from {config_toml}")
+
+    devmap_toml = devmap_toml.expanduser()
     if devmap_toml.exists():
         logger.info(
             f"Reading device to court map from {devmap_toml} "
@@ -856,8 +858,8 @@ async def setup_for_squore(
         )
 
     squoreapp.state.squore = {
-        "settings": settings_json,
-        "config": config_toml,
+        "settings": settings_json.expanduser(),
+        "config": config_toml.expanduser(),
         "devmap": devmap_toml,
         "commandlineparams": CommandLineParams(
             only_this_court=only_this_court,
