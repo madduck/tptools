@@ -852,7 +852,7 @@ async def setup_for_squore(
     if devmap_toml.exists():
         logger.info(
             f"Reading device to court map from {devmap_toml} "
-            "(cwd: {pathlib.Path.cwd()})"
+            f"(cwd: {pathlib.Path.cwd()})"
         )
 
     squoreapp.state.squore = {
