@@ -4,10 +4,18 @@
 shareAction = "PostResult"
 
 # If shareAction == "PostResult", the URL where to POST the results.
-# If specified as a relative URL, the same scheme/host/port will be used to which the client
-# send the request.
-# TODO: interaction with MQTT?
-PostResult = "/tptools/v1/squore/result"
+# If specified as a relative URL, the same scheme/host/port will be used to which the
+# client sent the request.
+#
+# If not specified, "…/result" will be used, e.g. "/squore/v1/result".
+# This routes the data back to tptools' squoresrv, where it is ignored,
+# but Squore receives a simple response telling people how to commence
+# the next match.
+#
+# If tcboard is also in use, you could set this to
+# "http://tcboard/tptools/v1/squore/result" and tcboard would process
+# the data in parallel to the MQTT live data.
+PostResult = "/squore/v1/result"
 
 # What to POST to the URL:
 # https://github.com/obbimi/Squore/blob/master/src/com/doubleyellow/scoreboard/prefs/PostDataPreference.java

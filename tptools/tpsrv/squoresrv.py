@@ -10,13 +10,14 @@ import tomllib
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from operator import attrgetter
+from textwrap import dedent
 from typing import Annotated, Any, Never, cast
 from warnings import warn
 
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.status import (
@@ -804,6 +805,39 @@ async def settings(
     #     + json.dumps(settings)
     # )
     return settings
+
+
+# }}}
+
+# {{{ GET /result
+
+
+@squoreapp.post("/result")
+async def result(
+    remote: Annotated[str, Depends(get_remote)],
+) -> JSONResponse:
+    logger.info(f"Result posted by remote {remote}, which we will ignore!")
+    return JSONResponse(
+        {
+            "result": "OK",
+            "title": "Thank you for your diligence!",
+            "message": dedent(
+                """\
+                <html><body style="background-color: #000; color: #fff">
+                    <h1>Your job here is done.</h1>
+
+                    <ul>
+                    <li>Please leave the tablet at the court.</li>
+                    <li>Press the (+) button at the bottom right to select
+                        the next match
+                    </li>
+                    </ul>
+
+                </body></html>
+                """
+            ),
+        }
+    )
 
 
 # }}}
