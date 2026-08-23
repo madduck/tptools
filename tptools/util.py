@@ -191,11 +191,12 @@ def silence_logger(
     loggername: str,
     *,
     level: int = logging.WARNING,
+    propagate: bool = True,
     get_logger_fn: Callable[[str], logging.Logger] = logging.getLogger,
 ) -> None:
     logger = get_logger_fn(loggername)
     logger.setLevel(level)
-    logger.propagate = False
+    logger.propagate = propagate
 
 
 async def sleep_forever(sleep: float = 1, *, forever: bool = True) -> Never | None:

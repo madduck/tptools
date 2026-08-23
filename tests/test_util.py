@@ -348,9 +348,18 @@ def test_silence_logger(level: int | None, mocker: MockerFixture) -> None:
         kwargs["level"] = level
     util.silence_logger("test", **kwargs)
 
-    assert logger.propagate is False
+    assert logger.propagate is True
     assert logger.setLevel.call_count == 1
     assert logger.setLevel.call_args.args[0] == level or logging.WARNING
+
+
+@pytest.mark.parametrize("propagate", [True, False])
+def test_silence_logger_propagate(propagate: bool, mocker: MockerFixture) -> None:
+    logger = mocker.MagicMock(spec=logging.Logger)
+
+    util.silence_logger("test", propagate=propagate, get_logger_fn=lambda _: logger)
+
+    assert logger.propagate is propagate
 
 
 @pytest.mark.asyncio
