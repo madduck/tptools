@@ -128,6 +128,9 @@ async def app_lifespan(api: FastAPI) -> AsyncGenerator[None]:
         partial(
             setup_for_squore,
             only_this_court=True,
+            kiosk_mode=is_truish(
+                os.getenv("SQKIOSK"),
+            ),
             emulate_scoring=is_truish(
                 os.getenv("SQEMULATE"),
             ),
