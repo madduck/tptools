@@ -814,11 +814,16 @@ async def settings(
 
     if court_for_dev is not None:
         c = court_for_dev
+        locid = c.location.id if c.location else 0
         courtname = (
-            f"{c.id}@{c.location.id if c.location else 0}-"
-            f"{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
+            f"{c.id}@{locid}-{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
         )
         settings["liveScoreDeviceId_customSuffix"] = f"-{courtname}"
+
+        settings["customData"]["court"] = {"id": c.id, "location_id": locid}
+
+    else:
+        settings["customData"]["court"] = None
 
     # logger.debug(
     #     f"Settings for device {squoredev.device_id or '(no ID)'}: "
