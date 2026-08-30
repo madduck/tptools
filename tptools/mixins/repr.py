@@ -36,9 +36,16 @@ class ReprMixin:
                         name, fn = f
 
                     value = fn(self)
-                    pairs.append(
-                        (name, repr(value) if (dorepr or value is None) else str(value))
-                    )
+
+                    if not name.endswith("?") or value is not None:
+                        pairs.append(
+                            (
+                                name.rstrip("?"),
+                                repr(value)
+                                if (dorepr or value is None)
+                                else str(value),
+                            )
+                        )
                     continue
 
                 obj = self

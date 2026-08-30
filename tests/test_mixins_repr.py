@@ -156,3 +156,23 @@ def test_repr_field_callable(
         repr(DummyClass(attr="something"))
         == f"DummyClass(attr='something', attrfn={value})"
     )
+
+
+@pytest.mark.parametrize("norepr", [True, False])
+def test_repr_field_callable_optional_none(
+    DummyClassFactory: DummyClassFactoryType,
+    norepr: bool,
+) -> None:
+    DummyClass = DummyClassFactory(
+        reprfields=["attr", ("attrfn?", lambda _: None, norepr)]
+    )
+    assert repr(DummyClass(attr="something")) == "DummyClass(attr='something')"
+
+
+def test_repr_field_callable_optional_not_none(
+    DummyClassFactory: DummyClassFactoryType,
+) -> None:
+    DummyClass = DummyClassFactory(reprfields=["attr", ("attrfn?", lambda _: 42, True)])
+    assert (
+        repr(DummyClass(attr="something")) == "DummyClass(attr='something', attrfn=42)"
+    )
