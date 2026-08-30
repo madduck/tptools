@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from enum import StrEnum, auto
 from functools import partial
-from typing import Any, Callable, Literal, Self, cast
+from typing import Any, Callable, Literal, Never, Self, cast
 
 import tzlocal
 from pydantic import BaseModel, model_validator
@@ -337,6 +337,7 @@ class TPMatchMaker(ReprMixin):
         self._matches: dict[tuple[TPDraw, int], TPMatch] = {}
         self._players: dict[tuple[TPDraw, int], TPPlayerMatch] = {}
         self._planning_map: dict[tuple[TPDraw, int], TPMatch] = {}
+        self._pmid_to_match: dict[int, TPMatch] = {}
 
     def _attr_len_repr(self, name: str) -> str:
         return str(len(getattr(self, name)))
@@ -363,6 +364,9 @@ class TPMatchMaker(ReprMixin):
             mmlogger.debug(f"Found match for {playermatch!r}: {other!r}")
             match = TPMatch(pm1=playermatch, pm2=other)
             self._matches[playermatch.draw, playermatch.matchnr] = match
+
+            self._pmid_to_match[playermatch.id] = match
+            self._pmid_to_match[other.id] = match
 
             self._planning_map[match.draw, playermatch.planning] = match
             self._planning_map[match.draw, other.planning] = match
@@ -492,3 +496,6 @@ class TPMatchMaker(ReprMixin):
                         raise ValueError(f"{match} does not derive from {srcmatch}")
 
             match.set_slots(*slots)
+
+    def match_for_playermatch_id(self, pmid: int) -> TPMatch | Never:
+        return self._pmid_to_match[pmid]

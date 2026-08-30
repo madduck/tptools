@@ -36,6 +36,9 @@ def test_make_match_incomplete(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> N
     assert len(matchmaker.unmatched) == 1
     assert len(matchmaker.matches) == 0
 
+    with pytest.raises(KeyError, match=str(tpmatch1.pm1.id)):
+        _ = matchmaker.match_for_playermatch_id(tpmatch1.pm1.id)
+
 
 def test_make_match(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm2)
@@ -43,6 +46,9 @@ def test_make_match(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     assert len(matchmaker.unmatched) == 0
     assert len(matchmaker.matches) == 1
     assert matchmaker.matches.pop() == tpmatch1
+
+    assert matchmaker.match_for_playermatch_id(tpmatch1.pm1.id) == tpmatch1
+    assert matchmaker.match_for_playermatch_id(tpmatch1.pm2.id) == tpmatch1
 
 
 def test_make_match_duplicate(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
