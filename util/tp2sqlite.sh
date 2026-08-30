@@ -42,7 +42,7 @@ for table in $(mdb-tables "$mdbfile"); do
 
   mdb-schema --drop-table -T "$table" "$mdbfile" sqlite | grep -v '^--' || :
   echo >&2 -n "schema… "
-  mdb-export -D "%Y-%m-%d %H:%M:%S" -H -I sqlite "$mdbfile" "$table" | grep -v '^--' || :
+  mdb-export -D "%Y-%m-%d %H:%M:%S" -H -I sqlite --quote=\' "$mdbfile" "$table" | grep -v '^--' || :
   echo >&2 -n "data… "
 
   anon=1
