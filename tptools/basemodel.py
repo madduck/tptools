@@ -20,11 +20,13 @@ class BaseModel[T: TPModel | None](
 ):
     @singledispatchmethod
     @classmethod
-    def from_tp_model(cls, tpmodel: T) -> Self | Never:
+    def from_tp_model(cls, tpmodel: T, **kwargs: dict[str, Any]) -> Self | Never:
+        # TODO:can we type kwargs? The keys should be limited to
+        # valid fields of the BaseModel.
         if tpmodel is None:  # pragma: nocover
             # thanks to singledispatch, we should never reach this
             raise NotImplementedError("No TPModel to instantiate from")
-        return cls.model_validate(tpmodel.model_dump())
+        return cls.model_validate(tpmodel.model_dump() | kwargs)
         # TODO: For some reason, mypy doesn't grok `Self` as return type
         # of this factory function, and spews tons of errors like this:
         # > tests/conftest.py:67: error: Incompatible return value type
