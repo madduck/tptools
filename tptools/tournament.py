@@ -222,7 +222,6 @@ async def load_tournament(
 
         raise
 
-    courts = [CourtClass.from_tp_model(c) for c in db_session.exec(select(TPCourt))]
     mm = TPMatchMaker()
     for pm in db_session.exec(select(TPPlayerMatch)):
         mm.add_playermatch(pm)
@@ -231,6 +230,21 @@ async def load_tournament(
     mm.resolve_match_entries()
 
     matches = [MatchClass.from_tpmatch(m) for m in mm.matches]
+
+    courts: list[Court] = []
+    for c in db_session.exec(select(TPCourt)):
+        match = None
+        if c.playermatch is not None:
+            try:
+                tpmatch = mm.match_for_playermatch_id(c.playermatch)
+
+            except KeyError:
+                pass
+
+            else:
+                match = MatchClass.from_tpmatch(tpmatch)
+
+        courts.append(CourtClass.from_tp_model(c, current_match=match))
 
     tournament = Tournament(
         name=tset.value if tset is not None else None,

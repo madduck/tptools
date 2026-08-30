@@ -38,5 +38,5 @@ def test_court1_has_no_match(court1: Court) -> None:
     assert court1.current_match is None
 
 
-def test_court2_has_match(court2: Court, match1: Match) -> None:
-    assert court2.current_match is match1
+def test_court2_has_match(court2: Court, match2: Match) -> None:
+    assert court2.current_match is match2

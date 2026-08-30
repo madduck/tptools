@@ -213,12 +213,24 @@ def MockSessionFactory(
             id=1, name="Tournament", value=tournament_name
         )
 
+        if playermatches is not None and (
+            len(
+                pendingpms := [
+                    pm
+                    for pm in playermatches
+                    if pm.status == TPPlayerMatch.Status.PENDING
+                ]
+            )
+            > 0
+        ):
+            tpcourt2.playermatch = pendingpms[0].id
+
         mock_session.exec.side_effect = [
             tname_setting,
             entries or [],
             draws or [tpdraw1, tpdraw2],
-            courts or [tpcourt1, tpcourt2],
             playermatches or [],
+            courts or [tpcourt1, tpcourt2],
         ]
 
         return cast(MockType, mock_session)  # cast required for mypy
@@ -342,6 +354,8 @@ async def test_load_tournament_group3(
     assert tournament.name == "Test"
     assert tournament.nentries == 3
     assert tournament.nmatches == 3
+
+    assert (cm := tournament.courts[2].current_match) is not None and cm.id == "2-1"
 
 
 @pytest.mark.asyncio
