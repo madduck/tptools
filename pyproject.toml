@@ -1,19 +1,19 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.sdist]
-exclude = [".direnv"]
-
-[tool.setuptools_scm]
-write_to = "_version.py"
+exclude = [".direnv", ".gitignore", ".github"]
 
 [project]
 name = "tptools"
-version = "0.6.10"
+dynamic = ["version"]
 authors = [{ name = "martin f. krafft", email = "tptools@pobox.madduck.net" }]
 description = "A set of tools to export data from TournamentSoftware"
 readme = "README.md"
@@ -63,7 +63,6 @@ dev = [
   "types-python-dateutil",
   "fastapi[standard]",
 ]
-build = ["hatchling"]
 
 [project.scripts]
 tpsrv = "tptools.tpsrv.cli:tpsrv"
