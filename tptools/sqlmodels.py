@@ -270,10 +270,11 @@ class TPCourt(TPModel, table=True):
     )
     location: TPLocation = Relationship(back_populates="courts")
     sortorder: int | None = None
+    playermatch: int | None = None
     playermatches: list["TPPlayerMatch"] = Relationship(back_populates="court")
 
     __str_template__ = "{self.location}, {self.name}"
-    __repr_fields__ = ("id", "name", "location?.name", "sortorder?")
+    __repr_fields__ = ("id", "name", "location?.name", "sortorder?", "playermatch?")
     __eq_fields__ = ("location", "sortorder", "name")
 
 

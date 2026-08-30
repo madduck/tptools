@@ -260,8 +260,8 @@ def tpcourt1(tplocation1: TPLocation) -> TPCourt:
 
 
 @pytest.fixture
-def tpcourt2(tplocation2: TPLocation) -> TPCourt:
-    return TPCourt(id=2, name="C07", location=tplocation2)
+def tpcourt2(tplocation2: TPLocation, pm1: TPPlayerMatch) -> TPCourt:
+    return TPCourt(id=2, name="C07", location=tplocation2, playermatch=pm1.id)
 
 
 tpcourt1copy = tpcourt1

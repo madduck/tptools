@@ -9,6 +9,12 @@ def test_repr(tpcourt1: TPCourt) -> None:
     assert repr(tpcourt1) == "TPCourt(id=1, name='C01', location.name='Sports4You')"
 
 
+def test_repr_with_match(tpcourt2: TPCourt) -> None:
+    assert repr(tpcourt2) == (
+        "TPCourt(id=2, name='C07', location.name='WeCare Germering', playermatch=141)"
+    )
+
+
 def test_eq(tpcourt1: TPCourt, tpcourt1copy: TPCourt) -> None:
     assert tpcourt1 == tpcourt1copy
 
