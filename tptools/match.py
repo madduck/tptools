@@ -110,3 +110,6 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
             scores=tpmatch.scores,
             **players,
         )
+
+
+Court.model_rebuild()
