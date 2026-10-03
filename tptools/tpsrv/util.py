@@ -132,7 +132,6 @@ async def http_request(
         try:
             async with AsyncClient() as client:
                 resp = await client.request(**request_args)
-                rt: dict[str, Any] = resp.json()
 
                 if resp.status_code == status_codes.OK:
                     logger.info(
@@ -140,15 +139,15 @@ async def http_request(
                         f"{len(resp.request.content)} bytes of data "
                         f"yielded a response of {len(resp.content)} bytes"
                     )
+                    return cast(dict[str, Any], resp.json())
 
                 else:
-                    logger.info(
-                        f"{method} request with "
+                    logger.warning(
+                        f"{method} request to {url} with "
                         f"{len(resp.request.content)} bytes of data "
                         f"yielded status {resp.status_code}, {resp.reason_phrase}"
                     )
-
-                return rt
+                    return None
 
         except json.JSONDecodeError as err:
             logger.warning(
