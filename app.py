@@ -102,8 +102,10 @@ def _maybe_do_post(factories: list[PluginFactory]) -> None:
 
 
 def _maybe_do_sqstdout(factories: list[PluginFactory]) -> None:
-    if "NOSQSTDOUT" in os.environ:
-        logger.info("Not printing Squore data to stdout as per $NOSQSTDOUT")
+    if "DOSQSTDOUT" not in os.environ:
+        logger.info(
+            "Not printing Squore data to stdout, set DOSQSTDOUT if you want that"
+        )
     else:
         sqstdout_lifespan = partial(print_sqdata, indent=1)
         factories.append(sqstdout_lifespan)
