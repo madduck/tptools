@@ -47,6 +47,8 @@ logger = clickx.new_logger(
     level=logging.WARNING,
 )
 
+logging.getLogger("uvicorn.access").disabled = True
+
 
 def make_app(
     lifespan: StatelessLifespan[FastAPI] | StatefulLifespan[FastAPI] | None = None,
@@ -165,7 +167,7 @@ def runit(
     loop = new_event_loop()
     asyncio.set_event_loop(loop)
 
-    config = uvicorn.Config(clictx.api, host=host, port=port)
+    config = uvicorn.Config(clictx.api, host=host, port=port, access_log=False)
     server = uvicorn.Server(config)
 
     # We do not use FastAPI's/Starlette's lifespan because of
