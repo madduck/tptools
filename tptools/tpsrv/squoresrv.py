@@ -823,9 +823,17 @@ async def settings(
         courtname = (
             f"{c.id}@{locid}-{re.sub(r'\W', '_', c.name, count=0, flags=re.ASCII)}"
         )
-        settings["liveScoreDeviceId_customSuffix"] = f"-{courtname}"
+        suffix = f"-{courtname}"
+        settings["liveScoreDeviceId_customSuffix"] = suffix
 
         settings["customData"]["court"] = {"id": c.id, "location_id": locid}
+
+        if squoredev.device_id is not None:
+            c.scoredev = (
+                squoredev.device_id
+                if squoredev.device_id.endswith(suffix)
+                else f"{squoredev.device_id}-{courtname}"
+            )
 
     else:
         settings["customData"]["court"] = None

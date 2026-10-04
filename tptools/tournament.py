@@ -191,7 +191,11 @@ class Tournament[
 
     @classmethod
     def from_tournament(cls, tournament: "Tournament") -> Self:
-        return cls.model_validate(tournament.model_dump())
+        ret = cls.model_validate(tournament.model_dump())
+        # preserve courts. This is a hack, but we add information to courts in
+        # various places and so the instance needs to be identical
+        ret.courts = {c.id: cast(CourtT, c) for c in tournament.courts.values()}
+        return ret
 
 
 async def load_tournament(
