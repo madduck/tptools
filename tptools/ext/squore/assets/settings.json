@@ -37,7 +37,7 @@
   "MQTTPublishTopicUnloadMatch": "tptools/${FeedName}/${Brand}/${DeviceId}/unloadMatch",
   "MQTTSubscribeTopicChange": "tptools/${Brand}/${DeviceId}/change",
   "MQTTPublishTopicDeviceInfo": "tptools/${Brand}/${DeviceId}/deviceInfo",
-  "MQTTPublishDeviceInfo_EveryXSeconds": "5",
+  "MQTTPublishDeviceInfo_EveryXSeconds": "30",
   "MatchTabbed_defaultTab": "Feed",
   "OrientationPreference": [
     "Landscape"
