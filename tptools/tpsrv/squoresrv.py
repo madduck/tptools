@@ -661,7 +661,7 @@ async def tournament(
     remote: Annotated[str, Depends(get_remote)],
     tournament: Annotated[SquoreTournament, Depends(get_tournament)],
 ) -> SquoreTournament:
-    logger.info(f"Returning tournament name in response to request from {remote}")
+    logger.info(f"Returning tournament in response to request from {remote}")
     return tournament
 
 
