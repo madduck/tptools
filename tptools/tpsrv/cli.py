@@ -47,8 +47,6 @@ logger = clickx.new_logger(
     level=logging.WARNING,
 )
 
-logging.getLogger("uvicorn.access").disabled = True
-
 
 def make_app(
     lifespan: StatelessLifespan[FastAPI] | StatefulLifespan[FastAPI] | None = None,
