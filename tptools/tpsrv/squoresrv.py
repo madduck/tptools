@@ -761,7 +761,12 @@ async def settings(
     # Data herein is included with every PostResult/MQTT packet:
     settings["customData"] = {}
 
-    settings["RemoteSettingsURL"] = (initurl := str(myurl / ".." / "init"))
+    initurl = str(myurl / ".." / "init")
+    initurl += (  # these placeholders will be filled in by Squore, so pass verbatim
+        "?cc=${countryCode}&version=${versionCode}"
+        "&ip=${ipAddress}&device_id=${liveScoreDeviceId}"
+    )
+    settings["RemoteSettingsURL"] = initurl
     settings["RemoteSettingsURL_Default"] = initurl
 
     if mirror_for_dev is not None:
