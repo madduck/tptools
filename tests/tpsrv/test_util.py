@@ -91,13 +91,6 @@ def test_validate_urls_stops_at_invalid_url(fake_click_context: click.Context) -
 # CliContext
 
 
-@pytest.fixture
-def clictx() -> CliContext:
-    from click_async_plugins import ITC
-
-    return CliContext(api=FastAPI(), itc=ITC())
-
-
 def test_clictx_defaults(clictx: CliContext) -> None:
     assert clictx.watcher is None
 

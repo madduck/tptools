@@ -50,11 +50,6 @@ def restore_logging() -> Generator[None]:
     root.handlers[:] = handlers
 
 
-@pytest.fixture
-def runner() -> CliRunner:
-    return CliRunner()
-
-
 # make_app()
 
 
