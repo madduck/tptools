@@ -274,7 +274,7 @@ def court1(tpcourt1: TPCourt) -> Court:
 
 @pytest.fixture
 def court2(tpcourt2: TPCourt, match2: Match) -> Court:
-    return Court.from_tp_model(tpcourt2, current_match=match2)
+    return Court.from_tp_model(tpcourt2, current_match=match2, scoredev="squore!")
 
 
 court1copy = court1

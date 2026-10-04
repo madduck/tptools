@@ -23,6 +23,7 @@ class Court(BaseModel[TPCourt]):
     sortorder: int | None = None
     location: Location | None = None
     current_match: "Match | None" = None
+    scoredev: str | None = None
 
     def _add_location_if_exists(self) -> str:
         return f" ({self.location})" if self.location else ""
@@ -37,6 +38,7 @@ class Court(BaseModel[TPCourt]):
         "sortorder?",
         "location?.name",
         ("match_on?", _current_match_id, True),
+        "scoredev?",
     )
     __eq_fields__ = ("sortorder", "name", "location")
 

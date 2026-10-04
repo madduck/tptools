@@ -40,3 +40,8 @@ def test_court1_has_no_match(court1: Court) -> None:
 
 def test_court2_has_match(court2: Court, match2: Match) -> None:
     assert court2.current_match is match2
+
+
+def test_scoredev_on_court2(court2: Court) -> None:
+    assert court2.scoredev is not None
+    assert "squore" in repr(court2)
