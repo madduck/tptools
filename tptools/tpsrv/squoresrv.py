@@ -825,10 +825,6 @@ async def settings(
     else:
         settings["customData"]["court"] = None
 
-    # logger.debug(
-    #     f"Settings for device {squoredev.device_id or '(no ID)'}: "
-    #     + json.dumps(settings)
-    # )
     return settings
 
 
