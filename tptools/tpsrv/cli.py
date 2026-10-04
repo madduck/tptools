@@ -194,7 +194,7 @@ def runit(
         loop.run_until_complete(lifespan(plugin_factories))
 
     except* click.ClickException as exc:
-        for e in exc.exceptions:
+        for e in exc.exceptions:  # pragma: no branch
             raise e from exc
 
     except* Exception:
