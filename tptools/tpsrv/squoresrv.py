@@ -111,7 +111,9 @@ def get_squoredevqueryparams(
 # {{{ Player name policies
 
 
-class PlayersPolicyParams(PlayerNamePolicyParams, PairCombinePolicyParams): ...
+class PlayersPolicyParams(
+    PlayerNamePolicyParams, PairCombinePolicyParams
+): ...  # pragma: no cover
 
 
 def get_playernamepolicy(
