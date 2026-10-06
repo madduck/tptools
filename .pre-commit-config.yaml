@@ -7,8 +7,8 @@ repos:
       - id: mypy
         additional_dependencies:
           - click
-          - click_extra (>= 8)
-          - click-async-plugins
+          - click_extra (>= 9.4.1)
+          - click-async-plugins (>= 0.7.4)
           - sqlmodel
           - fastapi
           - starlette
