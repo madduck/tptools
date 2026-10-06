@@ -39,7 +39,7 @@ That said, as `tptools` stands on top of the shoulders of giants, and a lot of b
   interface on the command-line, as well as [click-extra](https://kdeldycke.github.io/click-extra) mainly for configuration file handling. I've spun off [click-async-plugins](https://github.com/madduck/click-async-plugins) from this project, and am using it as a dependency now;
 * [Uvicorn](https://www.uvicorn.org/), an ASGI server that can scale — note you should still put it behind a
   reverse proxy, such as NginX or Traefik;
-* [HTTPX](https://www.python-httpx.org/), a modern, asynchronous HTTP client library;
+* [HTTPX2](https://github.com/pydantic/httpx2), a modern, asynchronous HTTP client library;
 * [Watchdog](https://github.com/gorakhargosh/watchdog/), which takes care of
   auto-reloading tournament data as they are changed, even on Windows;
 

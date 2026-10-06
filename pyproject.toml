@@ -38,7 +38,7 @@ dependencies = [
   "yarl",
   "fastapi",
   "uvicorn",
-  "httpx",
+  "httpx2",
   "tzlocal",
   "asyncinotify; sys_platform == 'linux'",
   "pywin32; sys_platform == 'win32'",

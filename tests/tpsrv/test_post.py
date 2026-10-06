@@ -5,7 +5,7 @@ from typing import Any
 
 import click
 import pytest
-from httpx import URL
+from httpx2 import URL
 from pytest import LogCaptureFixture
 from pytest_mock import AsyncMockType, MockerFixture
 

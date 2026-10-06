@@ -6,11 +6,11 @@ from functools import partial
 from typing import Annotated, Any, ContextManager
 
 import click
-import httpx
+import httpx2
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
-from httpx import URL, AsyncClient, MockTransport, Request, Response
+from httpx2 import URL, AsyncClient, MockTransport, Request, Response
 from pydantic import BaseModel
 from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
@@ -321,8 +321,8 @@ async def test_http_request_retries_then_succeeds(
     sleep: Any,
 ) -> None:
     responses: list[Response | Exception] = [
-        httpx.ConnectError("boom"),
-        httpx.ReadTimeout("slow"),
+        httpx2.ConnectError("boom"),
+        httpx2.ReadTimeout("slow"),
         Response(200, json={"ok": True}),
     ]
 
@@ -350,7 +350,7 @@ async def test_http_request_gives_up_after_retries(
     sleep: Any,
 ) -> None:
     def handler(request: Request) -> Response:
-        raise httpx.ConnectError("down")
+        raise httpx2.ConnectError("down")
 
     seen = mock_transport(handler)
     with caplog.at_level(logging.WARNING):
@@ -369,7 +369,7 @@ async def test_http_request_zero_retries(
     sleep: Any,
 ) -> None:
     def handler(request: Request) -> Response:
-        raise httpx.ConnectError("down")
+        raise httpx2.ConnectError("down")
 
     seen = mock_transport(handler)
     assert await http_request("GET", url, retries=0) is None

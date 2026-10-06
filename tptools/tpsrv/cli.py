@@ -126,7 +126,7 @@ def tpsrv(
             ("click_async_plugins.itc", logging.INFO),
             ("click_extra", logging.INFO),
             ("tptools.tpmatch", logging.INFO),
-            ("httpx", logging.WARNING),
+            ("httpx2", logging.WARNING),
             ("httpcore.connection", logging.INFO),
             ("httpcore.http11", logging.INFO),
         ):

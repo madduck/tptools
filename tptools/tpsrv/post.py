@@ -7,7 +7,7 @@ from typing import Any, cast
 
 import click
 from click_async_plugins import PluginLifespan, plugin, react_to_data_update
-from httpx import URL
+from httpx2 import URL
 
 from tptools import Tournament
 

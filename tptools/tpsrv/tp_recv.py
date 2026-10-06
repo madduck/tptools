@@ -5,7 +5,7 @@ from typing import Annotated, Any
 import click
 from click_async_plugins import PluginLifespan, plugin
 from fastapi import Depends, FastAPI, HTTPException, Request
-from httpx import URL
+from httpx2 import URL
 from starlette.status import HTTP_508_LOOP_DETECTED
 
 from tptools import Tournament

@@ -8,8 +8,8 @@ import click
 from click_async_plugins import CliContext as _CliContext
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.requests import HTTPConnection
-from httpx import URL, AsyncClient, HTTPError, InvalidURL
-from httpx import codes as status_codes
+from httpx2 import URL, AsyncClient, HTTPError, InvalidURL
+from httpx2 import codes as status_codes
 from pydantic import BaseModel, ValidationError
 from starlette.status import HTTP_424_FAILED_DEPENDENCY
 

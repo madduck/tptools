@@ -15,7 +15,7 @@ from click_async_plugins import (
     setup_plugins,
 )
 from fastapi import FastAPI
-from httpx import URL
+from httpx2 import URL
 from sqlmodel import Session
 
 from tptools.tpsrv.cli import (
@@ -49,7 +49,7 @@ for name, level in (
     ("uvicorn.error", logging.WARNING),
     ("tptools.tpmatch", logging.INFO),
     ("tptools.filewatcher", logging.INFO),
-    ("httpx", logging.WARNING),
+    ("httpx2", logging.WARNING),
     ("httpcore.connection", logging.INFO),
     ("httpcore.http11", logging.INFO),
 ):

@@ -5,7 +5,7 @@ import click
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from httpx import URL
+from httpx2 import URL
 from pytest import LogCaptureFixture
 from pytest_mock import AsyncMockType, MockerFixture
 
