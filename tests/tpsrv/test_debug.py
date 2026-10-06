@@ -8,9 +8,11 @@ from click_async_plugins.debug import KeyAndFunc
 from pytest import CaptureFixture
 from pytest_mock import MockerFixture
 
+from tptools import Tournament
 from tptools.tpsrv.debug import (
     debug,
     debug_key_press_handler,
+    dump_court_devices,
     simulate_reload_tournament,
 )
 from tptools.tpsrv.util import CliContext
@@ -18,6 +20,7 @@ from tptools.tpsrv.util import CliContext
 from .conftest import InvokePlugin, MakeFactory, wait_for
 
 CTRL_R = 0x12
+CTRL_L = 0x0C
 
 
 class FakeMonitor:
@@ -127,8 +130,9 @@ async def test_key_handler_passes_context_and_keymap(
     assert set(kwargs) == {"key_to_cmd", "puts"}
 
     key_to_cmd = kwargs["key_to_cmd"]
-    assert list(key_to_cmd) == [CTRL_R]
+    assert list(key_to_cmd) == [CTRL_R, CTRL_L]
     assert key_to_cmd[CTRL_R] == KeyAndFunc("^R", simulate_reload_tournament)
+    assert key_to_cmd[CTRL_L] == KeyAndFunc("^L", dump_court_devices)
 
 
 @pytest.mark.asyncio
@@ -158,6 +162,36 @@ async def test_ctrl_r_triggers_a_reload(
         monitor.calls[0][1]["key_to_cmd"][CTRL_R].func(clictx)
 
     fire.assert_called_once_with("tournament")
+
+
+@pytest.mark.asyncio
+async def test_ctrl_l_dumps_court_devices(
+    clictx: CliContext,
+    monitor: FakeMonitor,
+    mocker: MockerFixture,
+    tournament1: Tournament,
+) -> None:
+    clictx.itc.set("tournament", tournament1)
+    async with debug_key_press_handler(clictx) as task:
+        assert task is not None
+        await task
+        ret = monitor.calls[0][1]["key_to_cmd"][CTRL_L].func(clictx)
+        assert "squore! on C07" in ret
+
+
+@pytest.mark.asyncio
+async def test_ctrl_l_message_when_no_court_devices_known(
+    clictx: CliContext,
+    monitor: FakeMonitor,
+    mocker: MockerFixture,
+    tournament2: Tournament,
+) -> None:
+    clictx.itc.set("tournament", tournament2)
+    async with debug_key_press_handler(clictx) as task:
+        assert task is not None
+        await task
+        ret = monitor.calls[0][1]["key_to_cmd"][CTRL_L].func(clictx)
+        assert "No devices known" in ret
 
 
 # the command
