@@ -129,8 +129,8 @@ def tpsrv(
             ("click_extra", logging.INFO),
             ("tptools.tpmatch", logging.INFO),
             ("httpx2", logging.WARNING),
-            ("httpcore.connection", logging.INFO),
-            ("httpcore.http11", logging.INFO),
+            ("httpcore2.connection", logging.INFO),
+            ("httpcore2.http11", logging.INFO),
         ):
             silence_logger(name, level=level)
 

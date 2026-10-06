@@ -44,14 +44,14 @@ if not sys.warnoptions:
 
 for name, level in (
     ("asyncio", logging.INFO),
-    ("httpcore", logging.INFO),
     ("watchfiles.main", logging.WARNING),
     ("uvicorn.error", logging.WARNING),
     ("tptools.tpmatch", logging.INFO),
     ("tptools.filewatcher", logging.INFO),
     ("httpx2", logging.WARNING),
-    ("httpcore.connection", logging.INFO),
-    ("httpcore.http11", logging.INFO),
+    ("httpcore2", logging.INFO),
+    ("httpcore2.connection", logging.INFO),
+    ("httpcore2.http11", logging.INFO),
 ):
     silence_logger(name, level=level)
 
