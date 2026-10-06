@@ -1,3 +1,4 @@
+from ._version import version as VERSION
 from .court import Court, CourtSelectionParams
 from .devcourtmap import DeviceCourtMap
 from .draw import Draw, Event, Stage
@@ -24,4 +25,5 @@ __all__ = [
     "ScoresType",
     "Stage",
     "Tournament",
+    "VERSION",
 ]

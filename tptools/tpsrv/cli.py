@@ -20,6 +20,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, PlainTextResponse
 from starlette.types import StatefulLifespan, StatelessLifespan
 
+from tptools import VERSION
 from tptools.util import silence_logger
 
 from .util import CliContext, pass_clictx
@@ -77,7 +78,7 @@ def make_app(
             "X-Forwarded-For", request.client.host if request.client else None
         )
         logger.info(f"Received ping request from {client} …")
-        return f"Hello {client}, tpsrv is running!\n"
+        return f"Hello {client}, tpsrv {VERSION} is running!\n"
 
     app.get("/", response_class=PlainTextResponse)(pong)
 

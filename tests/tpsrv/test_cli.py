@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from pytest import LogCaptureFixture, MonkeyPatch
 from pytest_mock import MockerFixture
 
+from tptools import VERSION
 from tptools.tpsrv import cli
 from tptools.tpsrv.cli import PLUGINS, make_app, tpsrv
 from tptools.tpsrv.util import CliContext, pass_clictx
@@ -93,12 +94,12 @@ def test_root_pong(client: TestClient) -> None:
     resp = client.get("/")
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("text/plain")
-    assert resp.text == "Hello testclient, tpsrv is running!\n"
+    assert resp.text == f"Hello testclient, tpsrv {VERSION} is running!\n"
 
 
 def test_root_pong_prefers_forwarded_for(client: TestClient) -> None:
     resp = client.get("/", headers={"X-Forwarded-For": "192.0.2.7"})
-    assert resp.text == "Hello 192.0.2.7, tpsrv is running!\n"
+    assert resp.text == f"Hello 192.0.2.7, tpsrv {VERSION} is running!\n"
 
 
 def test_root_pong_logs_the_client(
@@ -116,7 +117,7 @@ def test_root_pong_without_client_address() -> None:
     app = make_app()
     (route,) = [r for r in app.routes if getattr(r, "path", None) == "/"]
     resp = route.endpoint(Request(scope))  # type: ignore[attr-defined]
-    assert resp == "Hello None, tpsrv is running!\n"
+    assert resp == f"Hello None, tpsrv {VERSION} is running!\n"
 
 
 def test_robots_txt(client: TestClient) -> None:
