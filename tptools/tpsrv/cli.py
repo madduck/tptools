@@ -98,7 +98,7 @@ def make_app(
     "--host",
     "-h",
     metavar="IP",
-    default="0.0.0.0",
+    default="127.0.0.1",
     show_default=True,
     help="Host to listen on (bind to)",
 )

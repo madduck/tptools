@@ -228,7 +228,7 @@ def test_help(runner: CliRunner) -> None:
     for opt in ("--config", "--verbose", "--very-debug", "--host", "--port"):
         assert opt in result.output
     assert "[default: 8000; 1024<=x<=65535]" in " ".join(result.output.split())
-    assert "[default: 0.0.0.0]" in result.output
+    assert "[default: 127.0.0.1]" in result.output
 
 
 def test_requires_a_command(runner: CliRunner) -> None:
@@ -357,7 +357,7 @@ def test_server_started_with_defaults(
 
     (srv,) = server.instances
     assert srv.serve_called == 1
-    assert srv.config.host == "0.0.0.0"
+    assert srv.config.host == "127.0.0.1"
     assert srv.config.port == 8000
     assert srv.config.access_log is False
 
@@ -365,11 +365,11 @@ def test_server_started_with_defaults(
 @pytest.mark.parametrize(
     "args, host, port",
     [
-        (["--host", "127.0.0.1"], "127.0.0.1", 8000),
+        (["--host", "0.0.0.0"], "0.0.0.0", 8000),
         (["-h", "::1"], "::1", 8000),
-        (["--port", "9999"], "0.0.0.0", 9999),
-        (["-p", "1024"], "0.0.0.0", 1024),
-        (["-p", "65535"], "0.0.0.0", 65535),
+        (["--port", "9999"], "127.0.0.1", 9999),
+        (["-p", "1024"], "127.0.0.1", 1024),
+        (["-p", "65535"], "127.0.0.1", 65535),
         (["-h", "localhost", "-p", "8080"], "localhost", 8080),
     ],
 )
