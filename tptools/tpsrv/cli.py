@@ -111,6 +111,7 @@ def make_app(
     show_default=True,
     help="Port to listen on",
 )
+@clickx.version_option(fields={"version": VERSION})
 @click.pass_context
 def tpsrv(
     ctx: click.Context,

@@ -635,3 +635,12 @@ def test_console_script_entry_point() -> None:
     (ep,) = [e for e in entry_points(group="console_scripts") if e.name == "tpsrv"]
     assert ep.value == "tptools.tpsrv.cli:tpsrv"
     assert ep.load() is tpsrv
+
+
+def test_tpsrv_version_option(
+    runner: CliRunner,
+    tmp_path: pathlib.Path,
+) -> None:
+    result = runner.invoke(tpsrv, ["--version"])
+    assert result.exit_code == 0
+    assert f"version {VERSION}" in result.output
