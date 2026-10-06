@@ -493,8 +493,8 @@ with the coding-style used by this project.
 pre-commit install
 ```
 
-All code (except for the `tpsrv` CLI) is 100% test-covered, and all
-contributions are expected to keep this up. Use `pytest` to run the test suite.
+All code is 100% test-covered, and all contributions are expected to keep this
+up. Use `pytest` to run the test suite.
 
 Note that all code is typed, and typing is part of test-coverage.
 
