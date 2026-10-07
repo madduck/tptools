@@ -1,4 +1,3 @@
-from ._version import version as VERSION
 from .court import Court, CourtSelectionParams
 from .devcourtmap import DeviceCourtMap
 from .draw import Draw, Event, Stage
@@ -8,6 +7,13 @@ from .match import Match
 from .tournament import MatchSelectionParams, Tournament, load_tournament
 from .tpmatch import TPMatchStatus as MatchStatus
 from .util import ScoresType
+
+VERSION: str | None
+try:
+    from ._version import version as VERSION
+
+except ImportError:  # pragma: nocover
+    VERSION = None
 
 __all__ = [
     "Court",
