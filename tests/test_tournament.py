@@ -28,6 +28,11 @@ def test_from_tournament(tournament1: Tournament) -> None:
     assert Tournament.from_tournament(tournament1) == tournament1
 
 
+def test_from_tournament_preserves_court_identity(tournament1: Tournament) -> None:
+    cid, court = Tournament.from_tournament(tournament1).courts.popitem()
+    assert tournament1.courts[cid] is court
+
+
 def test_repr_empty_noname() -> None:
     assert (
         repr(Tournament()) == "Tournament(nentries=0, ndraws=0, ncourts=0, nmatches=0)"
