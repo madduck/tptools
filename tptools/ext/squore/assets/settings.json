@@ -39,9 +39,7 @@
   "MQTTPublishTopicDeviceInfo": "tptools/${Brand}/${DeviceId}/deviceInfo",
   "MQTTPublishDeviceInfo_EveryXSeconds": "30",
   "MatchTabbed_defaultTab": "Feed",
-  "OrientationPreference": [
-    "Landscape"
-  ],
+  "OrientationPreference": ["Landscape"],
   "PlayerColorsNewMatch": "TakeFromPreferences",
   "PlayerColorsNewMatchA": "#ff6600",
   "PlayerColorsNewMatchB": "#0066ff",
