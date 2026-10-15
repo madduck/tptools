@@ -44,6 +44,7 @@
   "PlayerColorsNewMatchA": "#ff6600",
   "PlayerColorsNewMatchB": "#0066ff",
   "RemoteSettingsURL_AlwaysShowLoadErrors": true,
+  "restartAppIfChangesDetected": "2",
   "StartupAction": "SelectFeedMatch",
   "UseMQTT": true,
   "gameScoresAppearance": "ShowFullScoreOnlyOnDevice",
