@@ -56,7 +56,7 @@ async def serve_tournament(
 ) -> Tournament:
     # TODO: this may not belong here, as this is tp_recv, and we are technically
     # serving, but there is also no other use-case right now for this endpoint, so…
-    logger.debug(
+    logger.info(
         f"Returning in response to tournament request from {peer}: {tournament}"
     )
     return tournament
