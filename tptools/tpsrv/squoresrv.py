@@ -753,6 +753,7 @@ async def settings(
     mirror_for_dev: Annotated[str | None, Depends(get_mirror_for_dev)],
     squoredev: Annotated[SquoreDevQueryParams, Depends(get_squoredevqueryparams)],
     commandlineparams: Annotated[CommandLineParams, Depends(get_commandlineparams)],
+    courtnamepolicy: Annotated[CourtNamePolicy, Depends(get_courtnamepolicy)],
 ) -> dict[str, Any]:
     logger.info(
         f"App settings request from remote {remote} "
@@ -828,7 +829,9 @@ async def settings(
         suffix = f"-{courtname}"
         settings["liveScoreDeviceId_customSuffix"] = suffix
 
-        settings["customData"]["court"] = {"id": c.id, "location_id": locid}
+        settings["customData"]["court"] = c.model_dump(
+            context={"courtnamepolicy": courtnamepolicy}
+        )
 
         if squoredev.device_id is not None:
             c.scoredev = (

@@ -696,9 +696,10 @@ def test_settings_for_device_on_a_court(
 
     assert resp.status_code == 200
     settings = resp.json()
-    assert settings["customData"] == {
-        "court": {"id": court_id, "location_id": location_id}
-    }
+    c = Court.model_validate(settings["customData"]["court"])
+    assert c.id == court_id
+    assert c.location is not None
+    assert c.location.id == location_id
     assert settings["liveScoreDeviceId_customSuffix"] == suffix
     assert settings["feedPostUrl"] == feed_idx, "the feed of the court is preselected"
     assert "Pre-selected feed" in caplog.text
