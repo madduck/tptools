@@ -48,5 +48,5 @@ def test_cmp_ge(match1: Match, match1copy: Match, match2: Match) -> None:
 def test_match_timestamps_have_timezone(
     match1: Match, attr: str, now: datetime
 ) -> None:
-    m = Match(**match1.model_dump() | {attr: now})
+    m = Match(**match1.model_dump() | {attr: now})  # pyright: ignore[reportArgumentType]
     assert getattr(m, attr).tzinfo is not None
