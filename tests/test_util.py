@@ -440,6 +440,49 @@ def test_scores_to_string_gamesep() -> None:
 
 
 @pytest.mark.parametrize(
+    "high, low",
+    [
+        (11, 0),
+        (11, 9),
+        (12, 10),
+        (13, 11),
+        (14, 12),
+        (15, 13),
+        (18, 16),
+    ],
+)
+def test_is_score_legal(high: int, low: int) -> None:
+    assert util.is_score_legal(high, low)
+    # the order of the two scores does not matter
+    assert util.is_score_legal(low, high)
+
+
+@pytest.mark.parametrize(
+    "high, low",
+    [
+        (11, 10),
+        (11, 12),
+        (15, 11),
+        (14, 11),
+        (15, 12),
+        (10, 0),
+    ],
+)
+def test_set_score_is_illegal(high: int, low: int) -> None:
+    assert not util.is_score_legal(high, low)
+
+
+def test_is_score_legal_par() -> None:
+    assert util.is_score_legal(15, 13, par=15)
+    assert util.is_score_legal(15, 12, par=15)
+    assert util.is_score_legal(15, 0, par=15)
+    assert util.is_score_legal(16, 14, par=15)
+    assert util.is_score_legal(17, 15, par=15)
+    assert not util.is_score_legal(15, 14, par=15)
+    assert not util.is_score_legal(18, 15, par=15)
+
+
+@pytest.mark.parametrize(
     "input, sep, exp",
     [
         ({"1.2.3.4": "foo"}, ".", {"1.2.3.4": "foo"}),

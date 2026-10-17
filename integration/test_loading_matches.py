@@ -1,12 +1,19 @@
-from collections.abc import Iterable
+import pathlib
+import shutil
+import sqlite3
+from collections.abc import Generator, Iterable
 
 import pytest
 import pytest_subtests
+from sqlmodel import Session, create_engine
 
+from tptools import load_tournament
 from tptools.tpmatch import TPMatch, TPMatchStatus
 from tptools.util import ScoresType
 
 type MatchIdTuple = tuple[int, int]
+
+SQLITE_EXPORT = pathlib.Path(__file__).parent / "anon_tournament.sqlite"
 
 
 def test_loading_all_matches(all_tpmatches: list[TPMatch]) -> None:
@@ -205,3 +212,50 @@ def test_match_scores(
 
 
 # vim:fdm=marker:fdl=0
+
+
+@pytest.fixture
+def bad_score_db(tmp_path: pathlib.Path) -> Generator[pathlib.Path]:
+    """A copy of the export where match 80-11 ends 15-11, inconsistently.
+
+    The two PlayerMatch rows store the scoreline in the same orientation, so
+    they disagree, reproducing the TP export that made load_tournament raise a
+    ValidationError.
+    """
+    dest = tmp_path / "bad_scores.sqlite"
+    shutil.copy(SQLITE_EXPORT, dest)
+    with sqlite3.connect(dest) as conn:
+        # pm 1199 wins 15-11; pm 1200 stores the same orientation, not reversed
+        conn.execute(
+            "update PlayerMatch set winner=1, "
+            "team1set1=15, team2set1=11, "
+            "team1set2=0, team2set2=0, team1set3=0, team2set3=0 "
+            "where id=1199"
+        )
+        conn.execute(
+            "update PlayerMatch set winner=2, "
+            "team1set1=15, team2set1=11, "
+            "team1set2=0, team2set2=0, team1set3=0, team2set3=0 "
+            "where id=1200"
+        )
+        conn.commit()
+    yield dest
+
+
+@pytest.mark.asyncio
+async def test_load_tournament_records_bad_scores_errors(
+    bad_score_db: pathlib.Path,
+) -> None:
+    """load_tournament loads the bad match and records its errors."""
+    engine = create_engine(f"sqlite:///{bad_score_db}")
+    session = Session(engine)
+    session.begin()
+    try:
+        tournament = await load_tournament(session)
+    finally:
+        session.close()
+        engine.dispose()
+
+    match = tournament.matches["80-11"]
+    assert match.errors
+    assert match.scores == [(15, 11)]

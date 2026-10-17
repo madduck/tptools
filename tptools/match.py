@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Self, cast
 from zoneinfo import ZoneInfo
 
 import tzlocal
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, Field
 
 from .court import Court
 from .draw import Draw
@@ -42,6 +42,9 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
     endtime: Annotated[datetime, AfterValidator(_ensure_tzaware_time)] | None
     winner: Literal["A"] | Literal["B"] | None = None
     scores: ScoresType = []
+    # Problems recorded while loading the match, e.g. illegal set scores. This is
+    # a shallow copy of TPMatch.errors; downstream consumers should surface them.
+    errors: list[str] = Field(default_factory=list)
 
     __repr_fields__ = [
         "id",
@@ -108,6 +111,7 @@ class Match[EntryT: Entry = Entry, DrawT: Draw = Draw, CourtT: Court = Court](
             endtime=tpmatch.endtime,
             winner=winner,
             scores=tpmatch.scores,
+            errors=list(tpmatch.errors),
             **players,
         )
 

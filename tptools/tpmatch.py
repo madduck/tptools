@@ -7,13 +7,14 @@ from functools import partial
 from typing import Any, Callable, Literal, Never, Self, cast
 
 import tzlocal
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from .mixins import ComparableMixin, ReprMixin, StrMixin
 from .slot import Bye, Playceholder, Slot, Unknown
 from .sqlmodels import TPCourt, TPDraw, TPEntry, TPPlayerMatch
 from .util import (
     ScoresType,
+    is_score_legal,
     normalise_time,
     reduce_common_prefix,
     scores_to_string,
@@ -53,6 +54,9 @@ class TPMatchStatus(StrEnum):
 class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     pm1: TPPlayerMatch
     pm2: TPPlayerMatch
+    # Problems that do not prevent the match from being loaded, but which
+    # downstream consumers should surface. See _check_consistency().
+    errors: list[str] = Field(default_factory=list)
 
     _slots: tuple[Slot, Slot] | None = None
 
@@ -85,9 +89,33 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             and len(sc2) == 0
         ):
             return self
-        assert (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) == sc2, (
-            f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
+        if (sc1 := self.pm1.get_scores(reversed=self.pm1.winner == 2)) != sc2:
+            self.errors.append(
+                f"PlayerMatches have different scorelines: {sc1} vs. {sc2}"
+            )
+        return self
+
+    def _check_score_legality(self) -> Self:
+        for high, low in self.scores:
+            if not is_score_legal(high, low):
+                self.errors.append(f"illegal set score: {high}-{low}")
+        return self
+
+    def _check_winner_vs_set_count(self) -> Self:
+        won_by = self.won_by
+        if won_by is None or len(self.scores) == 0:
+            return self
+
+        won_by_pm1 = sum(1 for a, b in self.scores if a > b)
+        won_by_pm2 = sum(1 for a, b in self.scores if b > a)
+        winner_sets, loser_sets = (
+            (won_by_pm1, won_by_pm2) if won_by == "A" else (won_by_pm2, won_by_pm1)
         )
+        if winner_sets <= loser_sets:
+            self.errors.append(
+                f"winner '{won_by}' does not match the set count "
+                f"{won_by_pm1}-{won_by_pm2}"
+            )
         return self
 
     @model_validator(mode="after")
@@ -140,7 +168,12 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
 
             self._check_winner_consistency()
             self._check_event_consistency()
+            # The score checks record problems instead of raising. Recompute from
+            # scratch so that re-validating a model does not duplicate them.
+            self.errors[:] = []
             self._check_score_consistency()
+            self._check_score_legality()
+            self._check_winner_vs_set_count()
 
         except AssertionError as err:
             raise AssertionError(f"Validating {self!r}: {err}") from err

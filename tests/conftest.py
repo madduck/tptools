@@ -424,6 +424,50 @@ def TPMatchFactory() -> TPMatchFactoryType:
     return match_maker
 
 
+type ScorePairFactoryType = Callable[..., TPMatch]
+
+
+@pytest.fixture
+def ScorePairFactory(tpmatch1: TPMatch) -> ScorePairFactoryType:
+    """Build a TPMatch from a scored set list.
+
+    ``scores`` are from pm1's perspective. ``pm2`` normally stores the reversed
+    scoreline and claims the opposite winner. Pass ``pm2_winner`` or
+    ``pm2_scores`` to deliberately construct an inconsistent pair, e.g. as
+    produced by a faulty TP export.
+    """
+
+    def pair_maker(
+        scores: list[tuple[int, int]],
+        *,
+        pm1_winner: int = 1,
+        pm2_winner: int | None = None,
+        pm2_scores: list[tuple[int, int]] | None = None,
+    ) -> TPMatch:
+        def apply(
+            pm: TPPlayerMatch,
+            pairs: list[tuple[int, int]],
+            winner: int,
+        ) -> TPPlayerMatch:
+            update: dict[str, int] = {
+                "winner": winner,
+                **{f"team{a}set{g}": 0 for a in (1, 2) for g in range(1, 6)},
+            }
+            for g, (a, b) in enumerate(pairs, start=1):
+                update |= {f"team1set{g}": a, f"team2set{g}": b}
+            return pm.model_copy(update=update)
+
+        pm1 = apply(tpmatch1.pm1, scores, pm1_winner)
+        if pm2_scores is None:
+            pm2_scores = [(b, a) for a, b in scores]
+        if pm2_winner is None:
+            pm2_winner = 3 - pm1_winner if pm1_winner in (1, 2) else pm1_winner
+        pm2 = apply(tpmatch1.pm2, pm2_scores, pm2_winner)
+        return TPMatch(pm1=pm1, pm2=pm2)
+
+    return pair_maker
+
+
 @pytest.fixture
 def tpmatch1(
     TPMatchFactory: TPMatchFactoryType,

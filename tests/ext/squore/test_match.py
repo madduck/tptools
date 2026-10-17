@@ -16,3 +16,8 @@ def test_pending_match(sqmatch_pending: SquoreMatch) -> None:
     assert sqmatch_pending.court is None
     assert isinstance(sqmatch_pending.A, SquoreEntry)
     assert sqmatch_pending.B == "Unknown"
+
+
+def test_squore_match_dump_excludes_errors(sqmatch1: SquoreMatch) -> None:
+    """The Squore wire format must not contain the errors array."""
+    assert "errors" not in sqmatch1.model_dump()

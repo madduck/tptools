@@ -233,6 +233,24 @@ type ScoreType = tuple[int, int]
 type ScoresType = list[ScoreType]
 
 
+def is_score_legal(high: int, low: int, *, par: int = 11) -> bool:
+    """Return whether a single set score is a legal Par-to-``par`` result.
+
+    ``high`` and ``low`` are the two scores of the set, in either order. A set
+    ends as soon as one player has ``par`` points and leads by at least two, or
+    when a deuce has been decided by two points. Therefore the only legal
+    scorelines are ``par`` to anything up to ``par - 2``, or a scoreline two
+    points apart above ``par``, such as 13-11 or 14-12. For example, 11-10,
+    11-12, and 15-11 are all impossible.
+    """
+    high, low = max(high, low), min(high, low)
+    if high < par or low < 0:
+        return False
+    if high == par:
+        return low <= par - 2
+    return low == high - 2
+
+
 def scores_to_string(
     scores: ScoresType | None,
     *,

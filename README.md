@@ -318,6 +318,9 @@ one or more `--url` arguments and will post the data there.
 | `post`      | A simple tournament representation (players, draws, courts, matches) |
 | `sq-stdout` | A view of the data sent to Squore (see below)                        |
 
+Matches in the `stdout` and `post` output carry an `errors` array. See [Invalid
+match data](#invalid-match-data) below.
+
 ### Forwarding TP data
 
 If you prefer to work mostly on another machine than the one running
@@ -513,6 +516,29 @@ Forthwith, the generated file (`sensible.sqlite` in this case) can be used
 instead of the TP file as argument to the `tp` subcommand.
 
 ## Known Problems
+
+### Invalid match data
+
+TournamentSoftware sometimes stores set scores that cannot happen in the
+configured scoring format. An example is 15-11 in a "Par 11" tournament: a set
+ends at 14-11, so 15-11 is impossible. Another example is a match whose two
+player rows disagree about the scoreline.
+
+`tptools` does not reject such a match. It loads the match and adds one string
+to the match's `errors` array for each problem:
+
+* a set score that cannot happen in the format, such as 15-11 in a "Par 11"
+  tournament;
+* two player rows that disagree about the scoreline;
+* a recorded winner who did not win more sets than the opponent.
+
+When `errors` is empty, the match data is valid. An unplayed match has no
+score to check, so it has no errors.
+
+The `stdout` and `post` commands serve the match like any other, with the
+`errors` array next to the data. The Squore endpoints do not include `errors`,
+because the Squore schema has no field for them. Use `stdout` or `post` when
+you need the `errors` array.
 
 ### BYEs in Group Draws
 

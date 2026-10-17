@@ -8,7 +8,7 @@ from tptools.slot import Bye, Slot, Unknown
 from tptools.sqlmodels import TPEntry, TPPlayerMatch
 from tptools.tpmatch import TPMatch, TPMatchStatus
 
-from .conftest import TPMatchFactoryType
+from .conftest import ScorePairFactoryType, TPMatchFactoryType
 
 
 def test_repr(tpmatch1: TPMatch) -> None:
@@ -248,3 +248,138 @@ def test_slot_accessor_explicit(slot1: Slot, slot2: Slot, tpmatch1: TPMatch) -> 
     # the order of set_slots() overrides the winner field
     assert m.slot1 == slot2
     assert m.slot2 == slot1
+
+
+# A tournament using "Par 11" scoring: a set is won by reaching 11 (or more)
+# with a two-point margin. Therefore 11-10, 11-12, and 15-11 are all illegal.
+
+
+@pytest.mark.parametrize(
+    "scores",
+    [
+        [(11, 10)],
+        [(11, 12)],
+        [(15, 11)],
+    ],
+)
+def test_illegal_set_scores(
+    ScorePairFactory: ScorePairFactoryType, scores: list[tuple[int, int]]
+) -> None:
+    """An illegal set score is flagged, not silently accepted or raised."""
+    m = ScorePairFactory(scores)
+    assert m.errors
+
+
+@pytest.mark.parametrize(
+    "scores",
+    [
+        [(11, 5)],
+        [(11, 9)],
+        [(13, 11)],
+        [(11, 4), (6, 11), (13, 11), (11, 8)],
+    ],
+)
+def test_legal_set_scores_are_not_flagged(
+    ScorePairFactory: ScorePairFactoryType, scores: list[tuple[int, int]]
+) -> None:
+    """Legal set scores leave the match unflagged."""
+    m = ScorePairFactory(scores)
+    assert m.errors == []
+
+
+def test_errors_default_is_not_shared(
+    ScorePairFactory: ScorePairFactoryType,
+) -> None:
+    """The errors default must come from default_factory=list, not a shared []
+
+    A bare ``errors: list[str] = []`` default would be shared across all
+    instances: mutating one match's errors would leak into every other match.
+    """
+    one = ScorePairFactory([(11, 5)])
+    two = ScorePairFactory([(11, 5)])
+    one.errors.append("marker")
+    assert two.errors == []
+
+
+def test_inconsistent_pair_is_flagged_with_errors(
+    ScorePairFactory: ScorePairFactoryType,
+) -> None:
+    """A 15-11 set whose two PlayerMatches disagree no longer raises.
+
+    This reproduces the real-world TP export where one set ends 15-11 and the
+    two PlayerMatch rows store the scoreline in the same orientation, so they
+    disagree about it. The match must load, but record the error(s) for
+    downstream alerting.
+    """
+    # Both winners agree, but pm2 stores the scoreline in pm1's orientation.
+    # Previously this made TPMatch raise a ValidationError.
+    m = ScorePairFactory([(15, 11)], pm2_scores=[(15, 11)], pm2_winner=2)
+    assert m.errors
+
+
+@pytest.mark.parametrize(
+    "pm1_scores, pm2_scores, pm1_winner, pm2_winner",
+    [
+        # pm1 (A) wins the match 2-0
+        ([(11, 5), (11, 6)], [(5, 11), (6, 11)], 1, 2),
+        # pm1 (A) wins 2-1
+        ([(11, 5), (6, 11), (11, 7)], [(5, 11), (11, 6), (7, 11)], 1, 2),
+        # pm2 (B) wins 2-0
+        ([(5, 11), (6, 11)], [(11, 5), (11, 6)], 2, 1),
+    ],
+)
+def test_winner_matches_set_count(
+    ScorePairFactory: ScorePairFactoryType,
+    pm1_scores: list[tuple[int, int]],
+    pm2_scores: list[tuple[int, int]],
+    pm1_winner: int,
+    pm2_winner: int,
+) -> None:
+    """The winner field agrees with who won more sets."""
+    m = ScorePairFactory(
+        pm1_scores,
+        pm1_winner=pm1_winner,
+        pm2_scores=pm2_scores,
+        pm2_winner=pm2_winner,
+    )
+    assert m.errors == []
+
+
+@pytest.mark.parametrize(
+    "pm1_scores, pm2_scores, pm1_winner, pm2_winner, won_by",
+    [
+        # winner says A, but pm2 won both sets
+        ([(5, 11), (6, 11)], [(11, 5), (11, 6)], 1, 2, "A"),
+        # winner says B, but pm1 won both sets
+        ([(11, 5), (11, 6)], [(5, 11), (6, 11)], 2, 1, "B"),
+        # winner says A, but the sets are split 1-1
+        ([(11, 5), (6, 11)], [(5, 11), (11, 6)], 1, 2, "A"),
+    ],
+)
+def test_winner_contradicts_set_count(
+    ScorePairFactory: ScorePairFactoryType,
+    pm1_scores: list[tuple[int, int]],
+    pm2_scores: list[tuple[int, int]],
+    pm1_winner: int,
+    pm2_winner: int,
+    won_by: str,
+) -> None:
+    """A recorded winner who did not win more sets is flagged."""
+    m = ScorePairFactory(
+        pm1_scores,
+        pm1_winner=pm1_winner,
+        pm2_scores=pm2_scores,
+        pm2_winner=pm2_winner,
+    )
+    assert any(
+        e.startswith(f"winner '{won_by}' does not match the set count")
+        for e in m.errors
+    )
+
+
+def test_unplayed_match_has_no_set_count_error(
+    ScorePairFactory: ScorePairFactoryType,
+) -> None:
+    """An unplayed match records no set-count error, even without scores."""
+    m = ScorePairFactory([], pm1_winner=0, pm2_winner=0)
+    assert m.errors == []

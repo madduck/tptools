@@ -70,6 +70,9 @@ class SquoreMatch(Match[SquoreEntry, SquoreDraw, SquoreCourt]):
         self, handler: SerializerFunctionWrapHandler
     ) -> SquoreMatchStruct:
         ret: SquoreMatchStruct = handler(self)
+        # Squore does not know about our error reporting, and its struct forbids
+        # extra keys, so keep errors out of the Squore wire format.
+        cast(dict[str, Any], ret).pop("errors", None)
         dt = self.time
         ret["date"] = dt.date().strftime("%F") if dt is not None else None
         ret["time"] = dt.time().strftime("%H:%M") if dt is not None else None
