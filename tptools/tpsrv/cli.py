@@ -192,6 +192,9 @@ def runit(
                         create_plugin_task(task, create_task_fn=tg.create_task)
 
                     try:
+                        logger.info(
+                            f"Starting server on {server.config.host}:{server.config.port}…"
+                        )
                         await server.serve()
 
                     except KeyboardInterrupt:
