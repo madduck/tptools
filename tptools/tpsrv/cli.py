@@ -153,6 +153,38 @@ for plugin in PLUGINS:
         logger.debug(f"Added plugin to tpsrv: {plugin}")
 
 
+# We do not use FastAPI's/Starlette's lifespan because of
+# https://github.com/fastapi/fastapi/discussions/13878
+# but handle the lifespan ourselves outside of the server process:
+async def lifespan(
+    server: uvicorn.Server, plugin_factories: list[PluginFactory]
+) -> None:
+    async with AsyncExitStack() as stack:
+        tasks = await setup_plugins(plugin_factories, stack=stack)
+
+        try:
+            async with asyncio.TaskGroup() as tg:
+                for task in tasks:
+                    create_plugin_task(task, create_task_fn=tg.create_task)
+
+                try:
+                    logger.info(
+                        f"Starting server on {server.config.host}:{server.config.port}…"
+                    )
+                    await server.serve()
+
+                except SystemExit:
+                    pass
+
+                except KeyboardInterrupt:
+                    pass
+
+                raise asyncio.CancelledError
+
+        except asyncio.CancelledError:
+            logger.info("Exiting…")
+
+
 @tpsrv.result_callback()
 @pass_clictx
 def runit(
@@ -180,34 +212,8 @@ def runit(
     )
     server = uvicorn.Server(config)
 
-    # We do not use FastAPI's/Starlette's lifespan because of
-    # https://github.com/fastapi/fastapi/discussions/13878
-    # but handle the lifespan ourselves outside of the server process:
-    async def lifespan(plugin_factories: list[PluginFactory]) -> None:
-        async with AsyncExitStack() as stack:
-            tasks = await setup_plugins(plugin_factories, stack=stack)
-
-            try:
-                async with asyncio.TaskGroup() as tg:
-                    for task in tasks:
-                        create_plugin_task(task, create_task_fn=tg.create_task)
-
-                    try:
-                        logger.info(
-                            f"Starting server on {server.config.host}:{server.config.port}…"
-                        )
-                        await server.serve()
-
-                    except KeyboardInterrupt:
-                        pass
-
-                    raise asyncio.CancelledError
-
-            except asyncio.CancelledError:
-                logger.info("Exiting…")
-
     try:
-        loop.run_until_complete(lifespan(plugin_factories))
+        loop.run_until_complete(lifespan(server, plugin_factories))
 
     except* click.ClickException as exc:
         for e in exc.exceptions:  # pragma: no branch
