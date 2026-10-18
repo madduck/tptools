@@ -91,3 +91,27 @@ def test_find_abnormal_court_name(
     devcourtmap: DeviceCourtMap, courts: dict[str, Court]
 ) -> None:
     assert devcourtmap.find_court_for_ip("192.0.2.99", courts.values()) is None
+
+
+def test_manual_add(devcourtmap: DeviceCourtMap, courts: dict[str, Court]) -> None:
+    devcourtmap.add_devcourt_mapping("192.0.2.14", "court10")
+    assert devcourtmap.find_court_for_ip("192.0.2.14", courts.values()) == courts.get(
+        "court10"
+    )
+
+
+def test_manual_remove(devcourtmap: DeviceCourtMap, courts: dict[str, Court]) -> None:
+    assert devcourtmap.pop_devcourt_mapping("192.0.2.11") == 11
+    assert devcourtmap.find_court_for_ip("192.0.2.11", courts.values()) is None
+
+
+def test_manual_remove_nonexisting(
+    devcourtmap: DeviceCourtMap, courts: dict[str, Court]
+) -> None:
+    with pytest.raises(KeyError, match="No mapping from"):
+        assert devcourtmap.pop_devcourt_mapping("192.0.2.15")
+
+
+def test_manual_add_does_not_overwrite(devcourtmap: DeviceCourtMap) -> None:
+    with pytest.raises(KeyError, match="already exists"):
+        devcourtmap.add_devcourt_mapping("192.0.2.11", "court")

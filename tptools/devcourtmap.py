@@ -24,6 +24,17 @@ class DeviceCourtMap:
         # so for convenience, flatten this:
         return flatten_dict(devmap)
 
+    def add_devcourt_mapping(self, ip: str, court: int | str) -> None | Never:
+        if ip in self._devmap:
+            raise KeyError(f"A mapping from {ip} already exists")
+        self._devmap[ip] = court
+        return None
+
+    def pop_devcourt_mapping(self, ip: str) -> int | str | Never:
+        if ip not in self._devmap:
+            raise KeyError(f"No mapping from {ip} to remove")
+        return self._devmap.pop(ip)
+
     @staticmethod
     def normalise_court_name_for_matching(
         courtname: str,
