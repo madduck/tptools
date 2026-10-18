@@ -24,6 +24,10 @@ def simulate_reload_tournament(clictx: CliContext) -> None:
 def dump_court_devices(clictx: CliContext) -> str | None:
     """Dump information gathered so far"""
     tournament = clictx.itc.get("tournament")
+
+    if tournament is None:
+        return "Tournament not loaded"
+
     courtdevs = [
         (c, c.scoredev) for c in tournament.courts.values() if c.scoredev is not None
     ]
