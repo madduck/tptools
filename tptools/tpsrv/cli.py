@@ -2,7 +2,9 @@ import asyncio
 import importlib
 import importlib.resources
 import logging
+import os
 import pathlib
+import sys
 from contextlib import AsyncExitStack
 from typing import Never
 
@@ -232,6 +234,21 @@ def runit(
             _ = exc
             ipdb.set_trace()  # noqa: E402 E702 I001 # fmt: skip
 
-        click.get_current_context().exit(1)
+        _exit(1)
 
-    click.get_current_context().exit(0)
+    _exit(0)
+
+
+def _exit(code: int) -> Never:
+    """Tear down the Click context and terminate the process immediately.
+
+    The event loop's executor may still hold a thread blocked in some subroutine, which
+    asyncio cannot cancel. The interpreter's atexit handler joins those threads, so a
+    plain return would delay exit until the connect times out. Tear the context down
+    explicitly, flush the streams, and bypass the atexit join with os._exit().
+    """
+    click.get_current_context().close()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    logging.shutdown()
+    os._exit(code)
