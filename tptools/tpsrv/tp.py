@@ -63,7 +63,7 @@ async def tp_source(
     *,
     no_fire_on_startup: bool = False,
 ) -> PluginLifespan:
-    if clictx.itc.knows_about("tpdata"):
+    if clictx.itc.knows_about("tournament"):
         raise click.ClickException("Another TP source is already registered")
 
     async def callback() -> StateType:
