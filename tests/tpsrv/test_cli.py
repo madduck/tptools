@@ -11,6 +11,7 @@ import click
 import pytest
 from click.testing import CliRunner
 from click_async_plugins import PluginLifespan, plugin
+from click_extra.logging import Formatter as ClickExtraFormatter
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import LogCaptureFixture, MonkeyPatch
@@ -360,6 +361,38 @@ def test_server_started_with_defaults(
     assert srv.config.host == "127.0.0.1"
     assert srv.config.port == 8000
     assert srv.config.access_log is False
+    # uvicorn's default log_config would bypass the root logger's formatter
+    assert srv.config.log_config is None
+
+
+def test_uvicorn_records_reach_the_root_formatter(
+    runner: CliRunner,
+    server: type[FakeServer],
+    probe: click.Command,
+    caplog: LogCaptureFixture,
+) -> None:
+    """uvicorn's loggers must propagate to the logger clickx.new_logger() set up"""
+    result = runner.invoke(tpsrv, ["-v", "probe"])
+    assert result.exit_code == 0, result.output
+
+    uvicorn_logger = logging.getLogger("uvicorn.error")
+    assert uvicorn_logger.handlers == []
+    assert uvicorn_logger.propagate is True
+
+    with caplog.at_level(logging.INFO):
+        uvicorn_logger.info("a uvicorn message")
+
+    (record,) = [r for r in caplog.records if r.getMessage() == "a uvicorn message"]
+    root_handler = next(
+        h
+        for h in logging.getLogger().handlers
+        if isinstance(h.formatter, ClickExtraFormatter)
+    )
+    assert root_handler.formatter is not None
+    formatted = root_handler.formatter.format(record)
+    assert "uvicorn.error" in formatted
+    assert "a uvicorn message" in formatted
+    assert "test_cli.py:" in formatted
 
 
 @pytest.mark.parametrize(

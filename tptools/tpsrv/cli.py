@@ -166,7 +166,17 @@ def runit(
     loop = new_event_loop()
     asyncio.set_event_loop(loop)
 
-    config = uvicorn.Config(clictx.api, host=host, port=port, access_log=False)
+    # log_config=None keeps uvicorn from running dictConfig(), which would give
+    # the "uvicorn" logger its own stderr handler and propagate=False. Left
+    # alone, its loggers propagate to the root logger that clickx.new_logger()
+    # set up, so uvicorn's records use the same formatter and verbosity.
+    config = uvicorn.Config(
+        clictx.api,
+        host=host,
+        port=port,
+        access_log=False,
+        log_config=None,
+    )
     server = uvicorn.Server(config)
 
     # We do not use FastAPI's/Starlette's lifespan because of
