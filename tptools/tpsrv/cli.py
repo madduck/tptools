@@ -125,6 +125,7 @@ def tpsrv(
         for name, level in (
             ("asyncio", logging.WARNING),
             ("watchdog", logging.WARNING),
+            ("uvicorn", logging.WARNING),
             ("click_async_plugins.itc", logging.INFO),
             ("click_extra", logging.INFO),
             ("tptools.tpmatch", logging.INFO),
