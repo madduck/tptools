@@ -1,11 +1,12 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import click
 from click_async_plugins import PluginLifespan, plugin
 from fastapi import Depends, FastAPI, HTTPException, Request
 from httpx2 import URL
+from starlette.routing import Route
 from starlette.status import HTTP_508_LOOP_DETECTED
 
 from tptools import Tournament
@@ -70,20 +71,35 @@ async def setup_to_receive_tournament_post(
 ) -> PluginLifespan:
     api_path = "/".join((api_mount_point, TPRECV_PATH_VERSION))
 
-    logger.debug("Starting squoresrv configuration…")
+    logger.debug("Starting tp_recv configuration…")
     recvapp.state.clictx = clictx
-    clictx.api.mount(path=api_path, app=recvapp, name="squore")
+
+    clictx.api.mount(path=api_path, app=recvapp, name="tp_recv")
     logger.info(f"Configured the app to receive tptools data at {api_path}")
 
-    async def bootstrap_initial_tournament() -> None:
-        clictx.itc.set(
-            "tournament",
-            None
-            if url is None
-            else await bootstrap_tournament_from_url(Tournament, url),
+    if clictx.itc.knows_about("tournament"):
+        logger.warning(
+            "Another tournament source already registered, disabling POST endpoint…"
         )
+        recvapp.router.routes = [
+            r
+            for r in recvapp.routes
+            if cast(Route, r).name != receive_tournament.__name__
+        ]
 
-    yield bootstrap_initial_tournament()
+        yield None
+
+    else:
+
+        async def bootstrap_initial_tournament() -> None:
+            clictx.itc.set(
+                "tournament",
+                None
+                if url is None
+                else await bootstrap_tournament_from_url(Tournament, url),
+            )
+
+        yield bootstrap_initial_tournament()
 
 
 @plugin

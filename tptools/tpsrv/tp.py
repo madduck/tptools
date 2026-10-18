@@ -66,6 +66,8 @@ async def tp_source(
     if clictx.itc.knows_about("tournament"):
         raise click.ClickException("Another TP source is already registered")
 
+    clictx.itc.set("tournament", None)  # claim ownership of the key
+
     async def callback() -> StateType:
         logger.info("Loading tournament…")
         try:
