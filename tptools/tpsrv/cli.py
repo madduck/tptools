@@ -219,12 +219,18 @@ def runit(
         for e in exc.exceptions:  # pragma: no branch
             raise e from exc
 
-    except* Exception:
-        import ipdb
-
+    except* Exception as exc:
         logger.exception("Something went really wrong")
 
-        ipdb.set_trace()  # noqa: E402 E702 I001 # fmt: skip
+        try:
+            import ipdb
+
+        except ImportError:
+            pass
+
+        else:
+            _ = exc
+            ipdb.set_trace()  # noqa: E402 E702 I001 # fmt: skip
 
         click.get_current_context().exit(1)
 
