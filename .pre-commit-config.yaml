@@ -26,5 +26,10 @@ repos:
         args: [--show-fixes]
       - id: ruff-format
         args: [--diff]
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml", "-r", "."]
 
 fail_fast: true

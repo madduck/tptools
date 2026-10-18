@@ -42,3 +42,9 @@ jobs:
         with:
           python_version: ${{ matrix.python-version }}
           requirements: ".[dev]"
+
+      - name: Bandit
+        uses: PyCQA/bandit-action@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          configfile: pyproject.toml
