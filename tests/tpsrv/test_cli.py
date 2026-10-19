@@ -404,7 +404,7 @@ def test_uvicorn_records_reach_the_root_formatter(
 @pytest.mark.parametrize(
     "args, host, port",
     [
-        (["--host", "0.0.0.0"], "0.0.0.0", 8000),
+        (["--host", "0.0.0.0"], "0.0.0.0", 8000),  # nosec: B104
         (["-h", "::1"], "::1", 8000),
         (["--port", "9999"], "127.0.0.1", 9999),
         (["-p", "1024"], "127.0.0.1", 1024),
