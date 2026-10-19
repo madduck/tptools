@@ -67,18 +67,19 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
         if (a := zero_to_none(self.pm1.winner)) is not None and (
             b := zero_to_none(self.pm2.winner)
         ) is not None:
-            assert a + b == 3, f"winner fields: {a}+{b} != 3 "
+            if a + b != 3:
+                raise ValueError(f"winner fields: {a}+{b} != 3 ")
 
         else:
             b = zero_to_none(self.pm2.winner)
-            assert a is None and b is None, f"winner fields inconsistent: {a} vs. {b}"
+            if a is not None or b is not None:
+                raise ValueError(f"winner fields inconsistent: {a} vs. {b}")
         return self
 
     def _check_event_consistency(self) -> Self:
         if self.pm1.entry is not None and self.pm2.entry is not None:
-            assert self.pm1.entry.event == self.pm2.entry.event, (
-                "match between players in different events"
-            )
+            if self.pm1.entry.event != self.pm2.entry.event:
+                raise ValueError("match between players in different events")
         return self
 
     def _check_score_consistency(self) -> Self:
@@ -121,17 +122,21 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
     @model_validator(mode="after")
     def _check_consistency(self) -> Self:
         try:
-            assert self.pm1.status.is_match, "got a player"
-            assert self.pm2.status.is_match, "got a player"
+            if not self.pm1.status.is_match:
+                raise ValueError("got a player")
+            if not self.pm2.status.is_match:
+                raise ValueError("got a player")
 
             # It seems that PlayerMatch pairs always have the winner first, i.e. with
             # the lower planning number, so let's ensure that:
             if self.pm1.planning > self.pm2.planning:
                 self.pm1, self.pm2 = self.pm2, self.pm1
 
-            assert None not in self.pm2.van, "Missing van pointer"
+            if None in self.pm2.van:
+                raise ValueError("Missing van pointer")
 
-            assert self.pm1.van == self.pm2.van, "Inconsistent van pointers"
+            if self.pm1.van != self.pm2.van:
+                raise ValueError("Inconsistent van pointers")
 
             for field, acceptable in {
                 "id": (None,),
@@ -141,30 +146,10 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             }.items():
                 a = getattr(self.pm1, field)
                 b = getattr(self.pm2, field)
-                assert (a in acceptable and b in acceptable and a == b) or a != b, (
-                    f"same value for '{field}'"
-                )
+                if not ((a in acceptable and b in acceptable and a == b) or a != b):
+                    raise ValueError(f"same value for '{field}'")
 
-            for field in (
-                "matchnr",
-                "draw",
-                "court",
-                "time",
-            ):
-                # these fields must be identical between the two playermatches
-                # lest the 2nd match's field be None:
-                b = getattr(self.pm2, field)
-                if b is None:
-                    continue
-                a = getattr(self.pm1, field)
-                if (
-                    massager := cast(
-                        Callable[[Any], Any], self.__massage_fields__.get(field)
-                    )
-                ) is not None:
-                    a = massager(a)
-                    b = massager(b)
-                assert a == b, f"different values for '{field}': {a} vs. {b}"
+            self._check_identical_fields(("matchnr", "draw", "court", "time"))
 
             self._check_winner_consistency()
             self._check_event_consistency()
@@ -175,11 +160,38 @@ class TPMatch(ComparableMixin, ReprMixin, StrMixin, BaseModel):
             self._check_score_legality()
             self._check_winner_vs_set_count()
 
-        except AssertionError as err:
-            raise AssertionError(f"Validating {self!r}: {err}") from err
+        except ValueError as err:
+            raise ValueError(f"Validating {self!r}: {err}") from err
 
         else:
             return self
+
+    def _check_identical_fields(self, fields: tuple[str, ...]) -> None:
+        """Ensure the given fields are identical across both PlayerMatches.
+
+        These fields must not differ lest the 2nd match's field be None. Fields
+        that are None in the 2nd PlayerMatch are skipped.
+
+        Args:
+            fields: Names of the fields to compare.
+
+        Raises:
+            ValueError: If a field differs between the two PlayerMatches.
+        """
+        for field in fields:
+            b = getattr(self.pm2, field)
+            if b is None:
+                continue
+            a = getattr(self.pm1, field)
+            if (
+                massager := cast(
+                    Callable[[Any], Any], self.__massage_fields__.get(field)
+                )
+            ) is not None:
+                a = massager(a)
+                b = massager(b)
+            if a != b:
+                raise ValueError(f"different values for '{field}': {a} vs. {b}")
 
     @property
     def id(self) -> str:
@@ -466,9 +478,8 @@ class TPMatchMaker(ReprMixin):
                 raise ValueError(f"Cannot resolve unmatched {pm!r}")
 
     def resolve_match_entries(self) -> None:
-        assert len(self.unmatched) == 0, (
-            "Cannot resolve entries with unmatched PlayerMatches"
-        )
+        if len(self.unmatched) != 0:
+            raise ValueError("Cannot resolve entries with unmatched PlayerMatches")
 
         # Oh my god, what a mess. The TP "database" is a fucking disgrace, full of
         # redundancy and corner cases and inconsistencies.

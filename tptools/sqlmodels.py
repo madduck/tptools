@@ -359,7 +359,7 @@ class TPPlayerMatch(TPModel, table=True):
             case (int(_), int(_), True):
                 return van2, van1
 
-        raise AssertionError("van{1,2} inconsistent")
+        raise ValueError("van{1,2} inconsistent")
 
     @property
     def scheduled(self) -> bool:
@@ -400,8 +400,8 @@ class TPPlayerMatch(TPModel, table=True):
                 else:
                     return self.Status.PLAYED
 
-        except AssertionError as err:
-            raise RuntimeError(f"{self} has an invalid status: {str(err)}") from err
+        except ValueError as err:
+            raise ValueError(f"{self} has an invalid status: {str(err)}") from err
 
     def _status_repr(self) -> str:
         return self.status.name.lower()
