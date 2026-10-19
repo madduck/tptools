@@ -267,7 +267,7 @@ def test_status_group(
     assert pm1.status == status
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason="TP uses 0 and None interchangeably, but they are different")
 def test_winner0_is_not_played(pm: TPPlayerMatch) -> None:
     # This requires a custom type. There is no validation for model instances that are
     # read from the database, and `model_post_init` is also not called. We could map
