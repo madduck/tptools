@@ -8,12 +8,29 @@ import pytest
 from click.testing import CliRunner, Result
 from click_async_plugins import ITC
 from fastapi import FastAPI
+from pytest_mock import MockerFixture
 
+from tptools.tpsrv import cli
 from tptools.tpsrv.util import CliContext
 
 type PluginTask = Coroutine[None, None, None]
 type PluginCM = AbstractAsyncContextManager[PluginTask | None]
 type PluginFactory = Callable[[], PluginCM]
+
+
+@pytest.fixture(autouse=True)
+def no_hard_exit(mocker: MockerFixture) -> None:
+    """Keep the CLI result callback from killing the test process.
+
+    runit() ends by calling cli._exit(), which uses os._exit() and so tears
+    down the whole interpreter before pytest can finish. Raise SystemExit
+    instead, which CliRunner turns into the result's exit_code.
+    """
+
+    def exit_with(code: int) -> None:
+        raise SystemExit(code)
+
+    mocker.patch.object(cli, "_exit", side_effect=exit_with)
 
 
 @pytest.fixture
