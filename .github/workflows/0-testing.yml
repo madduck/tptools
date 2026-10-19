@@ -37,13 +37,15 @@ jobs:
         run: |
           pytest
 
+        # Bandit has to run before Mypy, because Mypy uses Docker, which creates files
+        # that Bandit's sanity pre-cleanup can't remove.
+      - name: Bandit
+        uses: PyCQA/bandit-action@v1
+        with:
+          configfile: pyproject.toml
+
       - name: Mypy Check
         uses: jpetrucciani/mypy-check@master
         with:
           python_version: ${{ matrix.python-version }}
           requirements: ".[dev]"
-
-      - name: Bandit
-        uses: PyCQA/bandit-action@v1
-        with:
-          configfile: pyproject.toml
