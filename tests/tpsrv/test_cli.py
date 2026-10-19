@@ -22,6 +22,10 @@ from tptools.tpsrv import cli
 from tptools.tpsrv.cli import PLUGINS, make_app, tpsrv
 from tptools.tpsrv.util import CliContext, pass_clictx
 
+# The autouse no_hard_exit fixture replaces cli._exit for every test, so keep a
+# reference to the real implementation captured at import time to test it.
+REAL_EXIT: Callable[[int], Any] = cli._exit
+
 
 @pytest.fixture(autouse=True)
 def default_cfg(tmp_path: pathlib.Path, monkeypatch: MonkeyPatch) -> pathlib.Path:
@@ -469,6 +473,19 @@ def test_keyboard_interrupt_is_a_clean_exit(
     assert recorder.events == ["setup", "task", "teardown"]
 
 
+def test_systemexit_from_serve_is_a_clean_exit(
+    runner: CliRunner,
+    server: type[FakeServer],
+    probe: click.Command,
+) -> None:
+    def bail() -> None:
+        raise SystemExit
+
+    server.behaviour = staticmethod(bail)
+    result = runner.invoke(tpsrv, ["probe"])
+    assert result.exit_code == 0, result.output
+
+
 def test_multiple_plugins_share_the_context(
     runner: CliRunner,
     server: type[FakeServer],
@@ -520,6 +537,44 @@ def test_unexpected_exception_drops_into_debugger_and_exits_1(
     set_trace.assert_called_once_with()
     assert "Something went really wrong" in caplog.text
     assert "ZeroDivisionError" in caplog.text
+
+
+def test_unexpected_exception_without_ipdb_still_exits_1(
+    runner: CliRunner,
+    server: type[FakeServer],
+    probe: click.Command,
+    monkeypatch: MonkeyPatch,
+    caplog: LogCaptureFixture,
+) -> None:
+    """Without ipdb installed the crash is logged and the server still exits"""
+    monkeypatch.setitem(sys.modules, "ipdb", None)
+    with caplog.at_level(logging.ERROR):
+        result = runner.invoke(tpsrv, ["probe", "--crash"])
+
+    assert result.exit_code == 1
+    assert "Something went really wrong" in caplog.text
+
+
+# _exit
+
+
+def test_exit_tears_down_context_and_flushes_before_exiting(
+    mocker: MockerFixture,
+) -> None:
+    ctx = mocker.Mock()
+    mocker.patch("tptools.tpsrv.cli.click.get_current_context", return_value=ctx)
+    stdout_flush = mocker.patch("tptools.tpsrv.cli.sys.stdout.flush")
+    stderr_flush = mocker.patch("tptools.tpsrv.cli.sys.stderr.flush")
+    shutdown = mocker.patch("tptools.tpsrv.cli.logging.shutdown")
+    os_exit = mocker.patch("tptools.tpsrv.cli.os._exit")
+
+    REAL_EXIT(3)
+
+    ctx.close.assert_called_once_with()
+    stdout_flush.assert_called_once_with()
+    stderr_flush.assert_called_once_with()
+    shutdown.assert_called_once_with()
+    os_exit.assert_called_once_with(3)
 
 
 # --very-debug and logger silencing

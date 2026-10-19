@@ -194,6 +194,11 @@ async def test_ctrl_l_message_when_no_court_devices_known(
         assert "No devices known" in ret
 
 
+def test_dump_court_devices_without_a_tournament(clictx: CliContext) -> None:
+    assert not clictx.itc.knows_about("tournament")
+    assert dump_court_devices(clictx) == "Tournament not loaded"
+
+
 # the command
 
 

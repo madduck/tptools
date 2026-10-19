@@ -238,6 +238,36 @@ async def test_setup_with_url_bootstraps_from_url(
     assert clictx.itc.get("tournament") == tournament1
 
 
+@pytest.fixture
+def restore_routes() -> Generator[None]:
+    """The disabled-POST branch rebinds recvapp.router.routes, so restore it"""
+    saved = recvapp.router.routes
+    yield
+    recvapp.router.routes = saved
+
+
+@pytest.mark.asyncio
+async def test_setup_disables_post_when_tournament_source_exists(
+    clictx: CliContext,
+    bootstrap: AsyncMockType,
+    restore_routes: Generator[None],
+    caplog: LogCaptureFixture,
+) -> None:
+    clictx.itc.set("tournament", Tournament(name="already here"))
+
+    with caplog.at_level(logging.WARNING):
+        async with setup_to_receive_tournament_post(clictx) as task:
+            assert task is None, "no bootstrapper when a source exists"
+
+    assert "Another tournament source already registered" in caplog.text
+    bootstrap.assert_not_called()
+
+    client = TestClient(clictx.api)
+    # the POST endpoint is gone, but GET still serves the tournament
+    assert client.post(f"{BASE}/tournament", content="").status_code == 405
+    assert client.get(f"{BASE}/tournament").json()["name"] == "already here"
+
+
 @pytest.mark.asyncio
 async def test_setup_with_url_that_yields_nothing(
     clictx: CliContext, bootstrap: AsyncMockType
