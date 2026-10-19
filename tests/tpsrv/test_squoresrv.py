@@ -52,11 +52,7 @@ def sqtournament(
     draw1: Draw,
     draw2: Draw,
 ) -> SquoreTournament:
-    """A tournament with two courts and only singles entries
-
-    (the entries are limited because of the problem documented in
-    test_players_with_singles_and_doubles_entries_of_the_same_player)
-    """
+    """A tournament with two courts and only singles entries"""
     t = Tournament(name="Sq Test")
     for match in (match1, match2, match_won_by_B):
         t.add_match(match)
@@ -245,23 +241,24 @@ def test_players_name_policy_from_query(client: TestClient) -> None:
     assert resp.text == "Hoeve, Iddo\nKrafft, Martin"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Sorting entries by (player1, player2) compares None with a Player if a "
-    "singles and a doubles entry have the same player1, which raises "
-    "NotImplementedError and thus gives a 500 response",
-)
 def test_players_with_singles_and_doubles_entries_of_the_same_player(
     client: TestClient,
     squore_state: dict[str, Any],
     entry1: Entry,
     entry12: Entry,
 ) -> None:
+    """The singles entry sorts before the doubles entry of the same player1.
+
+    The key for sorting must not compare None (singles player2) with a Player
+    (doubles player2), which would raise NotImplementedError and thus give a 500.
+    """
     t = Tournament(name="Mixed")
     t.add_entries([entry1, entry12])
     squoreapp.state.tournament = SquoreTournament.from_tournament(t)
 
-    assert client.get("/players").status_code == 200
+    resp = client.get("/players")
+    assert resp.status_code == 200
+    assert resp.text == "Martin Krafft\nMartin Krafft&Iddo Hoeve"
 
 
 def test_players_with_doubles_entries(

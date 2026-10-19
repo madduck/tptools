@@ -9,7 +9,6 @@ import re
 import tomllib
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from operator import attrgetter
 from textwrap import dedent
 from typing import Annotated, Any, Never, cast
 from warnings import warn
@@ -36,6 +35,7 @@ from tptools import (
     Draw,
     Entry,
     MatchSelectionParams,
+    Player,
     Tournament,
 )
 from tptools.ext.squore import (
@@ -221,6 +221,11 @@ def get_players_list(
     paircombinepolicy: Annotated[PairCombinePolicy, Depends(get_paircombinepolicy)],
     entries: Annotated[list[Entry], Depends(get_entries)],
 ) -> list[dict[str, Any]]:
+    def sortkey(e: Entry) -> tuple[Player, tuple[bool, Player | None]]:
+        # The second element must not let a None (singles) compare with a Player
+        # (doubles); the bool discriminates before player2 is ever compared.
+        return (e.player1, (e.player2 is not None, e.player2))
+
     return [
         e.model_dump(
             context={
@@ -228,7 +233,7 @@ def get_players_list(
                 "paircombinepolicy": paircombinepolicy,
             }
         )
-        for e in sorted(entries, key=attrgetter("player1", "player2"))
+        for e in sorted(entries, key=sortkey)
     ]
 
 
