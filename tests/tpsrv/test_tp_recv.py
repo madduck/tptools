@@ -37,7 +37,7 @@ def reset_recvapp_state() -> Generator[None]:
 def client(clictx: CliContext) -> TestClient:
     """A client for clictx.api, with recvapp mounted the way the plugin does it"""
     recvapp.state.clictx = clictx
-    clictx.api.mount(path=BASE, app=recvapp, name="squore")
+    clictx.api.mount(path=BASE, app=recvapp, name="tp_recv")
     return TestClient(clictx.api)
 
 
@@ -182,7 +182,7 @@ async def test_setup_mounts_recvapp_at_default_path(clictx: CliContext) -> None:
         bootstrapper.close()
 
     assert recvapp.state.clictx is clictx
-    mounts = [r for r in clictx.api.routes if getattr(r, "name", None) == "squore"]
+    mounts = [r for r in clictx.api.routes if getattr(r, "name", None) == "tp_recv"]
     assert [m.path for m in mounts] == [BASE]
     assert BASE == "/tptools/v1"
 
@@ -336,7 +336,7 @@ async def test_two_instances_exchange_tournaments_with_loop_protection(
     other = CliContext(api=FastAPI(), itc=ITC())
 
     recvapp.state.clictx = mine
-    mine.api.mount(path=BASE, app=recvapp, name="squore")
+    mine.api.mount(path=BASE, app=recvapp, name="tp_recv")
     client = TestClient(mine.api)
 
     from_other = client.post(
