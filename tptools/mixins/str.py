@@ -13,5 +13,6 @@ class StrMixin:
 
         else:
             return cast(
-                str, eval(f'f"""{self.__str_template__}"""', locals={"self": self})
+                str,
+                eval(f'f"""{self.__str_template__}"""', locals={"self": self}),  # nosec: B307
             )

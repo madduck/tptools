@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 
 import pytest
@@ -86,7 +87,7 @@ def test_default_status_entry_means_player(
 
 def test_inconsistent_van(pmplayer1: TPPlayerMatch) -> None:
     pmplayer1.van2 = 2001
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match=re.escape("van{1,2} inconsistent")):
         _ = pmplayer1.status
 
 

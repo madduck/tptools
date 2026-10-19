@@ -59,7 +59,7 @@ def test_make_match_duplicate(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> No
 
 def test_resolve_with_unmatched(matchmaker: TPMatchMaker, tpmatch1: TPMatch) -> None:
     matchmaker.add_playermatch(tpmatch1.pm1)
-    with pytest.raises(AssertionError, match="Cannot resolve entries with unmatched"):
+    with pytest.raises(ValueError, match="Cannot resolve entries with unmatched"):
         matchmaker.resolve_match_entries()
 
 

@@ -62,6 +62,7 @@ dev = [
   "types-pywin32",
   "types-python-dateutil",
   "fastapi[standard]",
+  "bandit",
 ]
 
 [project.scripts]
@@ -107,3 +108,10 @@ exclude_also = [
   'raise NotImplementedError',
   'raise AssertionError',
 ]
+
+[tool.bandit]
+exclude_dirs = ['.direnv']
+skips = ["B106"]           # do not check for hardcoded passwords anywhere
+
+[tool.bandit.assert_used]
+skips = ['*/tests/**.py', '*/integration/**.py']
