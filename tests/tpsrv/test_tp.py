@@ -317,12 +317,14 @@ async def test_tp_source_notifies_subscribers(
     listener = asyncio.create_task(listen())
     try:
         await wait_for(lambda: clictx.itc.has_subscribers("tournament"))
+        # tp_source first claims the key with None, then loads the tournament,
+        # so wait for the loaded value rather than the first notification
         async with running(tp_source(clictx, tpfile, session)):
-            await wait_for(lambda: len(received) == 1)
+            await wait_for(lambda: any(isinstance(t, Tournament) for t in received))
     finally:
         listener.cancel()
 
-    assert isinstance(received[0], Tournament)
+    assert any(isinstance(t, Tournament) for t in received)
 
 
 @pytest.mark.asyncio
@@ -367,7 +369,7 @@ async def test_tp_source_reloads_on_every_change(
 async def test_tp_source_refuses_second_source(
     clictx: CliContext, tpfile: pathlib.Path, session: Session
 ) -> None:
-    clictx.itc.set("tpdata", object())
+    clictx.itc.set("tournament", object())
 
     with pytest.raises(click.ClickException, match="Another TP source is already"):
         async with tp_source(clictx, tpfile, session):

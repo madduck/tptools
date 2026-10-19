@@ -379,7 +379,9 @@ def test_uvicorn_records_reach_the_root_formatter(
     assert uvicorn_logger.handlers == []
     assert uvicorn_logger.propagate is True
 
-    with caplog.at_level(logging.INFO):
+    # tpsrv silences the parent "uvicorn" logger to WARNING, so lower the
+    # level on the logger we emit from or the record never leaves it
+    with caplog.at_level(logging.INFO, logger="uvicorn.error"):
         uvicorn_logger.info("a uvicorn message")
 
     (record,) = [r for r in caplog.records if r.getMessage() == "a uvicorn message"]
@@ -526,6 +528,7 @@ def test_unexpected_exception_drops_into_debugger_and_exits_1(
 SILENCED: dict[str, int] = {
     "asyncio": logging.WARNING,
     "watchdog": logging.WARNING,
+    "uvicorn": logging.WARNING,
     "click_async_plugins.itc": logging.INFO,
     "click_extra": logging.INFO,
     "tptools.tpmatch": logging.INFO,
