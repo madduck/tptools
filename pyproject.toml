@@ -62,7 +62,7 @@ dev = [
   "types-pywin32",
   "types-python-dateutil",
   "fastapi[standard]",
-  "bandit",
+  "bandit[toml]",
 ]
 
 [project.scripts]
